@@ -8,6 +8,8 @@
 -- Dependencies into their places
 -- Sort imports logically
 -- Auto indentation
+-- Remove nvim-lspconfig dependency in favor of native LSP settings.
+-- Replace the nvim-cmp plugin with blink.cmp
 
 vim.pack.add({
     { src = "https://github.com/neovim/nvim-lspconfig" },
