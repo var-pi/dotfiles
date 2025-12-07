@@ -3,7 +3,7 @@
 -- TODO
 -- Add "hrsh7th/cmp-buffer",
 -- Add "hrsh7th/cmp-path",
--- Cmp for lua and latex
+-- Cmp for latex
 -- Ollama.Copilot
 -- Dependencies into their places
 -- Sort imports logically
