@@ -8,23 +8,30 @@
 -- Dependencies into their places
 -- Sort imports logically
 -- Auto indentation
--- Remove nvim-lspconfig dependency in favor of native LSP settings.
 -- Replace the nvim-cmp plugin with blink.cmp
+-- Auto doc
+-- Do not show underscore properties in cmp
+-- Mason instead of pulling language servers by hand?
+-- Forward search for latex?
 
 vim.pack.add({
-    { src = "https://github.com/neovim/nvim-lspconfig" },
+    -- Suggestions in a popup menu 
     { src = "https://github.com/hrsh7th/nvim-cmp" },
+    -- Pass suggstion information from a ls to cmp.
     { src = "https://github.com/hrsh7th/cmp-nvim-lsp" },
-    { src = "https://github.com/rafamadriz/friendly-snippets" },
-    { src = "https://github.com/L3MON4D3/LuaSnip" },
-    { src = "https://github.com/saadparwaiz1/cmp_luasnip" },
-    { src = "https://github.com/nomnivore/ollama.nvim" },
-    { src = "https://github.com/nvim-lua/plenary.nvim" }, -- For ollama
+
+    -- A strip with information about the editing session.
     { src = "https://github.com/nvim-lualine/lualine.nvim" },
+
+    -- A theme.
     { src = "https://github.com/catppuccin/nvim" },
+
+    -- Lua utility library.
+    { src = "https://github.com/nvim-lua/plenary.nvim" },
+    -- Management and integration of ollama workflows.
+    { src = "https://github.com/nomnivore/ollama.nvim" },
 })
 
-require('plugins.luasnip')()
 require('plugins.cmp')()
 require('plugins.ollama')()
 require('plugins.lualine')()
