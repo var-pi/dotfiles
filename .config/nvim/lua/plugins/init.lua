@@ -1,15 +1,12 @@
--- TODO Auto close paren
-
 -- TODO
--- Add "hrsh7th/cmp-buffer",
--- Add "hrsh7th/cmp-path",
+-- Auto close paren
 -- Ollama.Copilot
--- Auto indentation
 -- Replace the nvim-cmp plugin with blink.cmp
 -- Auto doc
--- Do not show underscore properties in cmp
 -- Mason instead of pulling language servers by hand?
 -- Forward search for latex?
+-- Learn about a treesitter
+-- Add options
 
 vim.pack.add({
     -- Suggestions in a popup menu 
@@ -28,9 +25,14 @@ vim.pack.add({
     -- Management and integration of ollama workflows.
     { src = "https://github.com/nomnivore/ollama.nvim" },
 
-    { src = "https://github.com/nvim-treesitter/nvim-treesitter" }
+    -- Features basedon code tree representation.
+    { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+
+    -- Automatically add a pairing brackets, quotes etc.
+    --{ src = "https://github.com/windwp/nvim-autopairs" },
 })
 
-require('plugins.cmp')()
-require('plugins.ollama')()
-require('plugins.lualine')()
+require('plugins.cmp')
+require('plugins.ollama')
+require('plugins.lualine')
+require('plugins.nvim-treesitter')

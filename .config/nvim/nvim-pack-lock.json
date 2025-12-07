@@ -32,6 +32,10 @@
       "rev": "ce4a8e0d5267e67056f9f4dcf6cb1d0933c8ca00",
       "src": "https://github.com/catppuccin/nvim"
     },
+    "nvim-autopairs": {
+      "rev": "7a2c97cccd60abc559344042fefb1d5a85b3e33b",
+      "src": "https://github.com/windwp/nvim-autopairs"
+    },
     "nvim-cmp": {
       "rev": "d97d85e01339f01b842e6ec1502f639b080cb0fc",
       "src": "https://github.com/hrsh7th/nvim-cmp"
