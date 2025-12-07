@@ -7,6 +7,7 @@
 -- Ollama.Copilot
 -- Dependencies into their places
 -- Sort imports logically
+-- Auto indentation
 
 vim.pack.add({
     { src = "https://github.com/neovim/nvim-lspconfig" },

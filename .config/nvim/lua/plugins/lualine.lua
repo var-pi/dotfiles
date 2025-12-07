@@ -12,8 +12,8 @@ return function()
 			    local ollama_status = require("ollama").status()
 
 			    local icons = {
-				"󱙺", -- IDLE
-				"󰚩"  -- WORKING (animation frame)
+				"󱙺",
+				"󰚩",
 			    }
 
 			    if ollama_status == "IDLE" then
