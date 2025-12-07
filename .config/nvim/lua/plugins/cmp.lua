@@ -1,3 +1,9 @@
+local function no_underscores(entry, _)
+    local label = entry:get_completion_item().label
+    return not label:match("^_")
+end
+
+
 return function()
     local cmp = require("cmp")
 
@@ -25,7 +31,10 @@ return function()
             end, { "i", "s" }),
         }),
         sources = cmp.config.sources({
-            { name = "nvim_lsp" },
+            {
+                name = "nvim_lsp",
+                entry_filter = no_underscores
+            },
             --{ name = "path" },
             --{ { name = "buffer" } },
         }),
