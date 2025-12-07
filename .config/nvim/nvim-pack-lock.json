@@ -44,6 +44,10 @@
       "rev": "56b4052f71220144689caaa2e5b66222ba5661eb",
       "src": "https://github.com/garymjr/nvim-snippets"
     },
+    "nvim-treesitter": {
+      "rev": "42fc28ba918343ebfd5565147a42a26580579482",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter"
+    },
     "ollama.nvim": {
       "rev": "45e58779fecde7ac5b8f62800bbe7180d4b48507",
       "src": "https://github.com/nomnivore/ollama.nvim"

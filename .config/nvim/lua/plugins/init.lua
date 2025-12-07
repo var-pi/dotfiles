@@ -4,8 +4,6 @@
 -- Add "hrsh7th/cmp-buffer",
 -- Add "hrsh7th/cmp-path",
 -- Ollama.Copilot
--- Dependencies into their places
--- Sort imports logically
 -- Auto indentation
 -- Replace the nvim-cmp plugin with blink.cmp
 -- Auto doc
@@ -29,6 +27,8 @@ vim.pack.add({
     { src = "https://github.com/nvim-lua/plenary.nvim" },
     -- Management and integration of ollama workflows.
     { src = "https://github.com/nomnivore/ollama.nvim" },
+
+    { src = "https://github.com/nvim-treesitter/nvim-treesitter" }
 })
 
 require('plugins.cmp')()
