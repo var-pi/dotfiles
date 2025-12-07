@@ -1,5 +1,5 @@
-require("keymaps")
-require("plugins.init")
-require("options")
-require("colorscheme")
-require("lsp")
+require'keymaps'
+require'plugins.init'
+require'options'
+require'colorscheme'
+require'lsp'
