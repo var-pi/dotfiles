@@ -7,12 +7,15 @@
 -- Forward search for latex?
 -- Learn about a treesitter
 -- Add options
+-- Autochange matching tag
 
 vim.pack.add{
     -- Suggestions in a popup menu 
     { src = 'https://github.com/hrsh7th/nvim-cmp' },
     -- Pass suggstion information from a ls to cmp.
     { src = 'https://github.com/hrsh7th/cmp-nvim-lsp' },
+    -- Buffer as a source for cmp.
+    { src = 'https://github.com/hrsh7th/cmp-buffer' },
 
     -- A strip with information about the editing session.
     { src = 'https://github.com/nvim-lualine/lualine.nvim' },
@@ -30,6 +33,9 @@ vim.pack.add{
 
     -- Automatically add a pairing brackets, quotes etc.
     { src = 'https://github.com/windwp/nvim-autopairs' },
+
+    -- Fuzzy search
+    { src = 'https://github.com/nvim-telescope/telescope.nvim' }
 }
 
 require'plugins.cmp'
@@ -37,3 +43,4 @@ require'plugins.ollama'
 require'plugins.lualine'
 require'plugins.nvim-treesitter'
 require'plugins.nvim-autopairs'
+require'plugins.telescope'

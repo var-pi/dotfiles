@@ -29,6 +29,7 @@ cmp.setup{
         end, { 'i', 's' }),
     },
     sources = cmp.config.sources{
-        { name = 'nvim_lsp', entry_filter = no_underscores }
+        { name = 'nvim_lsp', entry_filter = no_underscores },
+        { name = 'buffer' },
     },
 }
