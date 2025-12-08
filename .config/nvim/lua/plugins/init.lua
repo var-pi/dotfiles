@@ -34,7 +34,7 @@ vim.pack.add{
     -- Automatically add a pairing brackets, quotes etc.
     { src = 'https://github.com/windwp/nvim-autopairs' },
 
-    -- Fuzzy search
+    -- Fuzzy search.
     { src = 'https://github.com/nvim-telescope/telescope.nvim' }
 }
 
