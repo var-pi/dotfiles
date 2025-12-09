@@ -1,56 +1,20 @@
 {
   "plugins": {
-    "LuaSnip": {
-      "rev": "3732756842a2f7e0e76a7b0487e9692072857277",
-      "src": "https://github.com/L3MON4D3/LuaSnip"
-    },
-    "Ollama-Copilot": {
-      "rev": "7252d72ccc00017709cce7ee3b5fefe9bba46a7d",
-      "src": "https://github.com/Jacob411/Ollama-Copilot"
-    },
-    "cmp-buffer": {
-      "rev": "b74fab3656eea9de20a9b8116afa3cfc4ec09657",
-      "src": "https://github.com/hrsh7th/cmp-buffer"
-    },
-    "cmp-nvim-lsp": {
-      "rev": "cbc7b02bb99fae35cb42f514762b89b5126651ef",
-      "src": "https://github.com/hrsh7th/cmp-nvim-lsp"
-    },
-    "cmp_luasnip": {
-      "rev": "98d9cb5c2c38532bd9bdb481067b20fea8f32e90",
-      "src": "https://github.com/saadparwaiz1/cmp_luasnip"
-    },
-    "friendly-snippets": {
-      "rev": "572f5660cf05f8cd8834e096d7b4c921ba18e175",
-      "src": "https://github.com/rafamadriz/friendly-snippets"
-    },
-    "llm.nvim": {
-      "rev": "ce69731ba3f8d3ea8bc4c8f58c74c2f9ea0b33de",
-      "src": "https://github.com/huggingface/llm.nvim"
+    "blink.cmp": {
+      "rev": "57d900e6982f63c7cde689aa06d8af76c8da083e",
+      "src": "https://github.com/saghen/blink.cmp"
     },
     "lualine.nvim": {
       "rev": "47f91c416daef12db467145e16bed5bbfe00add8",
       "src": "https://github.com/nvim-lualine/lualine.nvim"
     },
     "nvim": {
-      "rev": "ce4a8e0d5267e67056f9f4dcf6cb1d0933c8ca00",
+      "rev": "193e123cdbc4dd3e86db883d55349e9587f0ded6",
       "src": "https://github.com/catppuccin/nvim"
     },
     "nvim-autopairs": {
-      "rev": "7a2c97cccd60abc559344042fefb1d5a85b3e33b",
+      "rev": "d9e44e54384e5b0f3536339c65484f2e41b528e3",
       "src": "https://github.com/windwp/nvim-autopairs"
-    },
-    "nvim-cmp": {
-      "rev": "d97d85e01339f01b842e6ec1502f639b080cb0fc",
-      "src": "https://github.com/hrsh7th/nvim-cmp"
-    },
-    "nvim-lspconfig": {
-      "rev": "a2a277114dbb93e98f04b5087a9b832918b7da15",
-      "src": "https://github.com/neovim/nvim-lspconfig"
-    },
-    "nvim-snippets": {
-      "rev": "56b4052f71220144689caaa2e5b66222ba5661eb",
-      "src": "https://github.com/garymjr/nvim-snippets"
     },
     "nvim-treesitter": {
       "rev": "42fc28ba918343ebfd5565147a42a26580579482",
@@ -63,10 +27,6 @@
     "plenary.nvim": {
       "rev": "b9fd5226c2f76c951fc8ed5923d85e4de065e509",
       "src": "https://github.com/nvim-lua/plenary.nvim"
-    },
-    "ripgrep": {
-      "rev": "cd1f981beafaeb9b61537e47e91314cea125400b",
-      "src": "https://github.com/BurntSushi/ripgrep"
     },
     "telescope.nvim": {
       "rev": "e69b434b968a33815e2f02a5c7bd7b8dd4c7d4b2",
