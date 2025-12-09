@@ -9,47 +9,46 @@
         neovim-nightly-overlay.inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    outputs = inputs@{ self, nix-darwin, nixpkgs, ... }:
+    outputs = inputs@{ self, nix-darwin, ... }:
         let
-        configuration = { pkgs, ... }: {
-            environment.systemPackages = with pkgs; [
-                ty
+            configuration = { pkgs, ... }: {
+                environment.systemPackages = with pkgs; [
+                    ty
                     gh
-                    vim
                     git
-                    fzf
-                    mpv
+                    nixd
                     kitty
                     texlab
                     ollama
                     yt-dlp
                     ripgrep # For telescope live_grep
+                    ffmpeg_7
                     python314
                     nodejs_24 # For tree-sitter
                     tree-sitter # For nvim-treesitter
                     texliveFull
                     jetbrains-mono
                     lua-language-server
-                    inputs.neovim-nightly-overlay.packages.${pkgs.system}.default # Convert to regular when 0.12.0 is out
-            ];
+                    inputs.neovim-nightly-overlay.packages.${pkgs.system}.default # Til 0.12 out
+                ];
 
-            nix.settings.experimental-features = "nix-command flakes";
+                nix.settings.experimental-features = "nix-command flakes";
 
-# Enable alternative shell support in nix-darwin.
-# programs.fish.enable = true;
+                # Enable alternative shell support in nix-darwin.
+                # programs.fish.enable = true;
 
-            system.configurationRevision = self.rev or self.dirtyRev or null;
-            system.stateVersion = 6;
+                system.configurationRevision = self.rev or self.dirtyRev or null;
+                system.stateVersion = 6;
 
-            nixpkgs.hostPlatform = "aarch64-darwin";
+                nixpkgs.hostPlatform = "aarch64-darwin";
 
-            security.pam.services.sudo_local.touchIdAuth = true;
+                security.pam.services.sudo_local.touchIdAuth = true;
+            };
+        in
+            {
+            darwinConfigurations."vortex" = nix-darwin.lib.darwinSystem {
+                modules = [ configuration ];
+            };
         };
-    in
-    {
-        darwinConfigurations."vortex" = nix-darwin.lib.darwinSystem {
-            modules = [ configuration ];
-        };
-    };
 }
 
