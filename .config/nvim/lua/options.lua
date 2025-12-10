@@ -3,3 +3,5 @@ vim.opt.number = true
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 vim.opt.clipboard = 'unnamedplus'
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = vim.treesitter.foldexpr()
