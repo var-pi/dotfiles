@@ -22,6 +22,7 @@ vim.pack.add{
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
 
     -- Management and integration of ollama workflows.
+    -- Note that currently v17.33.0 is checked out.
     { src = 'https://github.com/olimorris/codecompanion.nvim' },
 
     -- Features basedon code tree representation.
