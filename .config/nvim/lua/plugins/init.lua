@@ -1,5 +1,4 @@
 -- TODO
--- Ollama.Copilot
 -- Auto doc
 -- Mason instead of pulling language servers by hand?
 -- Forward search for latex?
@@ -21,10 +20,6 @@ vim.pack.add{
     -- Lua utility library.
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
 
-    -- Management and integration of ollama workflows.
-    -- Note that currently v17.33.0 is checked out.
-    { src = 'https://github.com/olimorris/codecompanion.nvim' },
-
     -- Features basedon code tree representation.
     { src = 'https://github.com/nvim-treesitter/nvim-treesitter' },
 
@@ -41,4 +36,3 @@ require'plugins.nvim-treesitter'
 require'plugins.nvim-autopairs'
 require'plugins.telescope'
 require'plugins.markview'
-require'plugins.codecompanion'

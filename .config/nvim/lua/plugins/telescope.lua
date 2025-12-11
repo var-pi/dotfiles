@@ -1,6 +1,6 @@
 require'plugins.utils.telescope.control_lines'
 
-require'telescope'.setup{
+require'telescope.init'.setup{
     defaults = {
         path_display = {
             "filename_first",
