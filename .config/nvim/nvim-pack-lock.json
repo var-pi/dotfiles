@@ -4,9 +4,25 @@
       "rev": "57d900e6982f63c7cde689aa06d8af76c8da083e",
       "src": "https://github.com/saghen/blink.cmp"
     },
+    "codecompanion.nvim": {
+      "rev": "8ad65eef735b31bb47d76f59d878ee1bac4bdc85",
+      "src": "https://github.com/olimorris/codecompanion.nvim"
+    },
+    "frizbee": {
+      "rev": "8c1153a159ae9aeda1ecf3c3dd9ab814c3ae60a3",
+      "src": "https://github.com/saghen/frizbee"
+    },
     "lualine.nvim": {
       "rev": "47f91c416daef12db467145e16bed5bbfe00add8",
       "src": "https://github.com/nvim-lualine/lualine.nvim"
+    },
+    "markview.nvim": {
+      "rev": "0a5033326f703d99a8788e2d47753d6298195e8a",
+      "src": "https://github.com/OXY2DEV/markview.nvim"
+    },
+    "nui.nvim": {
+      "rev": "de740991c12411b663994b2860f1a4fd0937c130",
+      "src": "https://github.com/MunifTanjim/nui.nvim"
     },
     "nvim": {
       "rev": "193e123cdbc4dd3e86db883d55349e9587f0ded6",

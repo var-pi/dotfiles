@@ -6,6 +6,9 @@
 -- Add options
 
 vim.pack.add{
+    -- Display Markdown, Latex, HTML etc in nvim.
+    { src = 'https://github.com/OXY2DEV/markview.nvim' },
+
     -- LSP support ++
     { src = 'https://github.com/saghen/blink.cmp' },
 
@@ -17,8 +20,9 @@ vim.pack.add{
 
     -- Lua utility library.
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
+
     -- Management and integration of ollama workflows.
-    { src = 'https://github.com/nomnivore/ollama.nvim' },
+    { src = 'https://github.com/olimorris/codecompanion.nvim' },
 
     -- Features basedon code tree representation.
     { src = 'https://github.com/nvim-treesitter/nvim-treesitter' },
@@ -27,12 +31,13 @@ vim.pack.add{
     { src = 'https://github.com/windwp/nvim-autopairs' },
 
     -- Fuzzy search.
-    { src = 'https://github.com/nvim-telescope/telescope.nvim' }
+    { src = 'https://github.com/nvim-telescope/telescope.nvim' },
 }
 
 require'plugins.blink'
-require'plugins.ollama'
 require'plugins.lualine'
 require'plugins.nvim-treesitter'
 require'plugins.nvim-autopairs'
 require'plugins.telescope'
+require'plugins.markview'
+require'plugins.codecompanion'

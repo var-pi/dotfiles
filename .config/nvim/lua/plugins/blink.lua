@@ -1,5 +1,4 @@
 require'blink.cmp'.setup{
-    version = '1.8',
     opts = {
         keymap = { preset = 'default' },
         sources = {
@@ -7,13 +6,17 @@ require'blink.cmp'.setup{
         },
     },
     fuzzy = {
-        implementation = "lua",
+        implementation = "rust",
+        prebuilt_binaries = {
+            force_version = 'v1.8.0',
+        }
     },
     completion = {
         accept = {
             auto_brackets = {
                 enabled = true,
-                blocked_filetypes = { 'prefer_rust_with_warning' },
+                blocked_filetypes = { 'lua' },
+                override_brackets_for_filetypes = {},
             }
         }
     }
