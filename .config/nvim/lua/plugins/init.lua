@@ -8,9 +8,6 @@ vim.pack.add{
     -- LSP support ++
     { src = 'https://github.com/saghen/blink.cmp' },
 
-    -- A strip with information about the editing session.
-    { src = 'https://github.com/nvim-lualine/lualine.nvim' },
-
     -- A theme.
     { src = 'https://github.com/catppuccin/nvim' },
 
@@ -27,9 +24,8 @@ vim.pack.add{
     { src = 'https://github.com/nvim-telescope/telescope.nvim' },
 }
 
---require'plugins.lspconfig'
 require'plugins.blink'
-require'plugins.lualine'
 require'plugins.nvim-treesitter'
 require'plugins.nvim-autopairs'
+require'plugins.render-markdown'
 require'plugins.telescope'

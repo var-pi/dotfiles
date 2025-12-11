@@ -1,5 +1,3 @@
-require'plugins.utils.telescope.control_lines'
-
 require'telescope.init'.setup{
     defaults = {
         path_display = {
