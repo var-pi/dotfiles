@@ -19,7 +19,6 @@
                     nixd
                     kitty
                     texlab
-                    ollama
                     yt-dlp
                     ripgrep # For telescope live_grep
                     ffmpeg_7
