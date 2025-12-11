@@ -1,14 +1,9 @@
--- TODO
--- Auto doc
--- Mason instead of pulling language servers by hand?
--- Forward search for latex?
--- Add options
-
 vim.pack.add{
-    { src = 'https://github.com/MeanderingProgrammer/render-markdown.nvim' },
+    -- Config files for language servers.
+    { src = 'https://github.com/neovim/nvim-lspconfig' },
 
-    -- Display Markdown, Latex, HTML etc in nvim.
-    -- { src = 'https://github.com/OXY2DEV/markview.nvim' },
+    -- Preview markdown.
+    { src = 'https://github.com/MeanderingProgrammer/render-markdown.nvim' },
 
     -- LSP support ++
     { src = 'https://github.com/saghen/blink.cmp' },
@@ -32,6 +27,7 @@ vim.pack.add{
     { src = 'https://github.com/nvim-telescope/telescope.nvim' },
 }
 
+--require'plugins.lspconfig'
 require'plugins.blink'
 require'plugins.lualine'
 require'plugins.nvim-treesitter'
