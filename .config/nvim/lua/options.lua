@@ -5,3 +5,5 @@ vim.opt.shiftwidth = 4
 vim.opt.clipboard = 'unnamedplus'
 vim.opt.foldmethod = 'expr'
 vim.opt.foldexpr = vim.treesitter.foldexpr()
+vim.opt.cursorline = true
+vim.opt.showmode = false

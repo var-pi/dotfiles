@@ -5,8 +5,10 @@
 -- Add options
 
 vim.pack.add{
+    { src = 'https://github.com/MeanderingProgrammer/render-markdown.nvim' },
+
     -- Display Markdown, Latex, HTML etc in nvim.
-    { src = 'https://github.com/OXY2DEV/markview.nvim' },
+    -- { src = 'https://github.com/OXY2DEV/markview.nvim' },
 
     -- LSP support ++
     { src = 'https://github.com/saghen/blink.cmp' },
@@ -35,4 +37,3 @@ require'plugins.lualine'
 require'plugins.nvim-treesitter'
 require'plugins.nvim-autopairs'
 require'plugins.telescope'
-require'plugins.markview'
