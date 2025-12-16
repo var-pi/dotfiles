@@ -1,9 +1,7 @@
 require'blink.cmp'.setup{
-    opts = {
-        keymap = { preset = 'default' },
-        sources = {
-            default = { 'lsp', 'path' },
-        },
+    keymap = { preset = 'default' },
+    sources = {
+        default = { 'lsp', 'path' },
     },
     fuzzy = {
         implementation = "rust",
@@ -19,5 +17,5 @@ require'blink.cmp'.setup{
                 override_brackets_for_filetypes = {},
             }
         }
-    }
+    },
 }
