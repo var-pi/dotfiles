@@ -28,7 +28,7 @@
                         texlab
                         ripgrep # For telescope live_grep
                         python314
-                        julia-lts-bin
+                        julia_111-bin
                         nodejs_24 # For tree-sitter
                         tree-sitter # For nvim-treesitter
                         texliveFull
