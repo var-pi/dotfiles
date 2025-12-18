@@ -6,6 +6,7 @@ nx() {
     kitty @ launch --cwd=current --keep-focus > /dev/null
     nvim "$@"
 }
+export JULIA_PROJECT="@."
 
 PATH="$HOME/bin:$PATH"
 
