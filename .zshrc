@@ -3,7 +3,7 @@ alias ls="ls --color"
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME" 
 alias drs='sudo darwin-rebuild switch --flake ~/.config/nix-darwin'
 nx() {
-    kitty @ launch --cwd=current --keep-focus
+    kitty @ launch --cwd=current --keep-focus > /dev/null
     nvim "$@"
 }
 
