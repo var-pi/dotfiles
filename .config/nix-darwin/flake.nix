@@ -23,6 +23,7 @@
                         ty
                         gh
                         git
+                        bat
                         nixd
                         kitty
                         texlab
