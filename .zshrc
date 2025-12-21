@@ -9,6 +9,7 @@ nx() {
 export JULIA_PROJECT="@."
 
 PATH="$HOME/bin:$PATH"
+fpath=($HOME/.zsh_completions $fpath)
 
 bindkey '^[[1;3D' backward-word  # alt-left
 bindkey '^[[1;3C' forward-word   # alt-right
