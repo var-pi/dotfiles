@@ -46,17 +46,6 @@
                     system.stateVersion = 6;
                     nixpkgs.hostPlatform = "aarch64-darwin";
                     security.pam.services.sudo_local.touchIdAuth = true;
-                    system.primaryUser = "var-pi";
-
-                    launchd.user.agents.ollama = {
-                        command = "${pkgs.ollama}/bin/ollama serve";
-                        serviceConfig = {
-                            KeepAlive = true;
-                            RunAtLoad = true;
-                            StandardOutPath = "/tmp/ollama.out.log";
-                            StandardErrorPath = "/tmp/ollama.err.log";
-                        };
-                    };
                 };
         in
             {
