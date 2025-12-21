@@ -25,7 +25,9 @@
                         git
                         bat
                         nixd
+                        ddgr
                         kitty
+                        ollama
                         texlab
                         ripgrep # For telescope live_grep
                         python314
