@@ -11,14 +11,14 @@
             inputs.nixpkgs.follows = "nixpkgs";
         };
         ymp = {
-            url = "github:var-pi/ymp/e5366563575a1d73d72f6f951650f4602d07582b";
+            url = "github:var-pi/ymp";
             inputs.nixpkgs.follows = "nixpkgs";
         };
     };
     outputs = inputs:
         let
             configuration = { pkgs, ... }: 
-                    {
+                {
                     environment.systemPackages = with pkgs; [
                         ty
                         gh
@@ -31,7 +31,7 @@
                         texlab
                         ripgrep # For telescope live_grep
                         python314
-                        julia_111-bin
+                        julia-bin
                         nodejs_24 # For tree-sitter
                         tree-sitter # For nvim-treesitter
                         texliveFull
@@ -46,6 +46,17 @@
                     system.stateVersion = 6;
                     nixpkgs.hostPlatform = "aarch64-darwin";
                     security.pam.services.sudo_local.touchIdAuth = true;
+                    system.primaryUser = "var-pi";
+
+                    launchd.user.agents.ollama = {
+                        command = "${pkgs.ollama}/bin/ollama serve";
+                        serviceConfig = {
+                            KeepAlive = true;
+                            RunAtLoad = true;
+                            StandardOutPath = "/tmp/ollama.out.log";
+                            StandardErrorPath = "/tmp/ollama.err.log";
+                        };
+                    };
                 };
         in
             {
