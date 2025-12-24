@@ -1,9 +1,9 @@
 {
     description = "vortex nix-darwin system flake";
     inputs = {
-        nixpkgs.url = "github:NixOS/nixpkgs";
+        nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.11-darwin";
         nix-darwin = {
-            url = "github:nix-darwin/nix-darwin";
+            url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
             inputs.nixpkgs.follows = "nixpkgs";
         };
         neovim-nightly-overlay = {
@@ -31,8 +31,8 @@
                         texlab
                         ripgrep # For telescope live_grep
                         python314
-                        julia-bin
-                        (writeShellScriptBin "julia-1.11" ''exec ${julia_111-bin}/bin/Julia "$@"'') # Till lsp broken
+                        (writeShellScriptBin "julia-1.12" ''exec ${julia-bin}/bin/Julia "$@"'') # Till lsp broken
+                        julia_111-bin # Till lsp broken
                         nodejs_24 # For tree-sitter
                         tree-sitter # For nvim-treesitter
                         texliveFull
