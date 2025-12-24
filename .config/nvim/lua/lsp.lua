@@ -23,9 +23,3 @@ vim.lsp.config('lua_ls', {
         }
     }
 })
-
-vim.lsp.config('julials', {
-    cmd = {
-        "julia-1.11"
-    },
-})
