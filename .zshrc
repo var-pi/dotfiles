@@ -1,21 +1,30 @@
 PROMPT="⚡️"
+
 alias ls="ls --color"
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME" 
 alias drs='sudo darwin-rebuild switch --flake ~/.config/nix-darwin'
-nx() {
-    kitty @ launch --cwd=current --keep-focus > /dev/null
-    nvim "$@"
-}
+
 export JULIA_PROJECT="@."
-
-PATH="$HOME/bin:$PATH"
-fpath=($HOME/.zsh_completions $fpath)
-
-bindkey '^[[1;3D' backward-word  # alt-left
-bindkey '^[[1;3C' forward-word   # alt-right
-
 export GH_TOKEN="$(security find-generic-password -s gh_token -a "$USER" -w)"
 
-fpath+=~/.zfunc; autoload -Uz compinit; compinit
+PATH="$HOME/bin:$PATH"
+# Autocompletion for ollama.
+fpath+=($HOME/.zsh_completions)
+# Autocompletion for ymp.
+fpath+=~/.zfunc
+autoload -Uz compinit
+compinit
 
+# Search history based on input with ↑ and ↓.
+autoload -U history-search-end
+zle -N history-beginning-search-backward-end history-search-end
+zle -N history-beginning-search-forward-end history-search-end
+bindkey "^[[A" history-beginning-search-backward-end
+bindkey "^[[B" history-beginning-search-forward-end
+
+# Jump words with ⌥ + ← and ⌥ + →
+bindkey ";3D" backward-word
+bindkey ";3C" forward-word
+
+# For all completion contexts, automatically enter interactive menu selection whenever there are multiple completion candidates.
 zstyle ':completion:*' menu select
