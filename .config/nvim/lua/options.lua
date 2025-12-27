@@ -1,5 +1,6 @@
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
 vim.opt.clipboard = 'unnamedplus'
 vim.opt.foldmethod = 'expr'
 vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
