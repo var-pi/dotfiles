@@ -1,0 +1,7 @@
+#compdef ymp
+
+_ymp_completion() {
+  eval $(env _TYPER_COMPLETE_ARGS="${words[1,$CURRENT]}" _YMP_COMPLETE=complete_zsh ymp)
+}
+
+compdef _ymp_completion ymp
