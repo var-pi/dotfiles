@@ -111,11 +111,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1766491352,
-        "narHash": "sha256-5zm28MlEA3u3ssjBfbNPglk98CClKfaVJcWi+zsPqno=",
+        "lastModified": 1766767992,
+        "narHash": "sha256-+zIE5xWQ/aX5a7jC/WlBlWh+dG9Sj7imuMh7D7t/64A=",
         "owner": "var-pi",
         "repo": "ymp",
-        "rev": "8bdf3752e85ec64caa333152793f3a403fb42ac0",
+        "rev": "5e542d204d6f465964d02fce7fd75a97d38a7e3f",
         "type": "github"
       },
       "original": {

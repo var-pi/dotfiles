@@ -31,8 +31,7 @@
                         texlab
                         ripgrep # For telescope live_grep
                         python314
-                        (writeShellScriptBin "julia-1.12" ''exec ${julia-bin}/bin/Julia "$@"'') # Till lsp broken
-                        julia_111-bin # Till lsp broken
+                        julia-bin
                         nodejs_24 # For tree-sitter
                         tree-sitter # For nvim-treesitter
                         texliveFull
