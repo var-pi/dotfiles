@@ -32,7 +32,7 @@
                         ripgrep # For telescope live_grep
                         python314
                         (writeShellScriptBin "julia-1.12" ''exec ${julia-bin}/bin/Julia "$@"'')
-                        julia-lts-bin # For LanguageServer.jl
+                        julia_111-bin # For LanguageServer.jl
                         nodejs_24 # For tree-sitter
                         tree-sitter # For nvim-treesitter
                         texliveFull
