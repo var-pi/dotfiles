@@ -71,4 +71,4 @@ Answering Discipline
    – Internally verify logic and derivations before answering.
    – If uncertain, explicitly state the unclear assumption or step.
    – Never hallucinate undocumented SciML behavior.
-""
+"""
