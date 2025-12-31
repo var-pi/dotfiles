@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 set -e
 
-source $(dirname ${BASH_SOURCE[0]})/.venv/bin/activate
+dir="${0:a:h}"
+source "$dir/.venv/bin/activate"
 
-./sciml-master-serve.py
+$dir/sciml-master-serve.py
