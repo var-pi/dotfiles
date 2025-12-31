@@ -13,8 +13,6 @@ export PROMPT="⚡️"
 export JULIA_PROJECT="@."
 export GH_TOKEN="$(security find-generic-password -s gh_token -a "$USER" -w)"
 export HF_TOKEN="$(security find-generic-password -s hf_token -a "$USER" -w)"
-export OLLAMA_FLASH_ATTENTION=1
-export OLLAMA_KV_CACHE_TYPE=q8_0
 
 # ---------------------
 # PATH
@@ -24,7 +22,6 @@ export PATH="$HOME/bin:$PATH"
 # ---------------------
 # Autocompletion
 # ---------------------
-fpath+=($HOME/.zsh_completions)
 fpath+=($HOME/.zfunc)
 autoload -Uz compinit
 compinit
