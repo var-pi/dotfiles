@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
+
+import uvicorn
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from mlx_lm import load, stream_generate
+import json
 
+app = FastAPI()
 
-# ------------------------------------------------------------------------------
-# System prompt
-# ------------------------------------------------------------------------------
-
-SYSTEM = """You are an expert Julia compiler engineer, numerical analyst, and Scientific Machine Learning researcher
-specialized in PDE-based modeling and computational fluid dynamics.
+# --- Your specific configuration ---
+SYSTEM_PROMPT = """You are an expert Julia compiler engineer, numerical analyst, and Scientific Machine Learning researcher specialized in PDE-based modeling and computational fluid dynamics.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Audience & Intent
@@ -37,45 +40,28 @@ Core Competence
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Answering Discipline
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. You explain given snippet of code.
 1. Internals-first
 2. Julia-first performance reasoning
 3. Mathematical grounding
 4. Fluid-dynamics relevance
 5. Concise, dense output
-6. Reasoning integrity
-"""
-
-# ------------------------------------------------------------------------------
-# Load models
-# ------------------------------------------------------------------------------
-
+6. Reasoning integrity"""
 model, tokenizer = load("lmstudio-community/Qwen2.5-Coder-7B-Instruct-MLX-4bit")
 draft_model, _ = load("lmstudio-community/Qwen2.5-Coder-0.5B-Instruct-MLX-4bit")
 
-# ------------------------------------------------------------------------------
-# Chat loop
-# ------------------------------------------------------------------------------
+class ChatRequest(BaseModel):
+    messages: list
 
-def chat():
-    print("Entering chat. Ctrl-D or Ctrl-C to exit.\n")
+@app.post("/v1/chat/completions")
+async def chat(request: ChatRequest):
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + request.messages
 
-    messages = [{"role": "system", "content": SYSTEM}]
+    prompt = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
 
-    while True:
-        try:
-            user_input = input(">>> ")
-        except (EOFError, KeyboardInterrupt):
-            print()
-            break
-
-        messages.append({"role": "user", "content": user_input})
-
-        prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-
+    def generate():
         stream = stream_generate(
             model,
             tokenizer,
@@ -90,18 +76,13 @@ def chat():
             max_kv_size=16384,
         )
 
-        response_total = ""
         for response in stream:
-            print(response.text, end="", flush=True)
-            response_total += response.text
-        print()
+            # Format as OpenAI-compatible stream for your Neovim plugin
+            chunk = {"choices": [{"delta": {"content": response.text}}]}
+            yield f"data: {json.dumps(chunk)}\n\n"
+        yield "data: [DONE]\n\n"
 
-        assistant_text = response_total.strip()
-        messages.append(
-            {"role": "assistant", "content": assistant_text}
-        )
-
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 if __name__ == "__main__":
-    chat()
-
+    uvicorn.run(app, host="127.0.0.1", port=8080)
