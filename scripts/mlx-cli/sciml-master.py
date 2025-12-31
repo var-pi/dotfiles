@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-import os
-import sys
-from pathlib import Path
-
 from mlx_lm import load, stream_generate
 
 
 # ------------------------------------------------------------------------------
-# System prompt (verbatim)
+# System prompt
 # ------------------------------------------------------------------------------
 
 SYSTEM = """You are an expert Julia compiler engineer, numerical analyst, and Scientific Machine Learning researcher
@@ -49,33 +45,21 @@ Answering Discipline
 6. Reasoning integrity
 """
 
-
 # ------------------------------------------------------------------------------
-# Optional: ensure relative-path behavior like BASH_SOURCE
-# ------------------------------------------------------------------------------
-
-SCRIPT_DIR = Path(__file__).resolve().parent
-os.chdir(SCRIPT_DIR)
-
-
-# ------------------------------------------------------------------------------
-# Load model
+# Load models
 # ------------------------------------------------------------------------------
 
-MODEL_NAME = "lmstudio-community/Qwen2.5-Coder-14B-Instruct-MLX-4bit"
-
-model, tokenizer = load(MODEL_NAME)
+model, tokenizer = load("lmstudio-community/Qwen2.5-Coder-7B-Instruct-MLX-4bit")
+draft_model, _ = load("lmstudio-community/Qwen2.5-Coder-0.5B-Instruct-MLX-4bit")
 
 # ------------------------------------------------------------------------------
-# Chat loop (rough equivalent of `mlx_lm chat`)
+# Chat loop
 # ------------------------------------------------------------------------------
 
 def chat():
     print("Entering chat. Ctrl-D or Ctrl-C to exit.\n")
 
-    conversation = [
-        {"role": "system", "content": SYSTEM}
-    ]
+    messages = [{"role": "system", "content": SYSTEM}]
 
     while True:
         try:
@@ -84,12 +68,10 @@ def chat():
             print()
             break
 
-        conversation.append(
-            {"role": "user", "content": user_input}
-        )
+        messages.append({"role": "user", "content": user_input})
 
         prompt = tokenizer.apply_chat_template(
-            conversation,
+            messages,
             tokenize=False,
             add_generation_prompt=True,
         )
@@ -97,10 +79,15 @@ def chat():
         response = stream_generate(
             model,
             tokenizer,
-            prompt,
+            draft_model=draft_model,
+            prompt=prompt,
             max_tokens=2048,
-            #temp=0.4,
-            #top_p=0.95,
+            temperature=0.1,
+            top_p=0.95,
+            top_k=30,
+            repetition_penalty=1.0,
+            kv_bits=8,
+            max_kv_size=16384,
         )
 
         response_total = ""
@@ -110,7 +97,7 @@ def chat():
         print()
 
         assistant_text = response_total.strip()
-        conversation.append(
+        messages.append(
             {"role": "assistant", "content": assistant_text}
         )
 
