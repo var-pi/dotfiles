@@ -4,7 +4,7 @@
 alias ls="ls --color"
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 alias drs='sudo darwin-rebuild switch --flake ~/.config/nix-darwin'
-alias sciml-master='~/scripts/mlx-cli/sciml-master.sh'
+alias sciml-master-serve='~/scripts/mlx-cli/sciml-master-serve.sh'
 
 # ---------------------
 # Environment Variables
