@@ -6,6 +6,7 @@
             url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
             inputs.nixpkgs.follows = "nixpkgs";
         };
+        claude-code-nix.url = "github:sadjow/claude-code-nix";
     };
     outputs = inputs:
         let
@@ -23,7 +24,6 @@
                         neovim
                         ripgrep # For telescope live_grep
                         python314
-                        claude-code
                         (writeShellScriptBin "julia-1.12" ''exec ${julia-bin}/bin/Julia "$@"'')
                         julia-lts-bin # For LanguageServer.jl
                         nodejs_24 # For tree-sitter
@@ -31,6 +31,7 @@
                         texliveFull
                         jetbrains-mono
                         lua-language-server
+                        inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
                     ];
 
                     nix.settings.experimental-features = "nix-command flakes";
