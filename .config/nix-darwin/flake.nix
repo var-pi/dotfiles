@@ -6,14 +6,6 @@
             url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
             inputs.nixpkgs.follows = "nixpkgs";
         };
-        neovim-nightly-overlay = {
-            url = "github:nix-community/neovim-nightly-overlay";
-            inputs.nixpkgs.follows = "nixpkgs";
-        };
-        ymp = {
-            url = "github:var-pi/ymp";
-            inputs.nixpkgs.follows = "nixpkgs";
-        };
     };
     outputs = inputs:
         let
@@ -28,6 +20,7 @@
                         ddgr
                         kitty
                         texlab
+                        neovim
                         ripgrep # For telescope live_grep
                         python314
                         claude-code
@@ -38,8 +31,6 @@
                         texliveFull
                         jetbrains-mono
                         lua-language-server
-                        inputs.ymp.packages.${stdenv.hostPlatform.system}.default
-                        inputs.neovim-nightly-overlay.packages.${stdenv.hostPlatform.system}.default # Til 0.12 out
                     ];
 
                     nix.settings.experimental-features = "nix-command flakes";
