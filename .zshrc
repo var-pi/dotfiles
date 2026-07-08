@@ -1,16 +1,33 @@
 # ---------------------
+# Shell Variables
+# ---------------------
+NIX_DARWIN_FLAKE="$HOME/.config/nix-darwin"
+
+# ---------------------
 # Aliases
 # ---------------------
 alias ls="ls --color"
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
-alias drs='sudo darwin-rebuild switch --flake ~/.config/nix-darwin'
 alias sciml-master-serve='~/scripts/mlx-cli/sciml-master-serve.sh'
+drs() {
+    sudo darwin-rebuild switch --flake "$NIX_DARWIN_FLAKE"
+}
+ucc() {
+    sudo nix flake update --flake "$NIX_DARWIN_FLAKE" claude-code-nix
+}
+gpp() {
+    julia-1.12 -e 'using JuliaFormatter; format(".")'
+    git add .
+    git commit -m "$1"
+    git push
+}
 
 # ---------------------
 # Environment Variables
 # ---------------------
 export PROMPT="⚡️"
 export JULIA_PROJECT="@."
+export JULIA_DEPOT_PATH="$HOME/.julia"
 export GH_TOKEN="$(security find-generic-password -s gh_token -a "$USER" -w)"
 export HF_TOKEN="$(security find-generic-password -s hf_token -a "$USER" -w)"
 
