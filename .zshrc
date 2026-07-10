@@ -13,7 +13,7 @@ drs() {
     sudo darwin-rebuild switch --flake "$NIX_DARWIN_FLAKE"
 }
 ucc() {
-    sudo nix flake update --flake "$NIX_DARWIN_FLAKE" claude-code-nix
+    nix flake update --flake "$NIX_DARWIN_FLAKE" claude-code-nix
 }
 gpp() {
     julia-1.12 -e 'using JuliaFormatter; format(".")'
