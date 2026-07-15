@@ -25,3 +25,7 @@ vim.lsp.config('lua_ls', {
         }
     }
 })
+
+vim.lsp.config('julials', {
+  settings = { julia = { lint = { missingrefs = "none" } } },
+})
