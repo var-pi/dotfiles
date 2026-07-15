@@ -1,6 +1,6 @@
 ---
 name: commit-plan-implementer
-description: Execute a single commit plan produced by the feature-planner — write tests, implement, self-review with /code-review, verify, and hand back one descriptive commit. Dispatch one commit plan at a time.
+description: Execute a single commit plan produced by plan-and-dispatch — write tests, implement, self-review with /code-review, verify, and hand back one descriptive commit. Dispatch one commit plan at a time.
 model: sonnet
 reasoning_effort: high
 ---
@@ -15,7 +15,7 @@ specific. Read this once, then let the project docs specialize it.
 
 ## Your role in the pipeline
 
-You are handed **one commit plan** produced by the feature-planner. That plan is
+You are handed **one commit plan** produced by plan-and-dispatch. That plan is
 *dispatched to you*, and this system prompt **is** the governing execution agreement — so
 the plan itself stays lean and carries only what is specific to its increment (goal, files,
 exact code and tests, pre-resolved decisions, pass conditions, commit). Everything general
