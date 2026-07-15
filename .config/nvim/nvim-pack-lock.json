@@ -4,6 +4,10 @@
       "rev": "d7f1c64f704ade8cdd0c9719796cdf0054455fde",
       "src": "https://github.com/saghen/blink.cmp"
     },
+    "diffview.nvim": {
+      "rev": "4516612fe98ff56ae0415a259ff6361a89419b0a",
+      "src": "https://github.com/sindrets/diffview.nvim"
+    },
     "lsp_log_viewer.nvim": {
       "rev": "28f5824bbd7829277a6d53ed7d31e14784c4757b",
       "src": "https://github.com/kuuote/lsp_log_viewer.nvim"
@@ -31,6 +35,10 @@
     "nvim-treesitter": {
       "rev": "42fc28ba918343ebfd5565147a42a26580579482",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
+    },
+    "nvim-web-devicons": {
+      "rev": "09d1324e264c6950262dbe02a9bce2933a6800db",
+      "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
     "output-panel.nvim": {
       "rev": "a60079820cd80484925e8130b7b52052b08eb153",

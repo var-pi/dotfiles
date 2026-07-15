@@ -22,6 +22,12 @@ vim.pack.add{
 
     -- Fuzzy search.
     { src = 'https://github.com/nvim-telescope/telescope.nvim' },
+
+    -- View git diffs.
+    { src = 'https://github.com/sindrets/diffview.nvim' },
+
+    -- Icons for diffview
+    { src = 'https://github.com/nvim-tree/nvim-web-devicons' },
 }
 
 require'plugins.blink'
@@ -29,3 +35,5 @@ require'plugins.nvim-treesitter'
 require'plugins.nvim-autopairs'
 require'plugins.render-markdown'
 require'plugins.telescope'
+require'plugins.diffview'
+require'plugins.nvim-web-devicons'

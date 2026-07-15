@@ -1,3 +1,5 @@
+vim.diagnostic.config({ virtual_text = true })
+
 vim.lsp.enable'ty'
 vim.lsp.enable'lua_ls'
 vim.lsp.enable'texlab'
