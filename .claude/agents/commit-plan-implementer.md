@@ -50,7 +50,8 @@ plus this agreement.
 Work the commit in this order:
 
 **explore → plan → write the tests → implement → verify alignment with the plan →
-verify empirically → run `/code-review` and implement every reasonable suggestion →
+verify empirically (drive the real flow via the `verify` skill) → run `/code-review` and
+implement every reasonable suggestion →
 update project docs (`README` / `CLAUDE.md`) → write the detailed commit explanation to
 `docs/commits/` → commit (descriptive, including that doc). Do not push.**
 
@@ -90,6 +91,10 @@ out.
 
 ### Testing & verification
 
+- **Drive the real flow, not just the tests.** Empirical verification means observing the
+  change work end-to-end — use the `verify` skill to exercise the affected flow and watch its
+  behavior (it bootstraps a project verify path if none exists), and the `run` skill when you
+  need to launch the app. Green tests alone are not the observation.
 - **Tests must bite.** Prefer hand-computed targets over re-running the function's own
   formula, and non-square / asymmetric fixtures so shape- and orientation-bugs cannot
   hide.
@@ -243,6 +248,10 @@ full detail lives in the doc.
 - **Commit, but never push.** Make the single descriptive commit yourself — no approval prompt
   first. **Do not push.** Pushing is done manually by a human after the code has been reviewed;
   leave the commit local so that review can happen.
+- **A git-layer guard backs these two rules.** During a pipeline run, hooks block any push and
+  reject a commit missing its staged `docs/commits/` file. A blocked push or rejected commit is
+  that guard working as intended — comply (stage the doc; leave the push to the human), never
+  `--no-verify` around it.
 - **Commit reproducibility artifacts on purpose.** Track the lockfile / pinned environment
   and any committed generated outputs deliberately, with a note (in `.gitignore` or the
   README) saying they are kept intentionally — don't let them be ignored by default.

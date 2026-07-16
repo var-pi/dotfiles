@@ -1,0 +1,19 @@
+#!/bin/sh
+# plan-and-dispatch pipeline guard (pre-push).
+#
+# Active only during a pipeline run, gated by a repo-local marker file (or the
+# $CLAUDE_PIPELINE override) that Tier 2 arms and clears. When inactive, defer to any
+# repo-local hook so this never silently shadows a project's own pre-push.
+# The pipeline commits locally and never pushes; pushing is a manual step the operator
+# takes after the marker is cleared. Armed by plan-and-dispatch SKILL.md (Phase 5).
+git_dir=$(git rev-parse --git-dir 2>/dev/null) || exit 0
+marker="$git_dir/CLAUDE_PIPELINE_ACTIVE"
+
+if [ ! -f "$marker" ] && [ -z "$CLAUDE_PIPELINE" ]; then
+    local_hook="$git_dir/hooks/pre-push"
+    [ -x "$local_hook" ] && exec "$local_hook" "$@"
+    exit 0
+fi
+
+echo "pre-push: push blocked during a pipeline run — pushing is a manual step outside the pipeline (pipeline guard)." >&2
+exit 1

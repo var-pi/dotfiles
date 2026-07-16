@@ -1,0 +1,25 @@
+#!/bin/sh
+# plan-and-dispatch pipeline guard (pre-commit).
+#
+# Active only during a pipeline run, gated by a repo-local marker file (or the
+# $CLAUDE_PIPELINE override) that Tier 2 arms and clears. When inactive, defer to any
+# repo-local hook so this never silently shadows a project's own pre-commit.
+# Armed by ~/.claude/skills/plan-and-dispatch/SKILL.md (Phase 5); enforced here so the
+# implementer subagent cannot skip it.
+git_dir=$(git rev-parse --git-dir 2>/dev/null) || exit 0
+marker="$git_dir/CLAUDE_PIPELINE_ACTIVE"
+
+if [ ! -f "$marker" ] && [ -z "$CLAUDE_PIPELINE" ]; then
+    # Inactive: run the repo-local hook if present (git ignores it while core.hooksPath
+    # points here), then allow the commit.
+    local_hook="$git_dir/hooks/pre-commit"
+    [ -x "$local_hook" ] && exec "$local_hook" "$@"
+    exit 0
+fi
+
+# Active: every pipeline commit stages its docs/commits/ explanation alongside the code.
+if git diff --cached --name-only --diff-filter=ACM | grep -q '^docs/commits/'; then
+    exit 0
+fi
+echo "pre-commit: stage this commit's docs/commits/ file — code and its explanation land together (pipeline guard)." >&2
+exit 1

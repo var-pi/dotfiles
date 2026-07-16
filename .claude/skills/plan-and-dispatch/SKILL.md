@@ -68,8 +68,9 @@ Do these phases in order — later phases assume the earlier ones are done.
 1. **Explore** the brief and codebase widely.
 2. **Tier 1 — Architectural plan:** decompose into one *stub* per commit (plus a README stub).
 3. **Tier 1 — Architectural review loop:** drive the reviewer over the whole set to convergence.
-4. **Persist, update docs, get approval** — the one and only human checkpoint.
+4. **Get approval (plan-mode gate), then persist & update docs** — the one and only human checkpoint.
 5. **Tier 2 — Per-commit loop:** after approval, complete/review/dispatch/gate each commit.
+6. **Close out:** disarm the guard, notify, and record cross-feature learnings.
 
 The `Preferences & tradeoffs` at the end govern every phase.
 
@@ -87,6 +88,13 @@ warranted, because you are the one who will decide how to carve it up:
 
 You read widely so that each implementer does not have to — the decomposition you produce is
 precisely what lets each downstream implementer read *only its own commit plan*.
+
+**Delegate the fan-out survey to `Explore`.** The broad sweep — what exists, where, which
+utilities and patterns to reuse — is exactly what the read-only `Explore` subagent is for;
+dispatch one or more and take back their conclusions instead of loading every file into your
+own context. Then deep-read yourself only the specific files you will carve up: you own the
+decomposition, so you still read firsthand what it hinges on. This keeps raw file-dumps out of
+your context without narrowing the context decomposition actually needs.
 
 ---
 
@@ -214,7 +222,8 @@ Run the loop in these beats:
    that **after it you will receive a review and must update the stubs**, so it retains the
    load-bearing state (the decomposition, each contract and decision and its rationale, the open
    questions) rather than trimming generically. Compact *for the job you are about to do.* Skip
-   it on short loops where compaction costs more than it saves.
+   it on short loops where compaction costs more than it saves — and note that delegating the
+   Phase 1 survey to `Explore` already holds your context down, so this fires less often.
 4. **Receive the review and integrate every reasonable finding** — the same standard the
    implementer applies to `/code-review`: act on a finding unless you can articulate why it is
    wrong or out of scope, and record the one-line reason whenever you decline.
@@ -226,20 +235,27 @@ Only once the loop has converged is the architecture ready for approval.
 
 ---
 
-## Phase 4: Persist, update the docs, and get approval
+## Phase 4: Get approval, then persist and update the docs
 
 Once the review loop has converged — and **before any implementer is dispatched** — settle the
 Tier 1 set as a durable, approved artifact. **This is the one and only human checkpoint;**
 Tier 2 proceeds without further human gates once the architecture is approved.
 
-1. **Persist the whole set.** Write every commit stub, the README stub, and any orientation
-   document to `~/.claude/plans/`. This is the checkpoint the Tier 2 loop walks and completes in
-   place, and the record that survives a compaction or restart.
-2. **Update `CLAUDE.md`** to bring the written record into step with the planned work. (The
+You plan in **plan mode**, so the evolving Tier 1 set lives in your plan-mode plan file through
+Phases 2–3 — that file is your durable, restart-surviving scratch and the copy you hand the
+reviewer each round. Approval runs through the plan-mode gate, and the per-file split follows it:
+
+1. **Surface the set for approval via `ExitPlanMode`** — the harness-level, un-skippable gate
+   where the human approves the Tier 1 architecture. No commit is completed or dispatched until
+   they do.
+2. **On approval, persist the whole set.** Split the plan-mode file into one stub per commit —
+   every commit stub, the README stub, any orientation document — under `~/.claude/plans/`. This
+   is the checkpoint the Tier 2 loop walks and completes in place. (Persisting *after* approval
+   is forced by plan mode, which permits editing only the plan file until it exits; durability
+   holds because the set sat in that file throughout Phases 2–3.)
+3. **Update `CLAUDE.md`** to bring the written record into step with the planned work. (The
    feature's own `README.md` is *not* updated by you here — its creation/update is delivered by
    the dedicated README plan and executed by the implementer with the rest of the set.)
-3. **Surface the set for approval** and wait before entering Tier 2. No commit is completed or
-   dispatched until the architecture is approved.
 
 ---
 
@@ -249,6 +265,21 @@ Once the architecture is approved, walk the set as a **strictly sequential, gate
 each commit, complete its deferred detail *now that the earlier commits are real*, review it,
 dispatch it, and gate on it landing green before touching the next. Planning and execution
 interleave here, one commit at a time.
+
+**Arm the pipeline guard before the first dispatch.** The implementer commits locally and must
+never push, and every commit must stage its `docs/commits/` file — enforce both at the git layer
+so a dispatched subagent cannot skip them. Point the project repo at the shared hooks and arm
+the marker, once, now:
+
+```
+git config core.hooksPath ~/.claude/hooks
+touch "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"
+```
+
+The hooks stay inert in every other repo and every non-pipeline commit; the marker scopes them
+to this run, and you clear it when the run ends — on success (Phase 6) or on halt (step 5). (If
+the repo already sets a custom `core.hooksPath`, arm the guard by hand rather than overwriting
+it.)
 
 For each commit plan, in planned order:
 
@@ -274,11 +305,30 @@ For each commit plan, in planned order:
    commits. Pushing is a manual human step outside this pipeline, and it does not reopen the
    Phase 4 approval (that checkpoint is the plan; this review is of the code).
 5. **Halt the chain on failure.** If a commit fails its pass conditions, **stop** rather than
-   completing or dispatching its dependents onto a broken seam. Surface the failure; do not
-   continue until it is resolved.
+   completing or dispatching its dependents onto a broken seam. Clear the pipeline marker
+   (`rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`) so the operator can push a fix
+   by hand, and **send a `PushNotification`** naming the failed commit — Tier 2 runs unattended,
+   so this is how the human learns a seam broke. Do not continue until it is resolved.
 
 The **README plan is completed and dispatched last**, once every commit's contract is settled
 and the code it documents exists.
+
+---
+
+## Phase 6: Close out — disarm, notify, capture learnings
+
+Once every commit (including the README plan) has landed green, close the run:
+
+1. **Disarm the pipeline guard.** Remove the marker so your manual push works again:
+   `rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`.
+2. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are
+   local and green, and pushing is the manual step you take now, outside the pipeline.
+3. **Capture durable, cross-feature learnings.** Record what this feature taught that the next
+   one would want and that the repo, git history, and `CLAUDE.md` do not already carry — a
+   recurring reuse target, a project gotcha, a decision worth reusing. Write to your persistent
+   memory under the memory conventions: one fact per file with frontmatter, update an existing
+   file rather than duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so
+   this is yours to write — skip anything already legible from the code.
 
 ---
 
