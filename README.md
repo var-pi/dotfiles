@@ -16,7 +16,7 @@ solvers for **Scientific Machine Learning in Julia**.
 - **A private LLM lives in my editor.** A domain-specialized model — the *Julia
   Master* — runs on-device via [MLX](https://github.com/ml-explore/mlx) and answers
   questions about a visual selection without a single byte leaving the laptop.
-- **Single 9B model, quantized KV cache.** The Master runs a 4-bit ~9B model with an
+- **Single 9B model, quantized KV cache.** The Master runs a 5-bit ~9B model with an
   8-bit KV cache and a 16k context window entirely on-device — no draft model, thinking
   disabled, so answers stream straight through.
 - **Reproducible Julia.** Pinned environments with committed `Manifest.toml`s, `Revise`
@@ -35,7 +35,7 @@ the answer streams back, token by token, into a fresh markdown split.
     ▲                                                │
     │                                                ▼
     │                                        MLX  ·  Qwen3.5-9B
-    │                                        4-bit, single model
+    │                                        5-bit, single model
     │                                        (thinking off,
     │                                         8-bit KV, 16k context)
     │                                                │
@@ -45,10 +45,16 @@ the answer streams back, token by token, into a fresh markdown split.
 The server (`scripts/mlx-cli/julia-master-serve.py`) exposes an **OpenAI-compatible**
 `/v1/chat/completions` streaming endpoint, which keeps the Neovim side
 (`.config/nvim/lua/mlx.lua`) a thin `curl` + `jobstart` client — no plugin, no SDK.
-The system prompt tunes the model into an expert Julia compiler engineer and SciML
-researcher writing for a graduate-level applied mathematician: internals-first,
-implementation-over-API, one insight per sentence, structured as Summary / Background /
-Details.
+The system prompt casts the model as an expert in the **numerical analysis of
+stochastic processes and computational probability in Julia**, writing for a
+mathematically mature applied mathematician who wants to implement and verify
+solvers and estimators rather than consume APIs. Its declared scope is covariance
+operators and their factorizations (Cholesky and other square roots, spectral/Bochner,
+Karhunen–Loève / Mercer), Gaussian-process sampling, Monte-Carlo convergence rates,
+quadrature, and the FFT. The output rules are strict: explain why the code exists
+rather than what it does, name the mathematical object behind it — which operator,
+which square root, which convergence rate — one insight per sentence, nothing obvious,
+all structured as Summary / Background / Details.
 
 Everything runs locally. It's private, offline-capable, and free to interrupt.
 
