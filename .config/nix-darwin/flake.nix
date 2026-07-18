@@ -19,6 +19,7 @@
                         bat
                         nixd
                         ddgr
+                        tree
                         kitty
                         texlab
                         neovim
