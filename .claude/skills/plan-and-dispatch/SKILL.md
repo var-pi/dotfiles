@@ -205,8 +205,9 @@ in coordination *between* commits that no single-plan review could see.
 every round** (via `SendMessage` / its agent id) so it keeps its own context — and its own
 prior review — across rounds. This same session persists all the way through Tier 2, so do not
 discard it when the architecture converges. Re-spawning a cold reviewer would defeat the loop:
-there would be no prior review for it to confirm was integrated. The reviewer **self-compacts
-after delivering each review** — you do not direct it to; when you resume it, it is already lean.
+there would be no prior review for it to confirm was integrated. The reviewer keeps its full
+transcript across rounds — its prior reviews are already in its context when you resume it, which
+is exactly what lets it confirm each was integrated; you do not manage its context.
 
 Run the loop in these beats:
 
@@ -217,13 +218,14 @@ Run the loop in these beats:
    (`Agent(subagent_type: "feature-plan-reviewer", …)`) and pass it the whole set at once,
    stating that this is an **architectural** review. Its system prompt is the review agreement,
    so give it only the set and the focus.
-3. **Compact your own context when it has grown heavy.** On long sets or many rounds, run
-   `/compact` on yourself while the review is in flight — and tell the compaction explicitly
-   that **after it you will receive a review and must update the stubs**, so it retains the
-   load-bearing state (the decomposition, each contract and decision and its rationale, the open
-   questions) rather than trimming generically. Compact *for the job you are about to do.* Skip
-   it on short loops where compaction costs more than it saves — and note that delegating the
-   Phase 1 survey to `Explore` already holds your context down, so this fires less often.
+3. **Keep your own context lean when it has grown heavy.** Your planner context — the whole
+   feature, Tier 1 plus all of Tier 2 — is the one that can actually approach the limit. When it
+   is compacted, whether automatically by the harness or by you (`/compact` at the REPL) while a
+   review is in flight, make sure the load-bearing state survives: the decomposition, each
+   contract and decision and its rationale, the open questions — not a generic trim. If you
+   compact manually, do it *for the job you are about to do* — **after it you will receive a
+   review and must update the stubs.** Delegating the Phase 1 survey to `Explore` already holds
+   your context down, so this rarely bites on short loops.
 4. **Receive the review and integrate every reasonable finding** — the same standard the
    implementer applies to `/code-review`: act on a finding unless you can articulate why it is
    wrong or out of scope, and record the one-line reason whenever you decline.
@@ -294,7 +296,7 @@ For each commit plan, in planned order:
    test bounds, conformance to the implementer's standards). It already knows the contracts from
    Tier 1. This is lighter than the Tier 1 loop; integrate its findings and resume until clean.
    For a commit whose deferred detail is mechanical (no new contract, a small body), a single
-   pass suffices — don't manufacture rounds. The reviewer self-compacts after each review.
+   pass suffices — don't manufacture rounds. The reviewer keeps its prior reviews across rounds.
 3. **Dispatch to `commit-plan-implementer`.** Dispatch the completed plan. If its Dispatch line
    named a model/effort override, pass it explicitly (`Agent(subagent_type:
    "commit-plan-implementer", model: …)`); otherwise dispatch with the default and say nothing
