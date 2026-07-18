@@ -2,7 +2,7 @@
 
 julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "6de5e8b1c4d9b467a5c126490dbc755dc0575a9c"
+project_hash = "2ef0fd7e50bd7421ea3d55b7198c475e2bc15dcc"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -18,25 +18,52 @@ git-tree-sha1 = "b7231a755812695b8046e8471ddc34c8268cbad5"
 uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
 version = "3.0.0"
 
+[[deps.CommonMark]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "351d6f4eaf273b753001b2de4dffb8279b100769"
+uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
+version = "0.9.1"
+
 [[deps.Compiler]]
 git-tree-sha1 = "382d79bfe72a406294faca39ef0c3cef6e6ce1f1"
 uuid = "807dbc54-b67e-4c79-8afb-eafe4df6f2e1"
 version = "0.1.1"
 
+[[deps.Dates]]
+deps = ["Printf"]
+uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+version = "1.11.0"
+
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 version = "1.11.0"
+
+[[deps.Glob]]
+git-tree-sha1 = "83cb0092e2792b9e3a865b6655e88f5b862607e2"
+uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
+version = "1.4.0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 version = "1.11.0"
 
+[[deps.JuliaFormatter]]
+deps = ["CommonMark", "Glob", "JuliaSyntax", "PrecompileTools", "TOML"]
+git-tree-sha1 = "ca9470360f51697fc1bde747760b2d99936619ea"
+uuid = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+version = "2.2.0"
+
 [[deps.JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
 git-tree-sha1 = "80580012d4ed5a3e8b18c7cd86cebe4b816d17a6"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
 version = "0.10.9"
+
+[[deps.JuliaSyntax]]
+git-tree-sha1 = "937da4713526b96ac9a178e2035019d3b78ead4a"
+uuid = "70703baa-626e-46a2-a12c-08ffd08c73b4"
+version = "0.4.10"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -87,6 +114,18 @@ git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
+[[deps.PrecompileTools]]
+deps = ["Preferences"]
+git-tree-sha1 = "07a921781cab75691315adc645096ed5e370cb77"
+uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+version = "1.3.3"
+
+[[deps.Preferences]]
+deps = ["TOML"]
+git-tree-sha1 = "522f093a29b31a93e34eaea17ba055d850edea28"
+uuid = "21216c6a-2e73-6563-6e65-726566657250"
+version = "1.5.1"
+
 [[deps.Printf]]
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -131,6 +170,11 @@ version = "1.11.0"
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
 version = "1.11.0"
+
+[[deps.TOML]]
+deps = ["Dates"]
+uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+version = "1.0.3"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
