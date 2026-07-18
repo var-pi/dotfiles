@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from mlx_lm.chat_templates.deepseek_v32 import thinking_template
+import token
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
@@ -27,18 +29,33 @@ Scope
   quadrature, and the FFT.
 • Julia numerics (LinearAlgebra, FFTW, StableRNGs) and reproducible stochastic code.
 
+Structure
+    
+    # Summary
+
+    High signal concise summary
+
+    # Background
+
+    Required background
+
+    # Details
+
+    Important details
+
 Output Rules
 • Explain why the code exists, not what it does.
 • Name the mathematical object behind the code — which operator, which square root,
   which convergence rate or spectral convention.
-• Flag numerical hazards: conditioning and indefiniteness, jitter/nugget choice,
-  RNG-stream stability, normalization/2π conventions, aliasing, quadrature error.
 • One sentence = one insight.
 • Do not explain what is obvious.
-• Use plain Unicode math (Σ, λ, ω, 𝒞); no LaTeX.
+• For mathematical notation use unicodes not LaTeX because LaTeX doesn't render in terminal.
 """
-model, tokenizer, *_ = load("lmstudio-community/Qwen2.5-Coder-7B-Instruct-MLX-4bit")
-draft_model, *_ = load("lmstudio-community/Qwen2.5-Coder-0.5B-Instruct-MLX-4bit")
+#model, tokenizer, *_ = load("lmstudio-community/Qwen2.5-Coder-7B-Instruct-MLX-4bit")
+#model, tokenizer, *_ = load("mlx-community/GLM-Z1-9B-0414-4bit")
+model, tokenizer, *_ = load("mlx-community/Qwen3.5-9B-4bit")
+#draft_model, *_ = load("mlx-community/Qwen3.5-9B-MTP-4bit")
+#draft_model, *_ = load("lmstudio-community/Qwen2.5-Coder-0.5B-Instruct-MLX-4bit")
 
 class ChatRequest(BaseModel):
     messages: list
@@ -48,20 +65,20 @@ async def chat(request: ChatRequest):
     messages = [{"role": "system", "content": SYSTEM_PROMPT}] + request.messages
 
     prompt = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=False
     )
 
     def generate():
         stream = stream_generate(
             model,
             tokenizer,
-            draft_model=draft_model,
+            #draft_model=draft_model,
             prompt=prompt,
             max_tokens=2048,
-            #temperature=0.1,
-            #top_p=0.95,
-            #top_k=30,
-            #repetition_penalty=1.0,
+            #mtp=True,
             kv_bits=8,
             max_kv_size=16384,
         )
