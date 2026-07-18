@@ -8,7 +8,7 @@ NIX_DARWIN_FLAKE="$HOME/.config/nix-darwin"
 # ---------------------
 alias ls="ls --color"
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
-alias sciml-master-serve='~/scripts/mlx-cli/sciml-master-serve.sh'
+alias jms='~/scripts/mlx-cli/julia-master-serve.sh'
 drs() {
     sudo darwin-rebuild switch --flake "$NIX_DARWIN_FLAKE"
 }

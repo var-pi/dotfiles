@@ -31,15 +31,15 @@ Scope
 
 Structure
     
-    # Summary
+    ━━━ Summary ━━━
 
     High signal concise summary
 
-    # Background
+    ━━━ Background ━━━
 
     Required background
 
-    # Details
+    ━━━ Details ━━━
 
     Important details
 
@@ -49,13 +49,9 @@ Output Rules
   which convergence rate or spectral convention.
 • One sentence = one insight.
 • Do not explain what is obvious.
-• For mathematical notation use unicodes not LaTeX because LaTeX doesn't render in terminal.
 """
-#model, tokenizer, *_ = load("lmstudio-community/Qwen2.5-Coder-7B-Instruct-MLX-4bit")
-#model, tokenizer, *_ = load("mlx-community/GLM-Z1-9B-0414-4bit")
-model, tokenizer, *_ = load("mlx-community/Qwen3.5-9B-4bit")
-#draft_model, *_ = load("mlx-community/Qwen3.5-9B-MTP-4bit")
-#draft_model, *_ = load("lmstudio-community/Qwen2.5-Coder-0.5B-Instruct-MLX-4bit")
+model, tokenizer, *_ = load("mlx-community/Qwen3.5-9B-5bit")
+#draft_model, *_ = load("mlx-community/Qwen3.5-9B-MTP-5bit")
 
 class ChatRequest(BaseModel):
     messages: list
@@ -79,7 +75,7 @@ async def chat(request: ChatRequest):
             prompt=prompt,
             max_tokens=2048,
             #mtp=True,
-            kv_bits=8,
+            #kv_bits=8,
             max_kv_size=16384,
         )
 
