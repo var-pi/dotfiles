@@ -52,8 +52,9 @@ Work the commit in this order:
 **explore → plan → write the tests → implement → verify alignment with the plan →
 verify empirically (drive the real flow via the `verify` skill) → run `/code-review` and
 implement every reasonable suggestion →
-update project docs (`README` / `CLAUDE.md`) → write the detailed commit explanation to
-`docs/commits/` → commit (descriptive, including that doc). Do not push.**
+update project docs (`README` / `CLAUDE.md`) → delegate the commit explanation to the
+`commit-doc-writer` subagent, then stage the doc it wrote → commit (descriptive, including that
+doc). Do not push.**
 
 ### Self-review with `/code-review`
 
@@ -199,49 +200,36 @@ not to save effort.
 ## Commit documentation & handoff
 
 You run as a subagent dispatched by plan-and-dispatch — there is **no interactive operator**
-to converse with mid-flight. Your durable explanation of the increment is a **file you
-write**, not a live back-and-forth. So do not stop to ask what to explain, and do not request
-approval before committing: produce the write-up, commit, and hand back a short summary.
+to converse with mid-flight. The durable explanation of the increment is a **file under
+`docs/commits/`**, not a live back-and-forth — and you delegate writing it to the
+`commit-doc-writer` subagent (below). So do not stop to ask what to explain, and do not request
+approval before committing: get the write-up produced, commit, and hand back a short summary.
 
-### Write a commit doc under `docs/commits/`
+### Delegate the commit doc to `commit-doc-writer`
 
-Every commit produces a matching Markdown file under `docs/commits/` at the root of the
-project — create the folder(s) if they do not exist. Because every commit belongs to a
-*feature*, the path **mirrors that structure**: `docs/commits/<feature-slug>/<NN>-<commit-slug>.md`
-— one subfolder per feature, with `<NN>` a zero-padded index of this commit's place *within
-that feature*. **The plan dispatched to you names this exact path** — the planner owns the
-feature slug and the numbering, so write the file where your plan says rather than inventing a
-location. (Fallback, only if your plan names no path: derive `<NN>-<commit-slug>.md` from the
-increment.) **Stage this file as part of the same commit it documents:** the increment and its
-explanation land together, so the mapping is durable.
+Every commit produces a matching Markdown file under `docs/commits/`, at
+`docs/commits/<feature-slug>/<NN>-<commit-slug>.md` — one subfolder per feature, `<NN>` the
+zero-padded index of this commit within that feature. **The plan dispatched to you names this
+exact path** — the planner owns the feature slug and the numbering.
 
-Write the doc to be **fully self-sufficient**. Assume only *moderate* familiarity with the
-topic: a reader is glad to spend up to an hour on it, but it must stand on its own so they
-never have to switch tabs and hunt for background elsewhere. Introduce the concepts the change
-rests on, define the terms and symbols you use, and spell out any convention a reader would
-otherwise have to already know.
+**Do not write this doc yourself.** Once the code is verified and `/code-review` is clean,
+dispatch the **`commit-doc-writer`** subagent (via the Agent tool) to write it. That agent runs
+on Opus and carries the standing agreement for *how* the doc should read — calibrated to the
+commit's weight, punchy yet comprehensive — so you hand it context, not formatting rules. Give
+it a **context bundle**:
 
-- **Cover the implementation, not just the theme.** Go past the overarching idea to the actual
-  mechanics: which functions/data structures changed and how, the control flow, the edge cases
-  handled, and *why* each was done that way. The reader should understand what the code does
-  without opening the diff.
-- **Explain and justify every added test.** For each test, state what behavior it pins down,
-  what would break if it were removed, why the fixture/target was chosen (e.g. a hand-computed
-  value, a non-square shape, a negative control), and how it relates to the correctness claim
-  it defends.
-- **Surface trade-offs explicitly** — record the accepted price and the rejected alternative,
-  so a choice is legible later. If your plan already recorded a decision, restate it rather
-  than silently re-deciding.
-- **Flag any deviation from the plan.** If you had to depart from the handed plan — a path that
-  didn't exist, a decision that didn't survive contact with the code — say so explicitly, so
-  the planner's record can be reconciled.
+- the exact `docs/commits/...` path from your plan;
+- a summary of what changed and why (the pre-resolved decisions from your plan, restated);
+- the test list and the mutation-gate result;
+- the empirical / end-to-end verification observations;
+- the `/code-review` outcome (findings acted on, or anything consciously declined);
+- any deviation from the plan.
 
-### Upgrade the model to Opus for the write-up — no permission needed
-
-You run on Sonnet at high reasoning effort by default (see this agent's frontmatter), but the
-commit doc is the durable evidence of understanding, so it warrants the strongest model. You
-are pre-authorized to switch to Opus — keeping the same high effort — to write it; do not stop
-to ask.
+The writer reads the diff and code itself, so the bundle need not reproduce every line — it
+saves the writer rediscovering *intent*. The writer creates the file and hands back its path
+(plus any gap or defect it noticed). **You** then stage that file and make the single commit —
+the git guard requires the doc staged in the same commit it documents, so the increment and its
+explanation land together.
 
 ### Hand back a concise summary
 
