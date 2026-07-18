@@ -166,16 +166,27 @@ implementer cannot get wrong.
 the feature's `README.md` file(s)**. README documentation belongs to no single commit — it
 describes the feature as a whole and its final shape settles only once every commit's contract
 does — so it must not be smuggled into one. Treat it as a **full member** of the set: its own
-stub now, its own single commit, its Dispatch line names `commit-plan-implementer`, same
-template. Because its content depends on every commit's contract, it is ordinarily the **last**
-plan completed and dispatched at Tier 2. Keep genuinely commit-local doc changes (a docstring,
-an inline comment) in the commit that makes them.
+stub now, its own single commit, same template. Its Dispatch line names `commit-plan-implementer`
+(the executor that commits it), **but its authoring is delegated to the `feature-readme-writer`
+subagent** — the implementer dispatches that Opus specialist to write the README, exactly as it
+dispatches `commit-doc-writer` for the per-commit doc. The README is written for *outside* readers
+(newcomers, evaluators, users), so it is a showcase, not an operator note — which is why a
+purpose-built writer owns it, not the generalist implementer. Because its content depends on every
+commit's contract, it is ordinarily the **last** plan completed and dispatched at Tier 2. Keep
+genuinely commit-local doc changes (a docstring, an inline comment) in the commit that makes them.
 
-Do not confuse this README plan with the per-commit `docs/commits/` file: the README plan is a
-full member of the set (its own stub and commit) owning *feature-level* docs, whereas the
-`docs/commits/<feature-slug>/<NN>-<commit-slug>.md` file is a per-commit explanation the
-implementer authors automatically under its own agreement — not a set member, no stub, your
-only responsibility for it is naming its path in template §8.
+Do not confuse this README plan with the per-commit `docs/commits/` file — two different authored
+artifacts, each with its own specialist writer:
+
+- the **feature `README.md`** is a full member of the set (its own stub and commit) owning
+  *feature-level, outward-facing* docs, **authored by `feature-readme-writer`**;
+- the **`docs/commits/<feature-slug>/<NN>-<commit-slug>.md`** file is a per-commit,
+  *maintainer-facing* explanation **authored by `commit-doc-writer`** — not a set member, no stub,
+  your only responsibility for it is naming its path in template §8.
+
+Both are staged and committed by the implementer; only the *writing* is delegated. Note the README
+increment gets **both**: its `README.md` and its own `docs/commits/` doc (which is what satisfies
+the git guard for that commit).
 
 **Plans must conform to the implementer's standards.** The code and tests you specify will be
 held to the code-style, testing, and commit standards in the commit-plan-implementer agreement.
@@ -257,7 +268,8 @@ reviewer each round. Approval runs through the plan-mode gate, and the per-file 
    holds because the set sat in that file throughout Phases 2–3.)
 3. **Update `CLAUDE.md`** to bring the written record into step with the planned work. (The
    feature's own `README.md` is *not* updated by you here — its creation/update is delivered by
-   the dedicated README plan and executed by the implementer with the rest of the set.)
+   the dedicated README plan, executed by the implementer and authored by the
+   `feature-readme-writer` subagent, with the rest of the set.)
 
 ---
 

@@ -231,6 +231,32 @@ saves the writer rediscovering *intent*. The writer creates the file and hands b
 the git guard requires the doc staged in the same commit it documents, so the increment and its
 explanation land together.
 
+### Delegate the feature README to `feature-readme-writer`
+
+One increment in a feature is special: the **dedicated feature README plan**, whose sole job is
+to create or update the feature's public-facing `README.md`. When *that* is the plan dispatched to
+you, do **not** write the README yourself — delegate its authoring to the **`feature-readme-writer`**
+subagent (via the Agent tool), the same way you delegate the commit doc to `commit-doc-writer`.
+It runs on Opus and carries the standing agreement for *how a showcase README should read* — it is
+written for outside readers, not the operator, so structure and captivation are its craft, not
+yours. It reads the whole finished feature itself (every `docs/commits/<feature-slug>/` doc, the
+code, the existing experiment figures), so hand it a **context bundle**, not formatting rules:
+
+- the exact README path(s) from your plan;
+- the feature slug and the set of commits that make up the feature, with the through-line/intent;
+- where the per-commit docs live (`docs/commits/<feature-slug>/`);
+- any deviation from the plan worth surfacing to a reader.
+
+The writer creates the README and hands back its path (plus any gap, broken claim, or unreadable
+figure it noticed — act on those). This README increment is still a normal commit for you: it also
+gets its own `docs/commits/<feature-slug>/<NN>-<commit-slug>.md` explanation via `commit-doc-writer`
+as every commit does, which is what satisfies the git guard. **You** then stage **both** the
+README and that commit doc and make the single commit.
+
+This delegation applies **only** to the dedicated feature-README increment. Incidental doc touches
+inside an ordinary code commit — a `README`/`CLAUDE.md` line the change makes necessary (the
+"update project docs" step of your workflow) — stay inline; you make those yourself.
+
 ### Hand back a concise summary
 
 After committing, return to the dispatcher a **comprehensive-yet-concise** summary: what
