@@ -137,6 +137,32 @@ that is a signal to raise with the operator — not to reach ahead.
 Any generated artifact (figures, reports, dumps) must be producible in a display-less
 CI / agent shell, so automated runs work without a human at a screen.
 
+### Make outputs self-explanatory
+
+A generated figure, graph, or chart must communicate what it depicts **on its own** — a
+reader should never have to reconstruct the meaning from surrounding context, the code, or
+the commit doc. Whenever they apply, these are **strictly required**, not optional polish:
+
+- **a title** stating what the artifact shows;
+- **labeled axes**, including units where the quantity has them;
+- **a legend** whenever more than one series, category, or condition is drawn;
+- **explicit annotation** of anything a reader would otherwise have to guess — the seed of a
+  stochastic run, a scale (log vs. linear), a threshold/reference line, or what a color or
+  marker encodes.
+
+**And they must actually be visible.** A required label that renders *outside the figure's
+visible box* — clipped at the edge so only a few pixels show, or cut off entirely — counts as
+missing, not present. Titles, axis labels, and legends are frequently clipped by tight or
+default bounds; before considering an artifact done, save it with margins that fit all
+elements (e.g. `bbox_inches="tight"` / `tight_layout()`, or an explicit padded layout) and
+**open the saved file to confirm every label sits fully inside the frame**. Rendering the code
+is not enough — inspect the actual output.
+
+The bar is: hand the saved artifact to someone with only moderate familiarity and no access to
+the code, and they can still say what it depicts and read a value off it. Omit one of these
+requirements only when it genuinely does not apply (e.g. a single-panel diagram with no axes),
+not to save effort.
+
 ---
 
 ## Code style & documentation
