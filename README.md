@@ -1,6 +1,6 @@
 # dotfiles
 
-> A declarative Apple-Silicon workstation with a local SciML LLM living inside my editor.
+> A declarative Apple-Silicon workstation with a local Julia LLM living inside my editor.
 
 My `$HOME`, under version control. There are no symlinks and no bootstrap script —
 the whole home directory *is* the work tree of a bare git repository, and a
@@ -13,7 +13,7 @@ solvers for **Scientific Machine Learning in Julia**.
 - **The whole macOS system is a flake.** Packages, Touch ID `sudo`, and even the
   Claude Code binary are declared in `.config/nix-darwin/flake.nix` and rebuilt with a
   single command. The machine is reproducible from a lockfile.
-- **A private LLM lives in my editor.** A domain-specialized model — the *SciML
+- **A private LLM lives in my editor.** A domain-specialized model — the *Julia
   Master* — runs on-device via [MLX](https://github.com/ml-explore/mlx) and answers
   questions about a visual selection without a single byte leaving the laptop.
 - **Single 9B model, quantized KV cache.** The Master runs a 4-bit ~9B model with an
@@ -24,7 +24,7 @@ solvers for **Scientific Machine Learning in Julia**.
 - **Agentic workflows, versioned.** A custom Claude Code `plan-and-dispatch` skill and
   its reviewer/implementer agents are tracked right alongside the shell config.
 
-## The SciML Master
+## The Julia Master
 
 The centerpiece. Instead of pasting code into a cloud chatbot, I select a region in
 Neovim and press `am` — *Ask Master*. The selection is streamed to a local server and
@@ -42,15 +42,13 @@ the answer streams back, token by token, into a fresh markdown split.
     └────────────  streamed tokens (SSE)  ◀──────────┘
 ```
 
-The server (`scripts/mlx-cli/sciml-master-serve.py`) exposes an **OpenAI-compatible**
+The server (`scripts/mlx-cli/julia-master-serve.py`) exposes an **OpenAI-compatible**
 `/v1/chat/completions` streaming endpoint, which keeps the Neovim side
 (`.config/nvim/lua/mlx.lua`) a thin `curl` + `jobstart` client — no plugin, no SDK.
 The system prompt tunes the model into an expert Julia compiler engineer and SciML
 researcher writing for a graduate-level applied mathematician: internals-first,
 implementation-over-API, one insight per sentence, structured as Summary / Background /
-Details. (An earlier
-[Ollama](https://ollama.com) incarnation of the same persona survives in
-`.modelfiles/julia-sciml.modelfile`.)
+Details.
 
 Everything runs locally. It's private, offline-capable, and free to interrupt.
 
@@ -61,7 +59,7 @@ Everything runs locally. It's private, offline-capable, and free to interrupt.
 | System | `nix-darwin` flake (`vortex`) | Declarative, reproducible macOS from a lockfile |
 | Editor | Neovim, Lua config | `blink.cmp`, telescope, treesitter, LSP for Julia/Lua/Nix/LaTeX |
 | Language | Julia (LTS + a `1.12` shim) | `Revise`, pinned envs, committed manifests |
-| AI | MLX server + Claude Code | On-device SciML model; versioned agent workflows |
+| AI | MLX server + Claude Code | On-device Julia model; versioned agent workflows |
 | Terminal | kitty + JetBrains Mono | — |
 | Shell | zsh | The bare-repo `dotfiles` alias and a few sharp helpers |
 
@@ -93,7 +91,6 @@ tracked files sit exactly where they belong. `dotfiles status`, `dotfiles add`,
 ├── .julia/
 │   ├── config/startup.jl               # Revise on interactive start
 │   └── environments/                   # pinned, manifest-locked envs
-├── .modelfiles/julia-sciml.modelfile   # the Master's earlier Ollama form
 ├── .claude/                            # plan-and-dispatch skill + agents
-└── scripts/mlx-cli/                    # the on-device SciML Master server
+└── scripts/mlx-cli/                    # the on-device Julia Master server
 ```
