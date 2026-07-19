@@ -1,0 +1,4 @@
+# Bare-repo dotfiles trick: ignore everything in $HOME by default.
+# Track a new file/dir explicitly with:
+#   git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" add -f <path>
+*
