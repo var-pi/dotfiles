@@ -75,7 +75,7 @@ async def chat(request: ChatRequest):
             prompt=prompt,
             max_tokens=2048,
             #mtp=True,
-            #kv_bits=8,
+            kv_bits=8,
             max_kv_size=16384,
         )
 
