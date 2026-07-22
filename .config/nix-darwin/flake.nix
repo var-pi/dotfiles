@@ -22,6 +22,7 @@
                         tree
                         kitty
                         texlab
+                        sioyek
                         neovim
                         ripgrep # For telescope live_grep
                         python314
