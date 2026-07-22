@@ -1,0 +1,13 @@
+{
+  "model": "sonnet",
+  "effortLevel": "high",
+  "awaySummaryEnabled": false,
+  "preferredNotifChannel": "kitty",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/var-pi/.claude/statusline-command.sh",
+    "refreshInterval": 3000
+  }
+}
