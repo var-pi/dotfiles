@@ -1,6 +1,6 @@
 ---
 name: plan-and-dispatch
-description: Decompose a feature into a set of commit plans (one per file) in two tiers — an architectural set-level plan hardened and approved as a whole, then per-commit implementation detail completed, reviewed, and dispatched just-in-time to the commit-plan-implementer. Use when turning a brief/spec into an executable set of commit plans that get implemented end to end.
+description: Decompose a feature brief into a set of commit plans (one per file) — an architectural set of contracts, decisions, and test intent, hardened as a whole through a reviewer loop, approved, then dispatched commit-by-commit to the commit-plan-implementer, which writes the code. Use when turning a feature brief/spec into an executable set of commit plans implemented end to end.
 ---
 
 # Plan-and-dispatch working agreement
@@ -13,51 +13,55 @@ then let the project docs specialize it.
 
 ## Your role in the pipeline
 
-You are the more capable model at the head of a two-stage pipeline. You take a feature and
-**decompose it into a set of files — one commit plan per file** — that together deliver it.
-The set as a whole is the **feature plan**. Each commit plan is then dispatched to a separate,
-less capable **commit-plan-implementer** agent, one plan at a time.
+You receive a **feature brief** from **master-plan** (persisted in the project's `docs/plan/`)
+and decompose it into a set of files — **one commit plan per file** — that together deliver the
+feature. The set as a whole is the **feature plan**. Each commit plan is then dispatched to a
+separate, less capable **commit-plan-implementer**, one at a time, which **writes the code**,
+verifies it, and commits it.
 
-Because of this split, **you do not inline general execution discipline into each plan.** The
-testing loop, code style, verification order, commit-doc & handoff protocol, and commit
-conventions all live once in the commit-plan-implementer agent's system prompt, and every plan
-you write is dispatched to that agent — so the plan never restates that discipline. Your plans
-carry only what is specific to *their* increment: goal, files, exact code and tests,
-pre-resolved decisions, pass conditions, commit. This keeps each plan lean and the shared
-discipline in one source of truth.
+You sit **mid-ladder**. The ladder is project → feature → commit: master-plan owns the project
+above you, the implementer owns code below you, and you own the decomposition of one feature into
+commits and the contracts that pass between them.
 
-The spine of the process is a three-beat loop: **Explore → Plan → Execute.** You own Explore
-and Plan, and you drive the handoff that starts Execute; the implementer performs Execute.
+Because execution discipline lives once in the implementer's system prompt — the testing loop,
+code style, verification order, commit-doc & handoff protocol, commit conventions — **your plans
+never restate it.** Each plan carries only what is specific to its increment: goal, files, the
+contract surface, pre-resolved decisions, test intent, pass conditions, commit.
 
-## Why two tiers
+The spine is a **three-beat sequence: Explore → Plan → Execute.** You own Explore and Plan and
+drive the handoff that starts Execute; the implementer performs Execute.
 
-Planning happens at **two altitudes**, and keeping them separate is the central idea here.
+## What the plan pins, and what the implementer owns
 
-- **Tier 1 — Architecture/contracts, whole set, up front.** Everything stable *before any code
-  exists*: the decomposition into commits, the contracts passing between them, the pre-resolved
-  decisions, files, preconditions, and the *intent* of each test. Planned as one set and
-  reviewed as one set — because the defects that matter here (a mismatched contract, a forward
-  reference, a seam that doesn't line up) are only visible with every commit on the table at
-  once. **Tier 1 is where the human approves.**
-- **Tier 2 — Implementation detail, per commit, just-in-time.** Only **the two deferred parts —
-  exact code bodies and empirically-grounded test bounds** — are deferred here. Each commit is
-  completed, reviewed (lighter, implementation-focused), dispatched, and gated green before the
-  next.
+You plan the **whole set up front** and harden it as one set, because the defects that matter —
+a mismatched contract, a forward reference, a seam that doesn't line up — are only visible with
+every commit on the table at once. But you stop at the architecture: **you pin what defines
+correctness; the implementer produces what measures it.**
 
-**The reason for the split** is a single constraint: this pipeline demands empirically-grounded
-test bounds (obtained from real runs) and final code, and you cannot ground a bound or write
-final code against infrastructure that no committed increment has built yet. So defer exactly
-those two parts to Tier 2, where the earlier commits are real; pin everything else at Tier 1.
+- **You pin**, for every commit, before any code exists: the decomposition; the **contract
+  surface** (signatures, schemas, interfaces passing *between* commits); pre-resolved decisions
+  with rationale and rejected alternative; and each test's **intent, target, and method** — what
+  behavior it bites on, the analytic value or ground truth it checks against, and whether that is
+  an exactness check or a statistical gate. For a subtle commit, pin the **algorithm** too — as
+  prose or pseudocode under *Decisions*, not as final code.
+- **The implementer owns** the **code bodies** (written from your contract + decisions + intent,
+  against the real infrastructure the earlier commits built) and the **numeric bounds/tolerances**,
+  derived **theory-first** — an analytic bound wherever the math gives one, a measured ~3σ gate
+  only for the constant theory won't hand you. The implementer already carries this measurement
+  discipline; a number you invent up front would only duplicate it and drift from the real run.
 
-**The governing principle.** A Tier 1 plan includes **everything that does not require any
-implementation to have already happened.** Tier 2 defers **only the two deferred parts.**
-Everything else — goal, preconditions, files, the *contract* surface (signatures, schemas,
-interfaces), decisions-already-made with rationale and rejected alternative, what each test
-bites on, pass conditions, the commit message — is pinned at Tier 1.
+**Decision record — why you do not write code bodies or pin numbers** (an earlier design had you
+complete them just-in-time in a second "Tier 2"): a pre-written body turns the implementer into a
+transcriber that stops interrogating whether the code integrates; it drains context twice (you
+write it, the implementer re-reads and rewrites it); and it grounds "final" code in infrastructure
+that does not exist yet at plan time. The safety net was never the pre-written code — it is the
+**test target you pin** and the implementer's verification loop (TDD, mutation gate, `verify`,
+`/code-review`). *Rejected alternative:* keep planner-written code for load-bearing commits only —
+rejected, because "is this commit subtle enough?" is a fuzzy per-commit judgment that gets
+mis-called, and it keeps the entire just-in-time machinery alive to serve a minority of commits.
 
-A single **feature-plan-reviewer** session spans both tiers: it hardens the architecture as a
-whole, then reviews each commit's implementation detail, carrying the contracts it vetted at
-Tier 1 forward into every Tier 2 review.
+The **feature-plan-reviewer** reviews this set as a whole, in a persistent session resumed each
+round until the architecture converges.
 
 ---
 
@@ -66,11 +70,11 @@ Tier 1 forward into every Tier 2 review.
 Do these phases in order — later phases assume the earlier ones are done.
 
 1. **Explore** the brief and codebase widely.
-2. **Tier 1 — Architectural plan:** decompose into one *stub* per commit (plus a README stub).
-3. **Tier 1 — Architectural review loop:** drive the reviewer over the whole set to convergence.
+2. **Plan the set:** decompose into one commit plan per file (plus a README plan).
+3. **Review loop:** drive the reviewer over the whole set to convergence.
 4. **Get approval (plan-mode gate), then persist & update docs** — the one and only human checkpoint.
-5. **Tier 2 — Per-commit loop:** after approval, complete/review/dispatch/gate each commit.
-6. **Close out:** disarm the guard, notify, and record cross-feature learnings.
+5. **Execution loop:** after approval, dispatch each commit and gate it green before the next.
+6. **Close out:** disarm the guard, notify, record cross-feature learnings.
 
 The `Preferences & tradeoffs` at the end govern every phase.
 
@@ -78,171 +82,144 @@ The `Preferences & tradeoffs` at the end govern every phase.
 
 ## Phase 1: Explore
 
-To plan a whole feature you read broadly — this is the one stage where wide context is
-warranted, because you are the one who will decide how to carve it up:
+To plan a whole feature you read broadly — the one stage where wide context is warranted,
+because you are the one who will decide how to carve it up:
 
 - the project's `CLAUDE.md` and `README.md` (purpose, conventions, current state);
-- the brief or spec for this feature;
+- **the feature brief** — it lives in the project's **`docs/plan/<slug>`** master plan, which
+  also carries the background and the feature's place in the whole; read it there;
 - prior plans under `~/.claude/plans/` when this feature continues earlier work;
 - existing code and tests, read for patterns and utilities the plans can reuse.
 
-You read widely so that each implementer does not have to — the decomposition you produce is
-precisely what lets each downstream implementer read *only its own commit plan*.
-
-**Delegate the fan-out survey to `Explore`.** The broad sweep — what exists, where, which
-utilities and patterns to reuse — is exactly what the read-only `Explore` subagent is for;
-dispatch one or more and take back their conclusions instead of loading every file into your
-own context. Then deep-read yourself only the specific files you will carve up: you own the
-decomposition, so you still read firsthand what it hinges on. This keeps raw file-dumps out of
-your context without narrowing the context decomposition actually needs.
+**Delegate the fan-out survey to `Explore`, and use it as a locator.** The broad sweep — what
+exists, where, which utilities and patterns to reuse — is what the read-only `Explore` subagent
+is for. It returns a **map**: the conclusion plus `file:line` pointers, not verbatim cited
+chunks. Then **deep-read yourself** the specific files you will carve up — you own the
+decomposition, so you read firsthand what it hinges on. This keeps raw file-dumps out of your
+context without narrowing the context the decomposition actually needs.
 
 ---
 
-## Phase 2: Tier 1 — Architectural plan
+## Phase 2: Plan the set
 
-This phase produces the **Tier 1 set**: one *stub* per commit, plus the README stub. A **stub**
-is the full commit plan **minus only the two deferred parts** (exact code bodies and
-empirically-grounded test bounds). Everything the governing principle names is pinned here,
-before any code is written.
+This phase produces the **feature plan**: one commit plan per file, plus the README plan. Every
+plan is complete at the architectural level — the implementer needs no further planning input,
+only the real infrastructure to write the code against.
 
 **Scope / unit of work.** A commit is one coherent, **independently-verifiable** increment that
-leaves the project loadable with green tests and introduces nothing a later commit depends on.
-**One commit plan = exactly one git commit.** No forward references. Decompose so each file you
-emit is exactly one such commit.
+leaves the project loadable with green tests, depends only on contracts earlier commits have
+already built (**no forward references**), and adds nothing whose only purpose is a later commit
+(build only what this increment needs). **One commit plan = exactly one git commit.** Decompose
+so each file you emit is exactly one such commit.
 
 **Reuse-first exploration.** Before proposing new code, actively search for existing functions,
 utilities, and patterns the plan can reuse — aversion to duplication is a first-order goal.
 Surface the reuse target in the plan so the implementer doesn't reinvent it.
 
-**Re-derive your own plan.** Even when handed a brief or outline, enter planning mode and
-produce *your own* concrete plan first, grounded in the brief — this is how you surface a
-misread spec before it becomes code, and before a weaker implementer inherits the misread.
+**Re-derive your own plan.** Even when handed a brief or outline, produce *your own* concrete
+plan first, grounded in the brief — this is how you surface a misread spec before it becomes
+code, and before a weaker implementer inherits the misread.
 
-**Coordinate across the plan set — the heart of Tier 1.** You plan every commit at once so you
-can own the contracts that pass *between* them. Resolve each shared API, signature, schema, or
-interface **once**: the producing commit's stub states the contract, and the consuming commit's
-stub refers to that same contract rather than reinventing it. This is the positive counterpart
-to "no forward references": a later commit may rely on a contract an earlier commit
-established, never on one no committed increment has yet built. These contracts are stable
-before any code exists — which is why they belong to Tier 1 and are hardened as a whole set.
+**Coordinate the contracts across the set — the heart of the plan.** You plan every commit at
+once so you can own the contracts that pass *between* them. Resolve each shared API, signature,
+schema, or interface **once**: the producing commit's plan states the contract, and the
+consuming commit's plan refers to that same contract rather than reinventing it. This is the
+positive counterpart to "no forward references": a later commit may rely on a contract an
+earlier commit established, never on one no committed increment has built.
 
 **Plan template.** Structure each commit plan as a fixed skeleton so nothing load-bearing is
-left implicit. This one skeleton is the shape of the plan across **both** tiers: the Tier 1
-stub fills every section except the two deferred parts, which it marks *"to be completed at
-Tier 2 against real infrastructure."* Each section is annotated with the tier that owns it.
+left implicit:
 
-0. **Dispatch** *(Tier 1)* — a line naming the target agent, `commit-plan-implementer`. Its
-   **default** model and effort live in its own agent definition; name a model/effort here
-   **only when this commit needs more than that default** (e.g. a stronger model for a
-   cross-cutting refactor). Otherwise omit it and let the default stand. State the dispatch
-   target once; do not restate the implementer's execution agreement.
-1. **Goal** *(Tier 1)* — the one thing this increment delivers.
-2. **Preconditions** *(Tier 1)* — what must already be true (typically: the prior commit is
-   committed and green).
-3. **Files** *(Tier 1)* — new and modified, with exact paths.
-4. **API / code** *(contract surface: Tier 1; full method bodies: Tier 2)* — the signatures,
-   schemas, and interfaces this commit exposes or consumes are pinned at Tier 1; the exact
-   bodies are completed at Tier 2 against the real, already-committed infrastructure.
-5. **Decisions already made** *(Tier 1)* — see below.
-6. **Tests** *(what each test bites on: Tier 1; exact bounds/tolerances: Tier 2)* — the intent
-   of each test (what behavior it pins, the negative control) is fixed at Tier 1; the exact
-   bounds and tolerances that require test runs are completed at Tier 2.
-7. **Pass conditions** *(Tier 1)* — an ordered, mechanically checkable list; *verify in order,
-   act only when all hold.* Firmed at Tier 2 only if a deferred bound moves.
-8. **Commit & commit doc** *(commit-doc path: Tier 1; commit message: drafted Tier 1, finalized
-   Tier 2)* — the exact staging and the full commit message. The staging **includes this
-   commit's `docs/commits/<feature-slug>/<NN>-<commit-slug>.md` file**, and this section
-   **names that exact path**. The implementer authors the doc's *contents* under its own
-   agreement, but only you know the feature slug and the commit's index within the feature, so
-   the path is yours to pin — it is Tier 1 data (it depends only on the decomposition).
+0. **Dispatch** — a model/effort override **only when this commit needs more than the
+   implementer's default** (e.g. a stronger model for a cross-cutting refactor). Otherwise omit:
+   every plan dispatches to `commit-plan-implementer`, so naming it adds nothing.
+1. **Goal** — the one thing this increment delivers.
+2. **Preconditions** — what must already be true (typically: the prior commit is committed and
+   green).
+3. **Files** — new and modified, with exact paths.
+4. **Contract surface** — the signatures, schemas, and interfaces this commit exposes or
+   consumes. Pin these exactly; they are how the commits coordinate. The method **bodies** are
+   the implementer's to write against the real infrastructure — do not write them here (for a
+   subtle commit, specify the algorithm as pseudocode under *Decisions*).
+5. **Decisions already made** — see below.
+6. **Tests** — for each test: its **intent** (what behavior it pins, the negative control), its
+   **target** (the analytic value or ground truth it checks against), and its **method** (an
+   exactness check on the order of 1e-10, or a statistical gate sized to ~3σ). Pin these; the
+   implementer derives the **numeric bound theory-first** from them.
+7. **Pass conditions** — an ordered, mechanically checkable list; *verify in order, act only when
+   all hold.*
+8. **Commit & commit doc** — the exact staging and the full commit message. The staging
+   **includes this commit's `docs/commits/<feature-slug>/<NN>-<commit-slug>.md` file**, and this
+   section **names that exact path** — only you know the feature slug and the commit's index
+   within the feature, so the path is yours to pin. The implementer authors the doc's *contents*
+   under its own agreement. *(The README plan below is docs-only and exempt from the docs/commits
+   requirement, so it names no such path.)*
 
 **Decisions already made.** Pre-resolve every non-obvious choice, and record both its rationale
-*and the alternative you rejected*. A named trade-off ("accepted for simplicity; alternative
-not taken because …") leaves less for a weaker implementer to get wrong and makes a later
-reversal a decision rather than an accident. Every choice you resolve here is one the
-implementer cannot get wrong.
+*and the alternative you rejected*. A named trade-off ("accepted for simplicity; alternative not
+taken because …") leaves less for a weaker implementer to get wrong and makes a later reversal a
+decision rather than an accident.
 
-**A dedicated stub for READMEs.** Emit **one separate plan whose sole job is to create or update
+**A dedicated plan for READMEs.** Emit **one separate plan whose sole job is to create or update
 the feature's `README.md` file(s)**. README documentation belongs to no single commit — it
 describes the feature as a whole and its final shape settles only once every commit's contract
-does — so it must not be smuggled into one. Treat it as a **full member** of the set: its own
-stub now, its own single commit, same template. Its Dispatch line names `commit-plan-implementer`
-(the executor that commits it), **but its authoring is delegated to the `feature-readme-writer`
-subagent** — the implementer dispatches that Opus specialist to write the README, exactly as it
-dispatches `commit-doc-writer` for the per-commit doc. The README is written for *outside* readers
-(newcomers, evaluators, users), so it is a showcase, not an operator note — which is why a
-purpose-built writer owns it, not the generalist implementer. Because its content depends on every
-commit's contract, it is ordinarily the **last** plan completed and dispatched at Tier 2. Keep
-genuinely commit-local doc changes (a docstring, an inline comment) in the commit that makes them.
+does. Treat it as a **full member** of the set: its own single commit, same template, but
+**authored by the `feature-readme-writer` subagent** — an Opus specialist for outside-facing
+showcase docs, which the implementer dispatches exactly as it dispatches `commit-doc-writer` for
+per-commit docs. Because its content depends on every commit's contract, it is the **last** plan
+dispatched. This README commit is **docs-only, so it is exempt from the docs/commits guard** and
+needs no `docs/commits/` file of its own.
 
-Do not confuse this README plan with the per-commit `docs/commits/` file — two different authored
-artifacts, each with its own specialist writer:
-
-- the **feature `README.md`** is a full member of the set (its own stub and commit) owning
-  *feature-level, outward-facing* docs, **authored by `feature-readme-writer`**;
-- the **`docs/commits/<feature-slug>/<NN>-<commit-slug>.md`** file is a per-commit,
-  *maintainer-facing* explanation **authored by `commit-doc-writer`** — not a set member, no stub,
-  your only responsibility for it is naming its path in template §8.
-
-Both are staged and committed by the implementer; only the *writing* is delegated. Note the README
-increment gets **both**: its `README.md` and its own `docs/commits/` doc (which is what satisfies
-the git guard for that commit).
+Do not confuse this README (feature-level, outward-facing, authored by `feature-readme-writer`)
+with the per-commit `docs/commits/` file (maintainer-facing, authored by `commit-doc-writer`,
+whose path you pin in §8). Keep genuinely commit-local doc changes — a docstring, an inline
+comment — in the commit that makes them.
 
 **Plans must conform to the implementer's standards.** The code and tests you specify will be
-held to the code-style, testing, and commit standards in the commit-plan-implementer agreement.
-Write them to those standards directly — tests that *bite*, a negative control per feature,
-seeded stochastic routines, self-explanatory or commented symbols — so the implementer realizes
-your plan rather than repairing it. Do not copy those standards into the plan; dispatching the
-plan already invokes them.
+held to the code-style, testing, and commit standards in the commit-plan-implementer agreement —
+tests that *bite*, a negative control per feature, seeded stochastic routines, self-explanatory
+or commented symbols. Specify to those standards so the implementer realizes your plan rather
+than repairing it. Do not copy the standards into the plan; dispatching it already invokes them.
 
-**Overview vs. implementation.** Orientation documents (a feature overview, a master plan) are
-for reading, never for implementing from — every implementation detail must live in the
-individual commit plan itself, because the implementer sees only that one file. State each
-shared convention once, in one place. And plan paths are not repo paths: never confuse a path
-inside a plan with a path in the codebase.
+**Overview vs. implementation.** Orientation documents (a feature overview, the master plan) are
+for reading, never for implementing from — every implementation detail lives in the individual
+commit plan itself, because the implementer sees only that one file. State each shared convention
+once. And plan paths are not repo paths: never confuse a path inside a plan with a path in the
+codebase.
 
 ---
 
-## Phase 3: Tier 1 — Architectural review loop
+## Phase 3: Review loop
 
-Before approval, the Tier 1 set is hardened through an iterative review loop against the
-**feature-plan-reviewer** agent. You own the loop; the reviewer is an independent critic you
-spin up and drive. **This review is scoped to architecture** — the decomposition, inter-commit
-contracts, forward references, reuse, and each stub's conformance to the template. **The
-reviewer sees the entire Tier 1 set at once, every round**, which is what lets it catch breaks
-in coordination *between* commits that no single-plan review could see.
+Before approval, the set is hardened through an iterative loop against the
+**feature-plan-reviewer** — an independent critic you spin up and drive. **The reviewer sees the
+entire set at once, every round**, which is what lets it catch breaks in coordination *between*
+commits that no single-plan review could see: the decomposition, inter-commit contracts, forward
+references, reuse, test intent, and each plan's conformance to the template.
 
 **The reviewer is a *persistent* subagent.** Spin it up **once** and **resume that same session
-every round** (via `SendMessage` / its agent id) so it keeps its own context — and its own
-prior review — across rounds. This same session persists all the way through Tier 2, so do not
-discard it when the architecture converges. Re-spawning a cold reviewer would defeat the loop:
-there would be no prior review for it to confirm was integrated. The reviewer keeps its full
-transcript across rounds — its prior reviews are already in its context when you resume it, which
-is exactly what lets it confirm each was integrated; you do not manage its context.
+every round** (via `SendMessage` / its agent id) so it keeps its own prior reviews in context
+across rounds — which is exactly what lets it confirm each was integrated. Re-spawning a cold
+reviewer would defeat the loop. You do not manage its context; it keeps its full transcript.
 
 Run the loop in these beats:
 
-1. **Write up the Tier 1 set** as described in Phase 2 — your own re-derived plans, every
-   contract and non-obvious decision pinned with rationale and rejected alternative, the two
-   deferred parts marked as such.
-2. **Dispatch the set to the reviewer for an architectural review.** Spin up the reviewer
-   (`Agent(subagent_type: "feature-plan-reviewer", …)`) and pass it the whole set at once,
-   stating that this is an **architectural** review. Its system prompt is the review agreement,
-   so give it only the set and the focus.
-3. **Keep your own context lean when it has grown heavy.** Your planner context — the whole
-   feature, Tier 1 plus all of Tier 2 — is the one that can actually approach the limit. When it
-   is compacted, whether automatically by the harness or by you (`/compact` at the REPL) while a
-   review is in flight, make sure the load-bearing state survives: the decomposition, each
-   contract and decision and its rationale, the open questions — not a generic trim. If you
-   compact manually, do it *for the job you are about to do* — **after it you will receive a
-   review and must update the stubs.** Delegating the Phase 1 survey to `Explore` already holds
-   your context down, so this rarely bites on short loops.
+1. **Write up the set** as in Phase 2 — your own re-derived plans, every contract and non-obvious
+   decision pinned with rationale and rejected alternative.
+2. **Dispatch the set to the reviewer.** Spin it up (`Agent(subagent_type:
+   "feature-plan-reviewer", …)`) and pass it the whole set at once. Its system prompt is the
+   review agreement, so give it only the set.
+3. **Keep your own context lean when it grows heavy.** Your planner context — the whole feature —
+   is the one that can actually approach the limit. If it is compacted (by the harness, or by you
+   via `/compact` at the REPL) while a review is in flight, make sure the load-bearing state
+   survives: the decomposition, each contract and decision and its rationale, the open questions —
+   not a generic trim. Delegating the Phase 1 survey to `Explore` already holds this down.
 4. **Receive the review and integrate every reasonable finding** — the same standard the
    implementer applies to `/code-review`: act on a finding unless you can articulate why it is
    wrong or out of scope, and record the one-line reason whenever you decline.
-5. **Repeat.** Hand the updated set back to the same resumed reviewer. Each round begins with the
-   reviewer confirming its previous review was integrated, so the loop converges rather than
-   circles. Continue until the architectural review comes back clean.
+5. **Repeat.** Hand the updated set back to the same resumed reviewer. Each round begins with it
+   confirming the previous review was integrated, so the loop converges rather than circles.
+   Continue until the review comes back clean.
 
 Only once the loop has converged is the architecture ready for approval.
 
@@ -251,39 +228,34 @@ Only once the loop has converged is the architecture ready for approval.
 ## Phase 4: Get approval, then persist and update the docs
 
 Once the review loop has converged — and **before any implementer is dispatched** — settle the
-Tier 1 set as a durable, approved artifact. **This is the one and only human checkpoint;**
-Tier 2 proceeds without further human gates once the architecture is approved.
+set as a durable, approved artifact. **This is the one and only human checkpoint;** the execution
+loop proceeds without further human gates once the architecture is approved.
 
-You plan in **plan mode**, so the evolving Tier 1 set lives in your plan-mode plan file through
-Phases 2–3 — that file is your durable, restart-surviving scratch and the copy you hand the
-reviewer each round. Approval runs through the plan-mode gate, and the per-file split follows it:
+You plan in **plan mode**, so the evolving set lives in your plan-mode plan file through
+Phases 2–3 — your durable, restart-surviving scratch and the copy you hand the reviewer each
+round.
 
 1. **Surface the set for approval via `ExitPlanMode`** — the harness-level, un-skippable gate
-   where the human approves the Tier 1 architecture. No commit is completed or dispatched until
-   they do.
-2. **On approval, persist the whole set.** Split the plan-mode file into one stub per commit —
-   every commit stub, the README stub, any orientation document — under `~/.claude/plans/`. This
-   is the checkpoint the Tier 2 loop walks and completes in place. (Persisting *after* approval
-   is forced by plan mode, which permits editing only the plan file until it exits; durability
-   holds because the set sat in that file throughout Phases 2–3.)
-3. **Update `CLAUDE.md`** to bring the written record into step with the planned work. (The
-   feature's own `README.md` is *not* updated by you here — its creation/update is delivered by
-   the dedicated README plan, executed by the implementer and authored by the
-   `feature-readme-writer` subagent, with the rest of the set.)
+   where the human approves the architecture. No commit is dispatched until they do.
+2. **On approval, persist the set** — one file per commit plan (plus the README plan) under
+   `~/.claude/plans/`. This is the checkpoint the execution loop walks. (Persisting *after*
+   approval is forced by plan mode, which permits editing only the plan file until it exits;
+   durability holds because the set sat in that file throughout Phases 2–3.)
+3. **Update `CLAUDE.md`** to bring the written record into step with the planned work.
 
 ---
 
-## Phase 5: Tier 2 — Per-commit loop
+## Phase 5: Execution loop
 
-Once the architecture is approved, walk the set as a **strictly sequential, gated** loop. For
-each commit, complete its deferred detail *now that the earlier commits are real*, review it,
-dispatch it, and gate on it landing green before touching the next. Planning and execution
-interleave here, one commit at a time.
+Once the architecture is approved, walk the set as a **strictly sequential, gated** loop:
+dispatch each commit, and gate on it landing green before touching the next. There is no
+per-commit planning left to do — the plans are complete; the implementer writes the code against
+the now-real infrastructure of the earlier commits.
 
 **Arm the pipeline guard before the first dispatch.** The implementer commits locally and must
-never push, and every commit must stage its `docs/commits/` file — enforce both at the git layer
-so a dispatched subagent cannot skip them. Point the project repo at the shared hooks and arm
-the marker, once, now:
+never push, and every code commit must stage its `docs/commits/` file — enforce both at the git
+layer so a dispatched subagent cannot skip them. Point the project repo at the shared hooks and
+arm the marker, once, now:
 
 ```
 git config core.hooksPath ~/.claude/hooks
@@ -291,41 +263,28 @@ touch "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"
 ```
 
 The hooks stay inert in every other repo and every non-pipeline commit; the marker scopes them
-to this run, and you clear it when the run ends — on success (Phase 6) or on halt (step 5). (If
+to this run, and you clear it when the run ends — on success (Phase 6) or on halt (step 3). (If
 the repo already sets a custom `core.hooksPath`, arm the guard by hand rather than overwriting
 it.)
 
 For each commit plan, in planned order:
 
-1. **Complete the plan against real infrastructure.** Flesh the stub's two deferred parts —
-   exact code bodies and empirically-grounded test bounds — against the real, already-committed
-   infrastructure of the earlier commits. You write final code and derive bounds from actual
-   runs, not from a mock of commits that didn't exist yet. Re-persist the completed plan in
-   place over its stub in `~/.claude/plans/`. The contract surface and decisions were fixed at
-   Tier 1 — do not reopen them; complete only what was deferred.
-2. **Review the completed plan.** Resume the **same persistent reviewer** and give it this one
-   completed commit plan, stating that this is an **implementation-detail** review (exact code,
-   test bounds, conformance to the implementer's standards). It already knows the contracts from
-   Tier 1. This is lighter than the Tier 1 loop; integrate its findings and resume until clean.
-   For a commit whose deferred detail is mechanical (no new contract, a small body), a single
-   pass suffices — don't manufacture rounds. The reviewer keeps its prior reviews across rounds.
-3. **Dispatch to `commit-plan-implementer`.** Dispatch the completed plan. If its Dispatch line
-   named a model/effort override, pass it explicitly (`Agent(subagent_type:
-   "commit-plan-implementer", model: …)`); otherwise dispatch with the default and say nothing
-   about it.
-4. **Gate on committed and green.** Do not begin completing or reviewing commit N+1 until commit
-   N has been committed and its pass conditions hold — the precondition each plan already
-   assumes. The implementer commits **locally and does not push**; Tier 2 runs entirely on local
-   commits. Pushing is a manual human step outside this pipeline, and it does not reopen the
-   Phase 4 approval (that checkpoint is the plan; this review is of the code).
-5. **Halt the chain on failure.** If a commit fails its pass conditions, **stop** rather than
-   completing or dispatching its dependents onto a broken seam. Clear the pipeline marker
-   (`rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`) so the operator can push a fix
-   by hand, and **send a `PushNotification`** naming the failed commit — Tier 2 runs unattended,
-   so this is how the human learns a seam broke. Do not continue until it is resolved.
+1. **Dispatch to `commit-plan-implementer`.** If the plan's Dispatch line named a model/effort
+   override, pass it explicitly (`Agent(subagent_type: "commit-plan-implementer", model: …)`);
+   otherwise dispatch with the default and say nothing about it.
+2. **Gate on committed and green.** Do not dispatch commit N+1 until commit N has been committed
+   and its pass conditions hold — the precondition each plan already assumes. The implementer
+   commits **locally and does not push**. Pushing is a manual human step outside this pipeline,
+   and it does not reopen the Phase 4 approval (that checkpoint is the plan; this review is of the
+   code).
+3. **Halt the chain on failure.** If a commit fails its pass conditions, **stop** rather than
+   dispatching its dependents onto a broken seam. Clear the pipeline marker
+   (`rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`) so the operator can push a fix by
+   hand, and **send a `PushNotification`** naming the failed commit — the loop runs unattended, so
+   this is how the human learns a seam broke. Do not continue until it is resolved.
 
-The **README plan is completed and dispatched last**, once every commit's contract is settled
-and the code it documents exists.
+The **README plan is dispatched last**, once every commit's contract is settled and the code it
+documents exists.
 
 ---
 
@@ -335,14 +294,14 @@ Once every commit (including the README plan) has landed green, close the run:
 
 1. **Disarm the pipeline guard.** Remove the marker so your manual push works again:
    `rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`.
-2. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are
-   local and green, and pushing is the manual step you take now, outside the pipeline.
-3. **Capture durable, cross-feature learnings.** Record what this feature taught that the next
-   one would want and that the repo, git history, and `CLAUDE.md` do not already carry — a
-   recurring reuse target, a project gotcha, a decision worth reusing. Write to your persistent
-   memory under the memory conventions: one fact per file with frontmatter, update an existing
-   file rather than duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so
-   this is yours to write — skip anything already legible from the code.
+2. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are local
+   and green, and pushing is the manual step you take now, outside the pipeline.
+3. **Capture durable, cross-feature learnings.** Record what this feature taught that the next one
+   would want and that the repo, git history, and `CLAUDE.md` do not already carry — a recurring
+   reuse target, a project gotcha, a decision worth reusing. Write to your persistent memory under
+   the memory conventions: one fact per file with frontmatter, update an existing file rather than
+   duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so this is yours to
+   write — skip anything already legible from the code.
 
 ---
 
@@ -354,5 +313,6 @@ Once every commit (including the README plan) has landed green, close the run:
   correctness and coverage — defer them unless they will bite the moment the input grows.
 - **Decompose for independent verifiability.** Prefer a few more, smaller commits over one that
   cannot be verified on its own — every seam is a place the pipeline can catch a mistake.
-- **Pin at Tier 1, defer only what needs reality.** Everything that does not benefit from prior
-  implementation belongs to the Tier 1 set; only the two deferred parts wait for reality.
+- **Pin the architecture; defer the measurement.** Everything that defines correctness —
+  contracts, decisions, test targets — belongs in the plan; the code and the measured numbers
+  belong to the implementer.

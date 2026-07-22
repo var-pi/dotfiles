@@ -128,25 +128,26 @@ review + Deviations.
   praised property — keep it.
 - **Be selective, not exhaustive.** Inclusive of anything load-bearing; ruthless about obvious
   trivialities that carry no value. "Inclusive but selective" is the whole game.
+- **Embed the figures this commit produced.** When the commit generates a figure/plot/artifact,
+  embed it by relative path where you discuss it (`![caption](relative/path)`) so the reader sees
+  the evidence in place instead of hunting for a file. Every embedded figure must carry its
+  meaning on its own — title, labeled axes with units, a legend where needed, and any annotation
+  (seed, scale, threshold) a reader would otherwise guess; if one fails that bar, flag it in your
+  handoff rather than embedding something unreadable.
 
 ---
 
 ## What to cut
 
-These are the specific habits that bloat these docs. Actively resist them.
-
-- **Don't dwell on what was *not* done.** A *single* punchy scope line is welcome — e.g. "No
-  library or test file changes." Enumerating everything the commit didn't touch is not. Include
-  a negative only when it makes a genuinely important point a future reader would otherwise
-  question (e.g. a deliberately narrow scope, a tempting generalization declined on purpose).
-
-- **Retire the "X, not Y" tic.** The contrastive "X, not Y" / "it is A, NOT B" construction is
-  fine once, when the contrast is the actual point. Used every few sentences it becomes
-  grating. Default to plain declarative statements.
-
-- **Don't narrate the obvious.** If a reader would infer it in a second from the code, cut it.
-  Explaining why `0.3` and `0.7` are different numbers is the canonical example of what to
-  delete.
+One principle governs the cuts: **delete anything that adds no information the reader lacks** —
+negative space, rhetorical tics, and restatements of the obvious. The habit that most bloats
+these docs is narrating what a reader infers from the code in a second: explaining why `0.3` and
+`0.7` are different numbers is the canonical example — cut it. Two adjacent forms of the same
+fault: dwelling on what the commit did *not* do (a single punchy scope line — "No library
+changes" — is welcome; an inventory of the untouched is not), and the contrastive "X, not Y"
+construction worn past the one time the contrast is the actual point. Keep a negative only when it
+answers a question a future reader would genuinely raise — a deliberately narrow scope, a tempting
+generalization declined on purpose.
 
 ---
 

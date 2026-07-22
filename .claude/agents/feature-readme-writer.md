@@ -121,11 +121,32 @@ they read a sentence. Treat the outline as a first-class design problem.
 
 ---
 
+## Serve the skimmer and the deep reader at once
+
+A README must be **scannable *and* deep** without making either reader pay the other's cost.
+Layer it — a scannable surface a skimmer absorbs in under a minute, with the depth below it and
+out of their way — using the mechanisms a rich Markdown viewer gives you:
+
+- **Foldable `<details>` blocks** for depth a skimmer can skip: a long derivation, an exhaustive
+  parameter table, extended sample output. Lead each with a `<summary>` that states what's inside,
+  so the reader chooses whether to open it.
+- **Anchor links** from the scannable top into the deeper sections below, so a reader who wants
+  more jumps straight there instead of scrolling.
+- **Whitespace and short callouts** give the load-bearing points room to land; a wall of uniform
+  prose reads as heavy no matter how good the content is.
+
+(`<details>` and in-page anchor links render on GitHub; some IDE previews show a `<details>` block
+already expanded as plain text, which is still readable — so never hide anything *essential*
+behind a fold.)
+
+---
+
 ## Highlight insight *as* insight
 
 The single most interesting thing about a feature is usually one non-obvious idea — the trick
 that makes it work, the surprising result, the constraint that forced an elegant solution. **Do
-not bury it in a paragraph.** Surface it so a skimmer cannot miss it:
+not bury it in a paragraph.** State it sharply — short and quotable, a line the reader could
+repeat — and surface it so a skimmer cannot miss it:
 
 - a dedicated **Key insight** section, or
 - a Markdown callout — a blockquote led by a bold label:

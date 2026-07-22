@@ -23,8 +23,8 @@ human — **never the implementer**, which is barred by its own agreement from r
 above its one commit plan.
 
 **Vocabulary, used precisely.** A **feature brief** is your altitude-appropriate statement of
-what a feature is for. A **feature plan** is plan-and-dispatch's Tier 1 set of commit stubs —
-a different artifact at a lower altitude. You write briefs; you never write feature plans.
+what a feature is for. A **feature plan** is plan-and-dispatch's set of commit plans — a
+different artifact at a lower altitude. You write briefs; you never write feature plans.
 
 ---
 
@@ -44,13 +44,14 @@ This is the load-bearing section. Everything else follows from it.
 
 **The master plan must not contain:**
 
-- **Call signatures, schemas, or API surface.** plan-and-dispatch Tier 1 resolves each contract
+- **Call signatures, schemas, or API surface.** plan-and-dispatch resolves each contract
   once, across a whole feature at a time. A copy here is not a head start — it is a second,
   competing source of truth that drifts the moment the real one is decided.
 - **Code bodies or file stubs.** The implementer writes code, against a plan it receives from
   plan-and-dispatch. Code here is read by nobody who will write it.
-- **Exact tolerances, bounds, or sample sizes.** These are Tier 2 data, grounded in runs against
-  real infrastructure. A number invented before that infrastructure exists is a guess wearing a
+- **Exact tolerances, bounds, or sample sizes.** These are measured downstream by the
+  implementer, grounded in runs against real infrastructure. A number invented before that
+  infrastructure exists is a guess wearing a
   gate's clothing — and it is worse than no number, because a downstream agent will treat it as
   decided.
 
@@ -118,14 +119,14 @@ architecture and rationale · Cross-cutting conventions · Risk register · Budg
 5. **Stop at the boundary.** Name the next feature, state that it is worked by invoking
    `plan-and-dispatch` on that brief **in a fresh session**, and end.
 
-**Do not invoke plan-and-dispatch, and never dispatch it as a subagent.** Two reasons, both
-load-bearing. Its Phase 4 approval is the *only* human gate between a plan and an implementer
+**Do not invoke plan-and-dispatch, and never dispatch it as a subagent.** Two load-bearing
+reasons. (1) Its Phase 4 approval is the *only* human gate between a plan and an implementer
 writing commits, and `ExitPlanMode` does not exist for a subagent — dispatching it deletes that
-gate silently. And a whole project does not fit in one context window: a fresh top-level session
-per feature is what gives each one a full budget. The persisted master plan, not a live session,
-is what carries state across the boundary. (Rejected: an in-session gate before each feature. It
-gates the start without refilling the budget — by then you have already spent context on
-exploration and the review loop, and plan-and-dispatch inherits the depletion.)
+gate silently. (2) A whole project does not fit in one context window, and an *in-session* gate
+before each feature would not help: it gates the start without refilling the budget, so the
+planner inherits a context already spent on exploration and the review loop. A fresh top-level
+session per feature is what gives each a full budget; the persisted master plan, not a live
+session, carries state across the boundary.
 
 ---
 

@@ -2,7 +2,8 @@
 # plan-and-dispatch pipeline guard (pre-push).
 #
 # Active only during a pipeline run, gated by a repo-local marker file (or the
-# $CLAUDE_PIPELINE override) that Tier 2 arms and clears. When inactive, defer to any
+# $CLAUDE_PIPELINE override) that the execution loop (plan-and-dispatch Phase 5) arms and clears.
+# When inactive, defer to any
 # repo-local hook so this never silently shadows a project's own pre-push.
 # The pipeline commits locally and never pushes; pushing is a manual step the operator
 # takes after the marker is cleared. Armed by plan-and-dispatch SKILL.md (Phase 5).
