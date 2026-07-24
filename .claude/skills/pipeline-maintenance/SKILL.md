@@ -17,6 +17,14 @@ point-in-time record of the design and its rationale) and [[editing-subagent-gui
 (how to compact a guideline file without dulling it). **Before editing, verify the map below
 against the actual files** — memories and maps drift; the files are ground truth.
 
+## Intake — read the improvement inbox first
+
+Before editing, read [[pipeline-improvement-inbox]] — the memory where `plan-and-dispatch`
+appends per-run pipeline-improvement suggestions at feature close (Phase 6). It is a **queue**:
+act on the relevant items this session, then **reconcile it** — delete each item you implemented,
+and annotate each you deliberately deferred with a one-line reason so it is not re-proposed. An
+item left untouched resurfaces (the point); an item silently dropped loses the feedback.
+
 ## The map — what exists and who reads it
 
 Each file is read by a **different model**, which sets how tersely to write it (see *Calibrate by
@@ -51,9 +59,13 @@ reader*).
 
 **Hooks (POSIX sh, `#!/bin/sh`):**
 - `hooks/pre-commit` — during a pipeline run, rejects a **code** commit missing its staged
-  `docs/commits/` file; **exempts docs-only commits** (nothing staged outside `README.md`/`docs/`).
+  `docs/commits/` file; **exempts docs-only commits** (nothing staged outside
+  `README.md`/`CLAUDE.md`/`docs/`).
 - `hooks/pre-push` — during a pipeline run, blocks every push (pushing is a manual human step).
-- Both are marker-gated on `$GIT_DIR/CLAUDE_PIPELINE_ACTIVE` (or `$CLAUDE_PIPELINE`), inert
+- `hooks/commit-msg` — during a pipeline run, rejects a degenerate commit message (empty, a
+  subject under ~15 chars, or subject-only with no body), so the implementer cannot commit without
+  a real description.
+- All three are marker-gated on `$GIT_DIR/CLAUDE_PIPELINE_ACTIVE` (or `$CLAUDE_PIPELINE`), inert
   otherwise, and chain to any repo-local hook when inactive.
 
 ## The dependency graph — what breaks what
@@ -69,10 +81,13 @@ multiple files; edit them together or you leave a relic.**
 - **The docs/commits path** is **named** by plan-and-dispatch (template §8), **authored** by
   `commit-doc-writer`, **staged + committed** by the implementer, and **enforced** by `pre-commit`.
   Change the path convention or the exemption and all four must agree.
-- **The git-guard quartet:** `plan-and-dispatch` Phase 5 (arms/disarms the marker) + both hooks +
-  the implementer's commit conventions. The README docs-only exemption lives in the hook's logic
-  *and* is described in plan-and-dispatch (README plan) *and* the implementer (README delegation) —
-  keep the two descriptions in step with what the hook actually does.
+- **The git-guard quintet:** `plan-and-dispatch` Phase 5 (arms/disarms the marker) + the three
+  hooks (`pre-commit`, `pre-push`, `commit-msg`) + the implementer's commit conventions. Two
+  sub-couplings to keep in step: (a) the **docs-only exemption** lives in `pre-commit`'s logic and
+  is described in both plan-and-dispatch (README plan) and the implementer — its file set is
+  `README.md` / `CLAUDE.md` / `docs/`, and all three must agree; (b) the **descriptive-message
+  rule** lives in `commit-msg`'s check and the implementer's commit conventions — keep the
+  threshold described consistently across both.
 - **The reviewer resumption protocol:** `plan-and-dispatch` Phase 3 resumes one persistent
   `feature-plan-reviewer` session each round; the reviewer + `reviewer-core.md` assume exactly that
   ("resumed, not respawned"). Same for `master-plan` ↔ `master-plan-reviewer`. Change how the loop
@@ -87,6 +102,10 @@ multiple files; edit them together or you leave a relic.**
 - **The shared cores:** a file that references a `shared/*.md` core assumes the content is there
   and *not* duplicated locally. Move a rule into a core → delete it from every referrer. Move it
   out → the referrers must re-inline or re-point.
+- **The improvement-inbox loop:** `plan-and-dispatch` Phase 6 *appends* pipeline-improvement
+  suggestions to [[pipeline-improvement-inbox]]; this skill's *Intake* step *consumes and
+  reconciles* them. Change the memory's name or shape → update both the Phase 6 step and the Intake
+  step (and the [[pipeline-improvement-inbox]] pointer in `MEMORY.md`).
 
 ## Editing discipline
 
@@ -120,3 +139,5 @@ Run this before declaring an ecosystem edit done:
    leave these; find them.
 6. **Update the record** — reflect any structural change in [[plan-and-dispatch-ecosystem]] and, if
    the map or a coupling changed, in this skill's *map* and *dependency graph*.
+7. **Reconcile the inbox** — delete or annotate every [[pipeline-improvement-inbox]] item this
+   session addressed, so it is not re-proposed next cycle.

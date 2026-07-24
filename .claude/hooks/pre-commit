@@ -19,12 +19,12 @@ if [ ! -f "$marker" ] && [ -z "$CLAUDE_PIPELINE" ]; then
 fi
 
 # Active: every code commit stages its docs/commits/ explanation alongside the code.
-# A docs-only commit (nothing staged outside README.md / docs/) is exempt — e.g. the feature
-# README, whose own content is the explanation.
+# A docs-only commit (nothing staged outside README.md / CLAUDE.md / docs/) is exempt — e.g. the
+# feature README, whose own content is the explanation.
 staged=$(git diff --cached --name-only --diff-filter=ACM)
 
-# Exempt when something is staged and nothing staged lives outside README.md / docs/.
-if [ -n "$staged" ] && ! printf '%s\n' "$staged" | grep -qvE '(^|/)README\.md$|^docs/'; then
+# Exempt when something is staged and nothing staged lives outside README.md / CLAUDE.md / docs/.
+if [ -n "$staged" ] && ! printf '%s\n' "$staged" | grep -qvE '(^|/)README\.md$|(^|/)CLAUDE\.md$|^docs/'; then
     exit 0
 fi
 

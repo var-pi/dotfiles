@@ -130,9 +130,15 @@ earlier commit established, never on one no committed increment has built.
 **Plan template.** Structure each commit plan as a fixed skeleton so nothing load-bearing is
 left implicit:
 
-0. **Dispatch** — a model/effort override **only when this commit needs more than the
-   implementer's default** (e.g. a stronger model for a cross-cutting refactor). Otherwise omit:
-   every plan dispatches to `commit-plan-implementer`, so naming it adds nothing.
+0. **Dispatch & effort** — a model/effort override **only when this commit needs more than the
+   implementer's default** (e.g. a stronger model for a cross-cutting refactor); otherwise omit
+   the override, since every plan dispatches to `commit-plan-implementer`. **Always** state an
+   **expected-effort estimate** — the magnitude of the heavy runs, or a legitimate wall-clock band —
+   even with no override: it is the operator's awareness signal (this commit is *supposed* to run
+   long, not stalled) and tells you, at the gate, how long a real run takes before you suspect a
+   stall. Mark it **advisory** by default; mark it a **guaranteed-sufficient hard stop** only for a
+   costly gate whose pinned config you can certify (~3σ) will suffice — never a cap that could
+   abort work at 80% and force a restart.
 1. **Goal** — the one thing this increment delivers.
 2. **Preconditions** — what must already be true (typically: the prior commit is committed and
    green).
@@ -145,7 +151,11 @@ left implicit:
 6. **Tests** — for each test: its **intent** (what behavior it pins, the negative control), its
    **target** (the analytic value or ground truth it checks against), and its **method** (an
    exactness check on the order of 1e-10, or a statistical gate sized to ~3σ). Pin these; the
-   implementer derives the **numeric bound theory-first** from them.
+   implementer derives the **numeric bound theory-first** from them. For an **expensive**
+   statistical gate, also pin the **near-final starting configuration** (N, ladder, the
+   exact-target values the reviewer verified) so the implementer's run is a *check, not a search* —
+   the reviewer-verified physics already narrows it, so hand over near-final numbers rather than
+   leaving a costly search to rediscover them.
 7. **Pass conditions** — an ordered, mechanically checkable list; *verify in order, act only when
    all hold.*
 8. **Commit & commit doc** — the exact staging and the full commit message. The staging
@@ -209,15 +219,10 @@ Run the loop in these beats:
 2. **Dispatch the set to the reviewer.** Spin it up (`Agent(subagent_type:
    "feature-plan-reviewer", …)`) and pass it the whole set at once. Its system prompt is the
    review agreement, so give it only the set.
-3. **Keep your own context lean when it grows heavy.** Your planner context — the whole feature —
-   is the one that can actually approach the limit. If it is compacted (by the harness, or by you
-   via `/compact` at the REPL) while a review is in flight, make sure the load-bearing state
-   survives: the decomposition, each contract and decision and its rationale, the open questions —
-   not a generic trim. Delegating the Phase 1 survey to `Explore` already holds this down.
-4. **Receive the review and integrate every reasonable finding** — the same standard the
+3. **Receive the review and integrate every reasonable finding** — the same standard the
    implementer applies to `/code-review`: act on a finding unless you can articulate why it is
    wrong or out of scope, and record the one-line reason whenever you decline.
-5. **Repeat.** Hand the updated set back to the same resumed reviewer. Each round begins with it
+4. **Repeat.** Hand the updated set back to the same resumed reviewer. Each round begins with it
    confirming the previous review was integrated, so the loop converges rather than circles.
    Continue until the review comes back clean.
 
@@ -230,6 +235,12 @@ Only once the loop has converged is the architecture ready for approval.
 Once the review loop has converged — and **before any implementer is dispatched** — settle the
 set as a durable, approved artifact. **This is the one and only human checkpoint;** the execution
 loop proceeds without further human gates once the architecture is approved.
+
+**Surface an Execution budget with the set.** Alongside the plans, present a consolidated
+per-commit **expected-effort** table (drawn from each plan's §0) and flag which commits carry a
+guaranteed-sufficient hard stop. The operator approves this at the same gate: it sets the
+expectation for the unattended run, so a legitimately long commit later reads as expected rather
+than as a stalled subagent.
 
 You plan in **plan mode**, so the evolving set lives in your plan-mode plan file through
 Phases 2–3 — your durable, restart-surviving scratch and the copy you hand the reviewer each
@@ -272,16 +283,24 @@ For each commit plan, in planned order:
 1. **Dispatch to `commit-plan-implementer`.** If the plan's Dispatch line named a model/effort
    override, pass it explicitly (`Agent(subagent_type: "commit-plan-implementer", model: …)`);
    otherwise dispatch with the default and say nothing about it.
-2. **Gate on committed and green.** Do not dispatch commit N+1 until commit N has been committed
-   and its pass conditions hold — the precondition each plan already assumes. The implementer
-   commits **locally and does not push**. Pushing is a manual human step outside this pipeline,
-   and it does not reopen the Phase 4 approval (that checkpoint is the plan; this review is of the
-   code).
+2. **Gate on the implementer's own result — do not re-run the heavy experiment.** The implementer
+   owns the single authoritative gated run. Gate commit N by confirming its handoff shows the
+   commit landed, the returned log ends `ALL GATES: PASS`, and the **cheap** test suite is green —
+   then dispatch N+1. Do **not** re-run the expensive experiment as a second "ground truth": it is
+   seeded and deterministic, so a re-run only reproduces identical numbers at full cost. The
+   implementer commits **locally and does not push**; pushing is a manual human step outside this
+   pipeline and does not reopen the Phase 4 approval (that checkpoint is the plan; this review is
+   of the code).
 3. **Halt the chain on failure.** If a commit fails its pass conditions, **stop** rather than
    dispatching its dependents onto a broken seam. Clear the pipeline marker
    (`rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`) so the operator can push a fix by
    hand, and **send a `PushNotification`** naming the failed commit — the loop runs unattended, so
    this is how the human learns a seam broke. Do not continue until it is resolved.
+
+**One land-or-idle waiter per commit.** After dispatching, wait once for the agent to land its
+commit; do not reactively poll ("is it still running?", repeated git-state reads). Judge a
+legitimate long run against a genuine stall by the commit's expected-effort estimate (§0), rather
+than nudging a mid-run agent you have mis-diagnosed as stuck.
 
 The **README plan is dispatched last**, once every commit's contract is settled and the code it
 documents exists.
@@ -302,6 +321,13 @@ Once every commit (including the README plan) has landed green, close the run:
    the memory conventions: one fact per file with frontmatter, update an existing file rather than
    duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so this is yours to
    write — skip anything already legible from the code.
+4. **Retrospect on the run itself, and feed the ecosystem.** Separately from the project learnings
+   above (which are about the *codebase*), reflect on the *pipeline*: give the operator a candid
+   retrospective — what went well and what burned tokens, grounded in the per-agent usage numbers
+   (planning/review vs. implementer tier, the outlier commits) — and append any concrete
+   pipeline-improvement suggestion to the rolling `pipeline-improvement-inbox` memory. That inbox is
+   the queue `pipeline-maintenance` reads before its next edit and reconciles as it acts, so a
+   suggestion recorded here becomes an ecosystem change next cycle rather than being lost.
 
 ---
 

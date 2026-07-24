@@ -108,7 +108,12 @@ review + Deviations.
   moderately-familiar reader would otherwise be lost; skip it for a self-evident change.
 - **Why these design choices** — restate the pre-resolved decisions (and the rejected
   alternatives) so a future reader does not re-litigate them. Often the single most valuable
-  section; include it whenever the commit made a real choice.
+  section; include it whenever the commit made a real choice. For a **load-bearing** commit,
+  foreground the design's *war story* — the iterations and rejected approaches it took to get the
+  design honest (e.g. "the first two SE estimators under-reported the noise and either false-failed
+  or false-passed; the final design is classical batch means") — as the heart of the section. That
+  narrative is what makes the rationale land and reads as intriguing rather than dutiful; the final
+  choice alone does not.
 - **Trade-offs & known limitations** — the accepted price, the rejected alternative, anything a
   future reader should know is deliberately unfixed.
 - **Empirical / end-to-end verification** — the observed real-flow evidence, when the commit

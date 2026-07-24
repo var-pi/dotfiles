@@ -1,0 +1,34 @@
+#!/bin/sh
+# plan-and-dispatch pipeline guard (commit-msg).
+#
+# Active only during a pipeline run, gated by a repo-local marker file (or the
+# $CLAUDE_PIPELINE override) that the execution loop (plan-and-dispatch Phase 5) arms and clears.
+# When inactive, defer to any repo-local hook so this never silently shadows a project's own
+# commit-msg. During a run it rejects a degenerate commit message (empty or a too-short subject),
+# so a dispatched implementer subagent cannot commit without a real description.
+# Armed by ~/.claude/skills/plan-and-dispatch/SKILL.md (Phase 5); enforced here so the
+# implementer subagent cannot skip it.
+git_dir=$(git rev-parse --git-dir 2>/dev/null) || exit 0
+marker="$git_dir/CLAUDE_PIPELINE_ACTIVE"
+
+if [ ! -f "$marker" ] && [ -z "$CLAUDE_PIPELINE" ]; then
+    # Inactive: run the repo-local hook if present (git ignores it while core.hooksPath
+    # points here), then allow the commit.
+    local_hook="$git_dir/hooks/commit-msg"
+    [ -x "$local_hook" ] && exec "$local_hook" "$@"
+    exit 0
+fi
+
+# Active: the message ($1 is the path to it) must carry a real description — a subject of at least
+# 15 characters AND a body. Strip git's comment lines; the first non-blank line is the subject, and
+# at least one more non-blank line must follow it (the body). This catches an empty, one-word, or
+# subject-only message (the failures this guards) while leaving a normal message alone.
+subject=$(grep -vE '^[[:space:]]*#' "$1" | grep -vE '^[[:space:]]*$' | head -n 1)
+subject=$(printf '%s' "$subject" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+body_lines=$(grep -vE '^[[:space:]]*#' "$1" | grep -cvE '^[[:space:]]*$')
+
+if [ "${#subject}" -lt 15 ] || [ "$body_lines" -lt 2 ]; then
+    echo "commit-msg: write a descriptive commit message — a subject (>=15 chars) plus a body naming the increment and its verified pass conditions (pipeline guard; an empty, one-word, or subject-only message is rejected)." >&2
+    exit 1
+fi
+exit 0

@@ -98,6 +98,13 @@ out.
 
 ### Testing & verification
 
+- **One synchronous gated run — never background, never re-confirm.** Run the verifying
+  experiment in the foreground **exactly once** (redirect to a log, read the gate lines). Do not
+  background it, set up monitors, or launch repeated "confirmation runs" — the routine is seeded
+  and deterministic (see *Determinism is success*), so a second run only reproduces identical
+  numbers at full cost. If a gate is marginal, change n/N/margin **deliberately and re-run once,
+  not in a loop**. On `ALL GATES: PASS`, go straight to the doc + commit — do not pause to
+  re-verify.
 - **Drive the real flow, not just the tests.** Empirical verification means observing the
   change work end-to-end — use the `verify` skill to exercise the affected flow and watch its
   behavior (it bootstraps a project verify path if none exists), and the `run` skill when you
@@ -132,6 +139,15 @@ out.
 
 When a pass condition is not met, identify the root cause, fix it, and repeat the loop.
 Do not report the failure and stop.
+
+### Respect the commit's effort budget
+
+Your plan carries an **expected-effort estimate** — the operator uses it to know this commit is
+*supposed* to run long, so a legitimate long run is not mistaken for a stall. Treat it as an
+**expectation you report against in your handoff, not a cap**: never abandon in-progress work to
+stay under it. Halt and report only when the plan explicitly marks a bound as a
+**guaranteed-sufficient hard stop**; otherwise, if you exceed the estimate, finish the work and
+note the overage in the handoff.
 
 ### Build only what the increment needs
 
@@ -291,17 +307,20 @@ not a re-explanation; the full detail lives in the doc.
 
 ## Commit conventions
 
-- **One increment = one commit.** The message names the increment and restates the pass
-  conditions you verified. Stage the increment's `docs/commits/` file with it — the code and
-  its explanation land in the same commit (the docs-only README commit is the exception: it
-  carries none).
+- **One increment = one commit, with a descriptive message.** The message needs a real subject
+  **and** a body naming the increment and restating the pass conditions you verified — an empty,
+  one-word, or otherwise degenerate message is a defect (a `commit-msg` guard rejects it during a
+  pipeline run). Stage the increment's `docs/commits/` file with it — the code and its explanation
+  land in the same commit (the docs-only README commit is the exception: it carries none).
 - **Commit, but never push.** Make the single descriptive commit yourself — no approval prompt
   first. **Do not push.** Pushing is done manually by a human after the code has been reviewed;
   leave the commit local so that review can happen.
-- **A git-layer guard backs these two rules.** During a pipeline run, hooks block any push and
-  reject a **code** commit missing its staged `docs/commits/` file (a docs-only commit — e.g. the
-  feature README — is exempt). A blocked push or rejected commit is that guard working as intended
-  — comply (stage the doc; leave the push to the human), never `--no-verify` around it.
+- **A git-layer guard backs these rules.** During a pipeline run, hooks block any push, reject a
+  **code** commit missing its staged `docs/commits/` file (a docs-only commit — nothing staged
+  outside `README.md` / `CLAUDE.md` / `docs/`, e.g. the feature README — is exempt), and reject a
+  degenerate commit message. A blocked push or rejected commit is that guard working as intended —
+  comply (stage the doc; write a real message; leave the push to the human), never `--no-verify`
+  around it.
 - **Commit reproducibility artifacts on purpose.** Track the lockfile / pinned environment
   and any committed generated outputs deliberately, with a note (in `.gitignore` or the
   README) saying they are kept intentionally — don't let them be ignored by default.
