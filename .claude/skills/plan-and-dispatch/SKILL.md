@@ -75,7 +75,7 @@ Do these phases in order — later phases assume the earlier ones are done.
 3. **Review loop:** drive the reviewer over the whole set to convergence.
 4. **Get approval (plan-mode gate), then persist & update docs** — the one and only human checkpoint.
 5. **Execution loop:** after approval, dispatch each commit and gate it green before the next.
-6. **Close out:** disarm the guard, notify, record cross-feature learnings.
+6. **Close out:** notify, record cross-feature learnings, dispatch the retrospective.
 
 The `Preferences & tradeoffs` at the end govern every phase.
 
@@ -264,20 +264,15 @@ dispatch each commit, and gate on it landing green before touching the next. The
 per-commit planning left to do — the plans are complete; the implementer writes the code against
 the now-real infrastructure of the earlier commits.
 
-**Arm the pipeline guard before the first dispatch.** The implementer commits locally and must
-never push, and every code commit must stage its `docs/commits/` file — enforce both at the git
-layer so a dispatched subagent cannot skip them. Point the project repo at the shared hooks and
-arm the marker, once, now:
-
-```
-git config core.hooksPath ~/.claude/hooks
-touch "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"
-```
-
-The hooks stay inert in every other repo and every non-pipeline commit; the marker scopes them
-to this run, and you clear it when the run ends — on success (Phase 6) or on halt (step 3). (If
-the repo already sets a custom `core.hooksPath`, arm the guard by hand rather than overwriting
-it.)
+**The pipeline guard arms itself — you do nothing.** The implementer commits locally and must
+never push, and every code commit must stage its `docs/commits/` file; both are enforced at the
+git layer so a dispatched subagent cannot skip them. `hooks/pipeline-marker.sh`, wired as a
+`SubagentStart`/`SubagentStop` hook pair on `commit-plan-implementer`, arms the marker when a
+dispatch begins and clears it when that dispatch ends — so the guard is live for exactly the
+window where a subagent is touching the repo, and a halt can never strand an armed marker that
+blocks your own push. Do not arm, disarm, or touch the marker yourself. (If a repo sets its own
+`core.hooksPath`, the script leaves it alone and warns that the guard is not enforcing; arm it by
+hand if you want it.)
 
 For each commit plan, in planned order:
 
@@ -293,10 +288,10 @@ For each commit plan, in planned order:
    pipeline and does not reopen the Phase 4 approval (that checkpoint is the plan; this review is
    of the code).
 3. **Halt the chain on failure.** If a commit fails its pass conditions, **stop** rather than
-   dispatching its dependents onto a broken seam. Clear the pipeline marker
-   (`rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`) so the operator can push a fix by
-   hand, and **send a `PushNotification`** naming the failed commit — the loop runs unattended, so
-   this is how the human learns a seam broke. Do not continue until it is resolved.
+   dispatching its dependents onto a broken seam, and **send a `PushNotification`** naming the
+   failed commit — the loop runs unattended, so this is how the human learns a seam broke. The
+   guard has already disarmed itself with the failed dispatch, so the operator can push a fix by
+   hand. Do not continue until it is resolved.
 
 **One land-or-idle waiter per commit.** After dispatching, wait once for the agent to land its
 commit; do not reactively poll ("is it still running?", repeated git-state reads). Judge a
@@ -308,21 +303,20 @@ documents exists.
 
 ---
 
-## Phase 6: Close out — disarm, notify, capture learnings
+## Phase 6: Close out — notify, capture learnings
 
-Once every commit (including the README plan) has landed green, close the run:
+Once every commit (including the README plan) has landed green, close the run. The guard needs no
+disarming: it cleared itself when the last dispatch ended.
 
-1. **Disarm the pipeline guard.** Remove the marker so your manual push works again:
-   `rm -f "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`.
-2. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are local
+1. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are local
    and green, and pushing is the manual step you take now, outside the pipeline.
-3. **Capture durable, cross-feature learnings.** Record what this feature taught that the next one
+2. **Capture durable, cross-feature learnings.** Record what this feature taught that the next one
    would want and that the repo, git history, and `CLAUDE.md` do not already carry — a recurring
    reuse target, a project gotcha, a decision worth reusing. Write to your persistent memory under
    the memory conventions: one fact per file with frontmatter, update an existing file rather than
    duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so this is yours to
    write — skip anything already legible from the code.
-4. **Delegate the pipeline retrospective to `pipeline-retrospector`.** Separately from the project
+3. **Delegate the pipeline retrospective to `pipeline-retrospector`.** Separately from the project
    learnings above (which are about the *codebase*), the run itself gets reviewed — but **not by
    you.** You chose the decomposition, drove the review loop, and dispatched every commit, so your
    account of what went wrong is the author's account. Dispatch the **`pipeline-retrospector`**

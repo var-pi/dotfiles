@@ -1,13 +1,12 @@
 #!/bin/sh
 # plan-and-dispatch pipeline guard (commit-msg).
 #
-# Active only during a pipeline run, gated by a repo-local marker file (or the
-# $CLAUDE_PIPELINE override) that the execution loop (plan-and-dispatch Phase 5) arms and clears.
-# When inactive, defer to any repo-local hook so this never silently shadows a project's own
-# commit-msg. During a run it rejects a degenerate commit message (empty or a too-short subject),
-# so a dispatched implementer subagent cannot commit without a real description.
-# Armed by ~/.claude/skills/plan-and-dispatch/SKILL.md (Phase 5); enforced here so the
-# implementer subagent cannot skip it.
+# Active only while a commit-plan-implementer dispatch is running, gated by a repo-local marker
+# file (or the $CLAUDE_PIPELINE override) that hooks/pipeline-marker.sh arms on SubagentStart and
+# clears on SubagentStop. When inactive, defer to any repo-local hook so this never shadows a
+# project's own commit-msg. While armed it rejects a degenerate commit message (empty or a
+# too-short subject), so a dispatched implementer subagent cannot commit without a real
+# description.
 git_dir=$(git rev-parse --git-dir 2>/dev/null) || exit 0
 marker="$git_dir/CLAUDE_PIPELINE_ACTIVE"
 

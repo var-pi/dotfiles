@@ -10,5 +10,29 @@
   "preferredNotifChannel": "kitty",
   "autoCompactEnabled": true,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "^commit-plan-implementer$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/var-pi/.claude/hooks/pipeline-marker.sh arm"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "^commit-plan-implementer$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/var-pi/.claude/hooks/pipeline-marker.sh disarm"
+          }
+        ]
+      }
+    ]
+  }
 }
