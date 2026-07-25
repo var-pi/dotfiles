@@ -19,11 +19,15 @@ against the actual files** — memories and maps drift; the files are ground tru
 
 ## Intake — read the improvement inbox first
 
-Before editing, read [[pipeline-improvement-inbox]] — the memory where `plan-and-dispatch`
-appends per-run pipeline-improvement suggestions at feature close (Phase 6). It is a **queue**:
+Before editing, read [[pipeline-improvement-inbox]] — the memory the `pipeline-retrospector`
+subagent files to at feature close (dispatched by `plan-and-dispatch` Phase 6). It is a **queue**:
 act on the relevant items this session, then **reconcile it** — delete each item you implemented,
 and annotate each you deliberately deferred with a one-line reason so it is not re-proposed. An
 item left untouched resurfaces (the point); an item silently dropped loses the feedback.
+
+The retrospector **proposes only** — it never edits an ecosystem file. Applying a change is this
+skill's job, with the operator present, because these files govern every future run and an
+unattended edit changes them with nobody reading the diff.
 
 ## The map — what exists and who reads it
 
@@ -45,17 +49,29 @@ reader*).
 - `feature-plan-reviewer` (Opus, xhigh) — reviews the whole feature set as a unit. Persistent
   across rounds.
 - `commit-plan-implementer` (Sonnet, high) — executes one commit plan: **writes the code**,
-  derives test bounds theory-first, verifies, `/code-review`s, commits locally (never pushes).
-  Delegates doc *authoring* to the two writers.
+  derives test bounds theory-first, verifies, dispatches `commit-code-reviewer`, commits locally
+  (never pushes). Delegates doc *authoring* to the two writers.
+- `commit-code-reviewer` (Opus, high, **read-only**) — independent fresh-context review of one
+  increment's diff, dispatched by the implementer before it commits. **One-shot per commit**, not
+  resumed — so it does *not* read `reviewer-core.md` (that core assumes a session resumed across
+  rounds). Reports; never fixes.
 - `commit-doc-writer` (Opus, high) — authors the per-commit, maintainer-facing
   `docs/commits/<slug>/<NN>-*.md`. Reads one diff. Does not stage/commit.
 - `feature-readme-writer` (Opus, high) — authors the feature's outward-facing showcase
   `README.md`. Dispatched last. Synthesizes the whole feature. Does not stage/commit.
+- `pipeline-retrospector` (Opus, high) — reviews the **run**, not the code: dispatched by
+  `plan-and-dispatch` Phase 6, files improvement proposals to [[pipeline-improvement-inbox]] and
+  returns an operator-facing retrospective. **Writes only that memory** — never an ecosystem file.
 
 **Shared cores (`shared/*.md`, read by the agents that reference them):**
-- `shared/reviewer-core.md` — the discipline both reviewers share (independence, objective-list
-  workflow, resumed-not-respawned, converge-don't-circle). Each reviewer file carries only its
-  altitude-specific objectives.
+- `shared/reviewer-core.md` — the discipline the two **plan** reviewers share (independence,
+  objective-list workflow, resumed-not-respawned, converge-don't-circle). Each reviewer file carries
+  only its altitude-specific objectives. Not read by `commit-code-reviewer`.
+- `shared/writer-core.md` — the craft both **doc writers** share: the rushed-team-lead reader and
+  the reader-time economics, layering (`<details>` folds, front-loading, heading navigability),
+  signal hierarchy (bold/callouts, used sparingly), denser-form selection, the cut list, figure
+  embedding + the self-explanatory bar, style constraints, weight calibration, handoff. Each writer
+  file carries only its audience, sources, sections, and altitude.
 
 **Hooks (POSIX sh, `#!/bin/sh`):**
 - `hooks/pre-commit` — during a pipeline run, rejects a **code** commit missing its staged
@@ -102,16 +118,40 @@ multiple files; edit them together or you leave a relic.**
 - **The shared cores:** a file that references a `shared/*.md` core assumes the content is there
   and *not* duplicated locally. Move a rule into a core → delete it from every referrer. Move it
   out → the referrers must re-inline or re-point.
-- **The improvement-inbox loop:** `plan-and-dispatch` Phase 6 *appends* pipeline-improvement
-  suggestions to [[pipeline-improvement-inbox]]; this skill's *Intake* step *consumes and
-  reconciles* them. Change the memory's name or shape → update both the Phase 6 step and the Intake
-  step (and the [[pipeline-improvement-inbox]] pointer in `MEMORY.md`).
+- **The improvement-inbox loop:** `plan-and-dispatch` Phase 6 *dispatches* `pipeline-retrospector`,
+  which *files* proposals to [[pipeline-improvement-inbox]]; this skill's *Intake* step *consumes and
+  reconciles* them. Spans four places — the Phase 6 step, the retrospector agreement, this skill's
+  Intake, and the [[pipeline-improvement-inbox]] pointer in `MEMORY.md`. Change the memory's name or
+  shape, or the retrospector's propose-only boundary, and all four must agree.
+- **The independent code review:** the implementer dispatches `commit-code-reviewer` over its own
+  diff; `plan-and-dispatch` and `feature-plan-reviewer` both cite that pass as the reason a plan may
+  omit code bodies and numeric bounds. Retire or rename it → update all four. **The built-in
+  `/code-review` command is not model-invocable** (it fails with `disable-model-invocation`); if a
+  future harness restores it, this agent is what it would replace, not supplement.
+- **The doc-style contract:** what a doc contains is owned by `commit-doc-writer` /
+  `feature-readme-writer` (+ `writer-core.md`); what the *implementer* hands them is owned by the
+  implementer's bundle sections. The implementer must pass a **superset** and let the writer select
+  — a bundle that dictates content competes with the writer's agreement and wins by accident.
+  Changing what docs contain means checking the bundle lists too.
 
 ## Editing discipline
 
 - **Objective-synthesis first (do not skip).** Before editing, restate and *extend* the user's
   stated objectives — the reason for the change and what a correct result looks like. This user
   cares that this step is not skipped. See [[editing-subagent-guideline-files]].
+- **Generalize the feedback; never transcribe it.** Operator feedback arrives as **examples** —
+  "this sentence is bloat", "I liked this part". The rule you write must be the **principle
+  extracted from the example**, never the example promoted to a rule. A transcribed example gets
+  applied to every case that superficially resembles it, and the resemblance is usually shallow.
+  *Precedent:* "I liked the war story" was written into `commit-doc-writer` as *include a war
+  story* — so every doc grew one, and the device that made a single doc interesting became
+  boilerplate the reader learned to skip. The correct extraction was *surface the one genuinely
+  non-obvious thing, at most one, usually none.* Before writing a rule, ask: **what must it say so
+  an agent facing a case the operator never mentioned still does the right thing?**
+  Corollaries: praise for a device is not a mandate to use it everywhere; a single complaint may be
+  a one-off, so weigh it before it becomes a standing rule; and a rule stated as a **cap or a
+  bound** ("at most one", "under ~150 lines") survives contact with an eager agent, whereas one
+  stated as an encouragement ("foreground the …") does not.
 - **The operative-why test.** For every sentence ask: *does it change what the agent does in a
   case we didn't spell out?* Keep operative rationale (the mistake-preventing "why" whose tail
   makes the rule generalize) and decision records (rejected-alternative notes). Cut purely
@@ -137,7 +177,13 @@ Run this before declaring an ecosystem edit done:
    generalize it to an unspelled case.
 5. **No relics** — no leftover reference to a retired concept, path, tier, or agent. Organic edits
    leave these; find them.
-6. **Update the record** — reflect any structural change in [[plan-and-dispatch-ecosystem]] and, if
+6. **Named capabilities still exist** — every skill, slash command, or tool an agreement tells an
+   agent to *use* must actually be invocable by that agent today. The harness changes underneath
+   these files: `/code-review` silently became user-triggered-only, and the pipeline ran without its
+   independent-review control until a commit doc happened to mention the error. The cheap check is
+   the session's own available-skills listing (a bundled command absent from it is **not**
+   model-invocable, whatever it did last month); confirm before an agreement depends on it.
+7. **Update the record** — reflect any structural change in [[plan-and-dispatch-ecosystem]] and, if
    the map or a coupling changed, in this skill's *map* and *dependency graph*.
-7. **Reconcile the inbox** — delete or annotate every [[pipeline-improvement-inbox]] item this
+8. **Reconcile the inbox** — delete or annotate every [[pipeline-improvement-inbox]] item this
    session addressed, so it is not re-proposed next cycle.

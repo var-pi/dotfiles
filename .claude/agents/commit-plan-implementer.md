@@ -1,6 +1,6 @@
 ---
 name: commit-plan-implementer
-description: Execute a single commit plan produced by plan-and-dispatch — write tests, implement, self-review with /code-review, verify, document the commit under docs/commits/, and hand back one descriptive commit (no push). Dispatch one commit plan at a time.
+description: Execute a single commit plan produced by plan-and-dispatch — write tests, implement, verify, get an independent review from commit-code-reviewer, document the commit under docs/commits/, and hand back one descriptive commit (no push). Dispatch one commit plan at a time.
 model: sonnet
 reasoning_effort: high
 ---
@@ -56,31 +56,41 @@ plus this agreement.
 Work the commit in this order:
 
 **explore → plan → write the tests → implement → verify alignment with the plan →
-verify empirically (drive the real flow via the `verify` skill) → run `/code-review` and
-implement every reasonable suggestion →
+verify empirically (drive the real flow end to end) → get an independent review from
+`commit-code-reviewer` and implement every reasonable finding →
 update project docs (`README` / `CLAUDE.md`) → delegate the commit explanation to the
 `commit-doc-writer` subagent, then stage the doc it wrote → commit (descriptive, including that
 doc). Do not push.**
 
-### Self-review with `/code-review`
+### Independent review — dispatch `commit-code-reviewer`
 
-Once the feature verifies empirically, run `/code-review` on your own diff **before**
-writing up the changes — an independent, fresh-context pass over your own work is the control
-most likely to catch a convention bug you cannot see, so treat it as a control, not ceremony,
-and use subagents freely where they help it. Then act on the results yourself:
+Once the increment verifies empirically, get an independent, fresh-context pass over your own diff
+**before** writing it up. This is the control most likely to catch a convention bug you cannot see,
+because you wrote the code — treat it as a control, not ceremony.
 
-- **Implement every reasonable suggestion — do not ask for confirmation first.** Fix the
-  findings, re-run the tests, and fold the results into the same increment. Quality is worth
-  far more than the tokens or wall-clock time saved by skipping this; never trade the review
-  away to finish faster.
-- **A suggestion is "reasonable" unless you can articulate why it is wrong or out of scope.**
-  Correctness and coverage findings are effectively always in scope. The narrow exceptions
-  are findings that reach into a *later* commit (see "Build only what the increment needs") or
-  that a pre-resolved decision in your plan already overrides — decline those, and record the
-  one-line reason you declined so the choice is legible later.
-- **Loop until it is clean.** Re-run `/code-review` after your fixes if they were substantial,
-  so a later finding introduced by an earlier fix does not slip through. Stop when the
-  remaining findings are all consciously-declined-and-recorded, not before.
+**Dispatch the `commit-code-reviewer` subagent** (via the Agent tool) with a context bundle: the
+increment's goal, its contract surface and pre-resolved decisions, the test intent, and where the
+change lives. It reads the diff itself, has **no write tools**, and reports findings organized by
+objective. You do the fixing — reviewing your own repair would destroy the independence that makes
+this worth running.
+
+> **Do not try to invoke `/code-review`.** It is a user-triggered command that no agent can call;
+> attempting it fails with `disable-model-invocation` and leaves the increment with **no**
+> independent review at all. `commit-code-reviewer` is the replacement, and it is not optional.
+
+Then act on the results:
+
+- **Implement every reasonable finding — do not ask for confirmation first.** Fix them, re-run the
+  tests, and fold the results into the same increment. Quality is worth far more than the tokens or
+  wall-clock time saved by skipping this; never trade the review away to finish faster.
+- **A finding is "reasonable" unless you can articulate why it is wrong or out of scope.**
+  Correctness and coverage findings are effectively always in scope. The narrow exceptions are
+  findings that reach into a *later* commit (see "Build only what the increment needs") or that a
+  pre-resolved decision in your plan already overrides — decline those, and record the one-line
+  reason so the choice is legible later.
+- **Re-dispatch once if your fixes were substantial**, so a defect introduced by a fix does not slip
+  through. Stop when the remaining findings are all consciously-declined-and-recorded — not before,
+  and not after a third round of diminishing returns.
 
 ### TDD with a mutation gate
 
@@ -106,9 +116,10 @@ out.
   not in a loop**. On `ALL GATES: PASS`, go straight to the doc + commit — do not pause to
   re-verify.
 - **Drive the real flow, not just the tests.** Empirical verification means observing the
-  change work end-to-end — use the `verify` skill to exercise the affected flow and watch its
-  behavior (it bootstraps a project verify path if none exists), and the `run` skill when you
-  need to launch the app. Green tests alone are not the observation.
+  change work end-to-end — exercise the affected flow and watch its behavior. Use the `verify`
+  and `run` skills when they are available in your environment; when they are not, drive the flow
+  directly (invoke the entry point, run the experiment script, read the output) rather than
+  skipping the step. Green tests alone are not the observation.
 - **Tests must bite.** Prefer hand-computed targets over re-running the function's own
   formula, and non-square / asymmetric fixtures so shape- and orientation-bugs cannot
   hide.
@@ -173,7 +184,11 @@ the commit doc. Whenever they apply, these are **strictly required**, not option
 - **a legend** whenever more than one series, category, or condition is drawn;
 - **explicit annotation** of anything a reader would otherwise have to guess — the seed of a
   stochastic run, a scale (log vs. linear), a threshold/reference line, or what a color or
-  marker encodes.
+  marker encodes;
+- **what the plotted quantity actually is**, whenever it is an aggregate. "Slope" and "mean slope
+  over 20 independent replicates" look identical on a chart and mean very different things; say
+  which in the title, axis label, or legend. A reader who mistakes an aggregate for a single
+  realization misjudges the noise, so this is a correctness label, not a nicety.
 
 **And they must actually be visible.** A required label that renders *outside the figure's
 visible box* — clipped at the edge so only a few pixels show, or cut off entirely — counts as
@@ -237,24 +252,27 @@ zero-padded index of this commit within that feature. **The plan dispatched to y
 exact path** — the planner owns the feature slug and the numbering. (The one exception is the
 docs-only README commit — see below — which is exempt and carries no such doc.)
 
-**Do not write this doc yourself.** Once the code is verified and `/code-review` is clean,
-dispatch the **`commit-doc-writer`** subagent (via the Agent tool) to write it. That agent runs
-on Opus and carries the standing agreement for *how* the doc should read — calibrated to the
-commit's weight, punchy yet comprehensive — so you hand it context, not formatting rules. Give
-it a **context bundle**:
+**Do not write this doc yourself.** Once the code is verified and the review is clean, dispatch the
+**`commit-doc-writer`** subagent (via the Agent tool) to write it. That agent runs on Opus and
+carries the standing agreement for *how* the doc should read — scannable, weight-calibrated, depth
+folded — so you hand it context, not formatting rules. Give it a **context bundle**:
 
 - the exact `docs/commits/...` path from your plan;
 - a summary of what changed and why (the pre-resolved decisions from your plan, restated);
 - the test list and the mutation-gate result;
 - the empirical / end-to-end verification observations;
-- the `/code-review` outcome (findings acted on, or anything consciously declined);
+- any review finding that **changed the design** (not the fact that a review ran);
 - any deviation from the plan.
 
-The writer reads the diff and code itself, so the bundle need not reproduce every line — it
-saves the writer rediscovering *intent*. The writer creates the file and hands back its path
-(plus any gap or defect it noticed). **You** then stage that file and make the single commit —
-the git guard requires the doc staged in the same commit it documents, so the increment and its
-explanation land together.
+The writer reads the diff and code itself, so the bundle need not reproduce every line — it saves
+the writer rediscovering *intent*. Hand it the full picture, including process detail it may need to
+judge the work; **the writer decides what belongs in the doc**, and its agreement tells it to keep
+run-log detail out. Do not instruct it to include seeds, gate margins, or review status — that is
+its call, and it is a call the operator has already made.
+
+The writer creates the file and hands back its path (plus any gap or defect it noticed). **You**
+then stage that file and make the single commit — the git guard requires the doc staged in the same
+commit it documents, so the increment and its explanation land together.
 
 ### Delegate the feature README to `feature-readme-writer`
 

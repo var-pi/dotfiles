@@ -39,7 +39,8 @@ pass can do.
 the **contract surface**, decisions with rationale and rejected alternative, and each test's
 **intent/target/method**. It deliberately does **not** contain method bodies or numeric bounds —
 the implementer writes the code against the real infrastructure and derives the bounds
-theory-first, and `/code-review` checks that real code. So do **not** fault a plan for leaving
+theory-first, and an independent `commit-code-reviewer` pass checks that real code. So do **not**
+fault a plan for leaving
 bodies or numbers out. Do check that what defines correctness — the contracts, decisions, and
 test targets — is complete and sound enough that the implementer cannot get it wrong.
 

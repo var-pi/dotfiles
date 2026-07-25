@@ -55,8 +55,9 @@ complete them just-in-time in a second "Tier 2"): a pre-written body turns the i
 transcriber that stops interrogating whether the code integrates; it drains context twice (you
 write it, the implementer re-reads and rewrites it); and it grounds "final" code in infrastructure
 that does not exist yet at plan time. The safety net was never the pre-written code — it is the
-**test target you pin** and the implementer's verification loop (TDD, mutation gate, `verify`,
-`/code-review`). *Rejected alternative:* keep planner-written code for load-bearing commits only —
+**test target you pin** and the implementer's verification loop (TDD, mutation gate, empirical
+verification, the independent `commit-code-reviewer` pass). *Rejected alternative:* keep
+planner-written code for load-bearing commits only —
 rejected, because "is this commit subtle enough?" is a fuzzy per-commit judgment that gets
 mis-called, and it keeps the entire just-in-time machinery alive to serve a minority of commits.
 
@@ -220,7 +221,7 @@ Run the loop in these beats:
    "feature-plan-reviewer", …)`) and pass it the whole set at once. Its system prompt is the
    review agreement, so give it only the set.
 3. **Receive the review and integrate every reasonable finding** — the same standard the
-   implementer applies to `/code-review`: act on a finding unless you can articulate why it is
+   implementer applies to its own code review: act on a finding unless you can articulate why it is
    wrong or out of scope, and record the one-line reason whenever you decline.
 4. **Repeat.** Hand the updated set back to the same resumed reviewer. Each round begins with it
    confirming the previous review was integrated, so the loop converges rather than circles.
@@ -321,13 +322,27 @@ Once every commit (including the README plan) has landed green, close the run:
    the memory conventions: one fact per file with frontmatter, update an existing file rather than
    duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so this is yours to
    write — skip anything already legible from the code.
-4. **Retrospect on the run itself, and feed the ecosystem.** Separately from the project learnings
-   above (which are about the *codebase*), reflect on the *pipeline*: give the operator a candid
-   retrospective — what went well and what burned tokens, grounded in the per-agent usage numbers
-   (planning/review vs. implementer tier, the outlier commits) — and append any concrete
-   pipeline-improvement suggestion to the rolling `pipeline-improvement-inbox` memory. That inbox is
-   the queue `pipeline-maintenance` reads before its next edit and reconciles as it acts, so a
-   suggestion recorded here becomes an ecosystem change next cycle rather than being lost.
+4. **Delegate the pipeline retrospective to `pipeline-retrospector`.** Separately from the project
+   learnings above (which are about the *codebase*), the run itself gets reviewed — but **not by
+   you.** You chose the decomposition, drove the review loop, and dispatched every commit, so your
+   account of what went wrong is the author's account. Dispatch the **`pipeline-retrospector`**
+   subagent (via the Agent tool) with a **context bundle**:
+
+   - the feature slug and its through-line, and where the plans were persisted (`~/.claude/plans/`);
+   - where the docs landed (`docs/commits/<feature-slug>/`) and the README path;
+   - the **per-agent token/usage numbers** for the run — planning, review loop, each implementer
+     dispatch, the writers — since only you can see them;
+   - every point where the operator intervened, a commit was re-dispatched, or a gate went marginal.
+
+   It reads the current ecosystem files and the run's artifacts itself, files concrete proposals to
+   the rolling `pipeline-improvement-inbox` memory, and returns an operator-facing retrospective.
+   **Relay that retrospective verbatim** — it is written for the operator, and paraphrasing it
+   reintroduces the self-assessment the delegation exists to avoid.
+
+   The retrospector **proposes only; it never edits the ecosystem files.** The inbox is the queue
+   `/pipeline-maintenance` reads before its next edit and reconciles as it acts, so a proposal filed
+   here becomes an ecosystem change with the operator present rather than an unattended rewrite of
+   the prompts that govern every future run.
 
 ---
 
