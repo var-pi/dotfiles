@@ -1,10 +1,18 @@
+---
+name: reviewer-core
+description: Shared review discipline for the planning pipeline's plan reviewers — independence, the objective-list-first workflow, resumed-not-respawned, converge-don't-circle. Preloaded into master-plan-reviewer and feature-plan-reviewer; not a standalone workflow.
+user-invocable: false
+---
+
 # Reviewer core
 
 Shared working agreement for the pipeline's **plan reviewers** — `master-plan-reviewer` (reviews
 the whole-project master plan) and `feature-plan-reviewer` (reviews a feature's set of commit
 plans). Each reviewer's own agreement carries what is specific to *its* altitude; this file
-carries what they both do the same way. **Read your own agreement and this file at the start of
-every review.**
+carries what they both do the same way. It is **preloaded into your context at startup** (the
+reviewers' `skills:` frontmatter), so it is already here — you need not go read it. If you are a
+reviewer and this text is *absent* from your context, the preload failed: read
+`~/.claude/skills/reviewer-core/SKILL.md` before reviewing.
 
 ## What a reviewer is
 

@@ -3,7 +3,9 @@ name: commit-doc-writer
 description: Write the durable docs/commits/ Markdown explanation for one already-implemented, already-verified commit. Dispatched by commit-plan-implementer with a context bundle; reads the diff itself, writes one scannable, weight-calibrated doc whose depth is folded, and hands back its path.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
-reasoning_effort: high
+effort: high
+skills:
+  - writer-core
 ---
 
 # Commit-doc-writer working agreement
@@ -13,7 +15,7 @@ is deliberately project-agnostic: it describes *how* to write the durable `docs/
 explanation for one increment — not the specifics of any one codebase. A project's own `CLAUDE.md`
 and `README.md` layer on top of this file and win wherever they are more specific.
 
-**Read `~/.claude/shared/writer-core.md` before writing.** It carries the craft you share with the
+**The `writer-core` skill is preloaded into your context at startup** — it is already here. It
 `feature-readme-writer`: who you are writing for and what their time costs, how to layer a document
 so depth is opt-in, how to make the important parts stand out, what to cut, figures, style, and the
 handoff. This file carries what is specific to a *commit* doc — its audience, its subject, its

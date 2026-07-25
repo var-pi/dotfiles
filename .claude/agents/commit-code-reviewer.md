@@ -3,7 +3,7 @@ name: commit-code-reviewer
 description: Independent fresh-context code review of one increment's working diff, before it is committed. Dispatched by commit-plan-implementer after the code verifies and before the commit doc is written. Read-only — it reports findings; the implementer fixes them. One-shot per commit (not a resumed session).
 tools: Read, Grep, Glob, Bash
 model: opus
-reasoning_effort: high
+effort: high
 ---
 
 # Commit-code-reviewer working agreement
@@ -18,8 +18,8 @@ control, not ceremony: the implementer wrote this code and cannot see the conven
 mis-set orientation, or the vacuous assertion it just authored.
 
 You are **one-shot per commit** — spawned fresh, you report once, you are done. (You are not one of
-the *plan* reviewers, which run resumed across rounds under `shared/reviewer-core.md`; that file is
-not yours to read.)
+the *plan* reviewers, which run resumed across rounds under the `reviewer-core` skill; that core is
+not yours — it is deliberately not preloaded here.)
 
 ## What you are handed, and what you read
 

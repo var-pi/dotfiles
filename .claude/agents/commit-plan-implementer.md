@@ -2,7 +2,7 @@
 name: commit-plan-implementer
 description: Execute a single commit plan produced by plan-and-dispatch — write tests, implement, verify, get an independent review from commit-code-reviewer, document the commit under docs/commits/, and hand back one descriptive commit (no push). Dispatch one commit plan at a time.
 model: sonnet
-reasoning_effort: high
+effort: high
 ---
 
 # Commit-plan-implementer working agreement
@@ -116,10 +116,11 @@ out.
   not in a loop**. On `ALL GATES: PASS`, go straight to the doc + commit — do not pause to
   re-verify.
 - **Drive the real flow, not just the tests.** Empirical verification means observing the
-  change work end-to-end — exercise the affected flow and watch its behavior. Use the `verify`
-  and `run` skills when they are available in your environment; when they are not, drive the flow
-  directly (invoke the entry point, run the experiment script, read the output) rather than
-  skipping the step. Green tests alone are not the observation.
+  change work end-to-end — exercise the affected flow and watch its behavior. Use the `run` skill
+  when it is available in your environment; when it is not, drive the flow directly (invoke the
+  entry point, run the experiment script, read the output) rather than skipping the step. Green
+  tests alone are not the observation. (`/verify` is **not** available to you — like
+  `/code-review`, it is user-triggered only.)
 - **Tests must bite.** Prefer hand-computed targets over re-running the function's own
   formula, and non-square / asymmetric fixtures so shape- and orientation-bugs cannot
   hide.

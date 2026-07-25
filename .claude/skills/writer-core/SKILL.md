@@ -1,10 +1,18 @@
+---
+name: writer-core
+description: Shared doc craft for the planning pipeline's doc writers — the rushed-team-lead reader, layering and folding, signal hierarchy, the cut list, the figure bar. Preloaded into commit-doc-writer and feature-readme-writer; not a standalone workflow.
+user-invocable: false
+---
+
 # Writer core
 
 Shared working agreement for the pipeline's **doc writers** — `commit-doc-writer` (the
 maintainer-facing `docs/commits/` file for one increment) and `feature-readme-writer` (the
 outward-facing feature `README.md`). Each writer's own agreement carries its audience, its
-sources, and its section shape; this file carries what they both do the same way. **Read your own
-agreement and this file before writing.**
+sources, and its section shape; this file carries what they both do the same way. It is
+**preloaded into your context at startup** (the writers' `skills:` frontmatter), so it is already
+here — you need not go read it. If you are a writer and this text is *absent* from your context,
+the preload failed: read `~/.claude/skills/writer-core/SKILL.md` before writing.
 
 ---
 
