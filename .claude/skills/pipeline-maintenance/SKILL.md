@@ -69,17 +69,23 @@ reader*).
   `plan-and-dispatch` Phase 6, files improvement proposals to [[pipeline-improvement-inbox]] and
   returns an operator-facing retrospective. **Writes only that memory** — never an ecosystem file.
 
-**Shared cores (`shared/*.md`, read by the agents that reference them):**
-- `shared/reviewer-core.md` — the discipline the two **plan** reviewers share (independence,
+**Shared cores (`skills/*-core/SKILL.md`, `user-invocable: false`, **preloaded** into the agents
+that list them in their `skills:` frontmatter — not read via a tool call):**
+- `skills/reviewer-core/` — the discipline the two **plan** reviewers share (independence,
   objective-list workflow, resumed-not-respawned, converge-don't-circle). Each reviewer file carries
-  only its altitude-specific objectives. Not read by `commit-code-reviewer`.
-- `shared/writer-core.md` — the craft both **doc writers** share: the rushed-team-lead reader and
+  only its altitude-specific objectives. Deliberately **not** preloaded into `commit-code-reviewer`.
+- `skills/writer-core/` — the craft both **doc writers** share: the rushed-team-lead reader and
   the reader-time economics, layering (`<details>` folds, front-loading, heading navigability),
   signal hierarchy (bold/callouts, used sparingly), denser-form selection, the cut list, figure
   embedding + the self-explanatory bar, style constraints, weight calibration, handoff. Each writer
   file carries only its audience, sources, sections, and altitude.
 
 **Hooks (POSIX sh, `#!/bin/sh`):**
+- `hooks/pipeline-marker.sh` — arms the marker (and points the repo at these hooks) on
+  `SubagentStart`, clears it on `SubagentStop`, both matching `^commit-plan-implementer$` and wired
+  in `~/.claude/settings.json`. The guard is therefore live for exactly one dispatch at a time and
+  nobody arms it by hand. Never `exit 2` on the disarm path — on `SubagentStop` that blocks the
+  subagent from finishing.
 - `hooks/pre-commit` — during a pipeline run, rejects a **code** commit missing its staged
   `docs/commits/` file; **exempts docs-only commits** (nothing staged outside
   `README.md`/`CLAUDE.md`/`docs/`).
@@ -103,15 +109,19 @@ multiple files; edit them together or you leave a relic.**
 - **The docs/commits path** is **named** by plan-and-dispatch (template §8), **authored** by
   `commit-doc-writer`, **staged + committed** by the implementer, and **enforced** by `pre-commit`.
   Change the path convention or the exemption and all four must agree.
-- **The git-guard quintet:** `plan-and-dispatch` Phase 5 (arms/disarms the marker) + the three
-  hooks (`pre-commit`, `pre-push`, `commit-msg`) + the implementer's commit conventions. Two
-  sub-couplings to keep in step: (a) the **docs-only exemption** lives in `pre-commit`'s logic and
+- **The git-guard quintet:** `hooks/pipeline-marker.sh` + its two `settings.json` wirings (the
+  `SubagentStart`/`SubagentStop` matchers on `commit-plan-implementer`) + the three git hooks
+  (`pre-commit`, `pre-push`, `commit-msg`) + the implementer's commit conventions + the Phase 5
+  paragraph that tells the planner **not** to touch the marker. Rename the implementer and the
+  matchers stop matching, silently leaving every commit unguarded — so a rename means editing
+  `settings.json` in the same pass. Two sub-couplings to keep in step: (a) the **docs-only
+  exemption** lives in `pre-commit`'s logic and
   is described in both plan-and-dispatch (README plan) and the implementer — its file set is
   `README.md` / `CLAUDE.md` / `docs/`, and all three must agree; (b) the **descriptive-message
   rule** lives in `commit-msg`'s check and the implementer's commit conventions — keep the
   threshold described consistently across both.
 - **The reviewer resumption protocol:** `plan-and-dispatch` Phase 3 resumes one persistent
-  `feature-plan-reviewer` session each round; the reviewer + `reviewer-core.md` assume exactly that
+  `feature-plan-reviewer` session each round; the reviewer + `reviewer-core` assume exactly that
   ("resumed, not respawned"). Same for `master-plan` ↔ `master-plan-reviewer`. Change how the loop
   resumes → change both sides.
 - **The README routing:** the README plan is a full set member (plan-and-dispatch) that the
@@ -121,9 +131,14 @@ multiple files; edit them together or you leave a relic.**
   `plan-and-dispatch` in a fresh top-level session. master-plan's "never dispatch p-a-d as a
   subagent" rationale (ExitPlanMode gate + budget) depends on p-a-d keeping its Phase 4 human gate;
   if that gate ever changes, revisit the rationale.
-- **The shared cores:** a file that references a `shared/*.md` core assumes the content is there
-  and *not* duplicated locally. Move a rule into a core → delete it from every referrer. Move it
-  out → the referrers must re-inline or re-point.
+- **The shared cores:** an agent that lists a core in its `skills:` frontmatter assumes the content
+  arrives preloaded and is *not* duplicated locally. Move a rule into a core → delete it from every
+  referrer. Move it out → the referrers must re-inline or re-point. Two harness constraints the
+  preload depends on: a core must **not** set `disable-model-invocation: true` (that flag also
+  blocks preloading — use `user-invocable: false` to keep it out of the `/` menu), and a **missing
+  or renamed core is skipped with only a debug-log warning**, so the agent runs on without it. That
+  silent failure is why each core opens by saying it is preloaded and what to do if it is absent,
+  and why renaming a core means grepping every `skills:` list.
 - **The improvement-inbox loop:** `plan-and-dispatch` Phase 6 *dispatches* `pipeline-retrospector`,
   which *files* proposals to [[pipeline-improvement-inbox]]; this skill's *Intake* step *consumes and
   reconciles* them. Spans four places — the Phase 6 step, the retrospector agreement, this skill's
@@ -182,7 +197,7 @@ multiple files; edit them together or you leave a relic.**
 Run this before declaring an ecosystem edit done:
 
 1. **Consistency** — every coupling above that the change touches is updated on *all* its files.
-   Sweep for retired vocabulary: `grep -rniE '<retired terms>' ~/.claude/{skills,agents,shared,hooks}`.
+   Sweep for retired vocabulary: `grep -rniE '<retired terms>' ~/.claude/{skills,agents,hooks}`.
 2. **No bloat** — no rule restated with drifting wording; nothing that fails the operative-why test.
 3. **Everything explicit** — no rule that assumes context living only in a conversation; a cold
    reader of the file can act on it.
@@ -190,12 +205,17 @@ Run this before declaring an ecosystem edit done:
    generalize it to an unspelled case.
 5. **No relics** — no leftover reference to a retired concept, path, tier, or agent. Organic edits
    leave these; find them.
-6. **Named capabilities still exist** — every skill, slash command, or tool an agreement tells an
-   agent to *use* must actually be invocable by that agent today. The harness changes underneath
-   these files: `/code-review` silently became user-triggered-only, and the pipeline ran without its
-   independent-review control until a commit doc happened to mention the error. The cheap check is
-   the session's own available-skills listing (a bundled command absent from it is **not**
-   model-invocable, whatever it did last month); confirm before an agreement depends on it.
+6. **Named capabilities still exist, and named config keys are still read** — every skill, slash
+   command, or tool an agreement tells an agent to *use* must actually be invocable by that agent
+   today, and every frontmatter/settings key must actually be one the harness parses. The harness
+   changes underneath these files, and **both failure modes are silent**: `/code-review` and
+   `/verify` became user-triggered-only, and the pipeline ran without its independent-review control
+   until a commit doc happened to mention the error; separately, all seven agents carried
+   `reasoning_effort:` — never a real key — so the "xhigh" reviewers ran at the session default for
+   months with no warning anywhere. Frontmatter parses loose: an unknown key is dropped, not
+   flagged. The cheap checks are the session's own available-skills listing (a bundled command
+   absent from it is **not** model-invocable, whatever it did last month) and the published
+   frontmatter field table; confirm both before an agreement depends on them.
 7. **Update the record** — reflect any structural change in [[plan-and-dispatch-ecosystem]] and, if
    the map or a coupling changed, in this skill's *map* and *dependency graph*. Then update
    `~/.claude/PIPELINE.md` for anything it mirrors (flow, ownership, paths, guard logic, models,

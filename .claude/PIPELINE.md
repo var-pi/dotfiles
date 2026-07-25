@@ -2,13 +2,13 @@
 
 **This file is a map, not an agreement.** It shows the shape of the ecosystem: who dispatches whom,
 where the human gates sit, what each artifact path is. It carries **no rule of its own** — every
-rule is owned by the file named beside it (`skills/*/SKILL.md`, `agents/*.md`, `shared/*.md`,
-`hooks/*`). When the map and a governing file disagree, the file wins and this map is stale.
+rule is owned by the file named beside it (`skills/*/SKILL.md`, `agents/*.md`, `hooks/*`). When
+the map and a governing file disagree, the file wins and this map is stale.
 
 To change anything in the ecosystem, invoke **`/pipeline-maintenance`** — it carries the editing
 discipline and the cross-file dependency graph.
 
-> Verified against the files on **2026-07-25**.
+> Verified against the files on **2026-07-25** (Claude Code 2.1.220).
 
 ---
 
@@ -21,7 +21,7 @@ human steps:
 |---|--------|-------------------|
 | 1 | Fresh session → **`/master-plan`** on the brief → approve at `ExitPlanMode` | Persists the master plan + one **feature brief** per feature to `docs/plan/` |
 | 2 | **A new session per feature** → **`/plan-and-dispatch`** on that brief → approve the commit-plan set **and its execution budget** at `ExitPlanMode` | Runs unattended: dispatches every commit, gating each green before the next |
-| 3 | Wait for the **"ready to push"** notification → review the local commits → **push by hand** | Nothing — the guard blocks pushes, deliberately |
+| 3 | Wait for the **"ready to push"** notification → review the local commits → **push by hand** | Nothing — the guard blocks a *dispatched implementer* from pushing, deliberately |
 | 4 | **`/pipeline-maintenance`** when the improvement inbox has items | Applies the retrospector's proposals with you present |
 
 Step 2's `ExitPlanMode` is **the only gate between a plan and code being written**.
@@ -49,7 +49,7 @@ flowchart TD
         P3 <--> FPR(["feature-plan-reviewer<br/>Opus xhigh · persistent · sees the WHOLE set every round"])
         P3 --> G2{{"HUMAN GATE · ExitPlanMode<br/>the set + the execution budget"}}
         G2 --> P4["Phase 4 · persist to ~/.claude/plans/ · update CLAUDE.md"]
-        P4 --> P5["Phase 5 · arm the git guard, then walk the set<br/>strictly sequential, gated on each commit landing green"]
+        P4 --> P5["Phase 5 · walk the set<br/>strictly sequential, gated on each commit landing green"]
     end
 
     subgraph L3["COMMIT altitude · one dispatch per commit plan"]
@@ -61,10 +61,10 @@ flowchart TD
 
     DP -. "SESSION BOUNDARY — you open a fresh session per feature<br/>state travels in the persisted plan, not a live session" .-> PAD
     P5 --> LOOP
-    RM --> P6["Phase 6 · disarm the guard · notify 'ready to push'<br/>planner writes project learnings to memory"]
+    RM --> P6["Phase 6 · notify 'ready to push'<br/>planner writes project learnings to memory"]
     P6 --> RETRO(["pipeline-retrospector<br/>Opus · reviews the RUN, not the code · propose-only"])
     RETRO --> INBOX[("memory/pipeline-improvement-inbox.md")]
-    P5 -. "a commit fails its pass conditions" .-> HALT["HALT the chain · clear the marker · PushNotification"]
+    P5 -. "a commit fails its pass conditions" .-> HALT["HALT the chain · PushNotification"]
 
     classDef gate fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111;
     classDef store fill:#e0e7ff,stroke:#4338ca,color:#111;
@@ -112,6 +112,7 @@ sequenceDiagram
     participant GIT as git guard hooks
 
     PAD->>IMP: one commit plan — goal, contract surface, decisions,<br/>test intent, pass conditions, the docs path
+    Note over IMP,GIT: SubagentStart arms the git guard here,<br/>SubagentStop disarms it — nobody arms it by hand
     Note over IMP: reads ONLY this plan plus the project's<br/>CLAUDE.md / README.md — never a sibling plan
     IMP->>IMP: write the tests first
     IMP->>IMP: MUTATION GATE — a test that passes before the<br/>feature exists is vacuous; rewrite it
@@ -142,7 +143,8 @@ Three things this diagram is making visible:
 ## 5. The git guard
 
 Three POSIX-sh hooks in `~/.claude/hooks/`, pointed at by `git config core.hooksPath` and gated on a
-repo-local marker file so they are **inert in every other repo and every non-pipeline commit**.
+repo-local marker file so they are **inert in every other repo and every non-pipeline commit**. A
+fourth script, `pipeline-marker.sh`, owns the marker's lifetime.
 
 ```mermaid
 flowchart TD
@@ -168,13 +170,19 @@ flowchart TD
     class X1,X2,X3 no;
 ```
 
-**Marker lifecycle.** `plan-and-dispatch` Phase 5 arms it before the first dispatch
-(`touch "$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE"`); Phase 6 clears it on success, and a
-Phase-5 halt clears it too so you can push a fix by hand.
+**Marker lifecycle — nobody arms it by hand.** `hooks/pipeline-marker.sh` is wired in
+`~/.claude/settings.json` as a `SubagentStart` hook (arm) and a `SubagentStop` hook (disarm), both
+matching `^commit-plan-implementer$`. The guard is therefore live for exactly the window in which a
+dispatched implementer is touching the repo: **your own pushes are never blocked between commits,
+and a halted run cannot strand an armed marker.** The arm step also points the repo at these hooks,
+unless the repo already sets its own `core.hooksPath` — then it leaves it alone and warns that the
+guard is not enforcing.
 
-**Why a marker file and not an env var:** Claude Code's `settings.json` hooks do not fire on
-subagent tool calls, and each Bash call runs in a fresh shell — so nothing in the session
-environment can reach a dispatched implementer. The git layer can.
+**Why a marker file and not an env var:** each Bash call runs in a fresh shell, so nothing in the
+session environment can reach a dispatched implementer. The git layer can. (`settings.json` hooks
+*do* now fire on subagent tool calls, and their payload carries `agent_type` — which is what makes
+the lifecycle above possible. Enforcement stays at the git layer because it catches a commit by any
+route, not only one made through Bash.)
 
 ---
 
@@ -229,9 +237,10 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 | `agents/commit-doc-writer.md` | Authors the per-commit doc | Opus · high | one diff + the bundle | `docs/commits/...` · does not stage or commit |
 | `agents/feature-readme-writer.md` | Authors the showcase README | Opus · high | the whole finished feature | `README.md` · does not stage or commit |
 | `agents/pipeline-retrospector.md` | Retrospective on the run | Opus · high | run artifacts + ecosystem files | the inbox memory **only** |
-| `shared/reviewer-core.md` | Shared review discipline | — | read by `master-plan-reviewer` + `feature-plan-reviewer` | — · **not** read by `commit-code-reviewer`, which is one-shot, not resumed |
-| `shared/writer-core.md` | Shared doc craft | — | read by `commit-doc-writer` + `feature-readme-writer` | — · the rushed-team-lead reader, folding, signal hierarchy, figure bar |
+| `skills/reviewer-core/SKILL.md` | Shared review discipline | — | **preloaded** into `master-plan-reviewer` + `feature-plan-reviewer` via their `skills:` frontmatter | — · deliberately **not** preloaded into `commit-code-reviewer`, which is one-shot, not resumed |
+| `skills/writer-core/SKILL.md` | Shared doc craft | — | **preloaded** into `commit-doc-writer` + `feature-readme-writer` | — · the rushed-team-lead reader, folding, signal hierarchy, figure bar |
 | `hooks/pre-commit`, `pre-push`, `commit-msg` | The git guard | POSIX sh | the staged set / the message | allow or reject · marker-gated, see §5 |
+| `hooks/pipeline-marker.sh` | Arms/disarms the guard | POSIX sh | — | wired in `settings.json` as `SubagentStart`/`SubagentStop` on `commit-plan-implementer` |
 
 ---
 
@@ -239,11 +248,13 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 
 | What you see | Where it comes from |
 |--------------|---------------------|
-| `pre-push: push blocked during a pipeline run` | The guard is still armed. Expected mid-run; if the run ended, clear `$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE` |
+| `pre-push: push blocked during a pipeline run` | An implementer dispatch is still running, so the guard is armed. If nothing is running, a `SubagentStop` hook did not fire: clear `$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE` by hand |
 | `pre-commit: stage this commit's docs/commits/ file` | A code commit without its doc. Owner: `hooks/pre-commit` + the path pinned in the plan's §8 |
 | `commit-msg: write a descriptive commit message` | Subject under 15 chars, or no body. Owner: `hooks/commit-msg` + the implementer's commit conventions |
-| Commit docs feel bloated or same-weight throughout | `shared/writer-core.md` (scannability, folding, the cut list) and `agents/commit-doc-writer.md` (what belongs in a commit doc at all) |
+| Commit docs feel bloated or same-weight throughout | `skills/writer-core/SKILL.md` (scannability, folding, the cut list) and `agents/commit-doc-writer.md` (what belongs in a commit doc at all) |
 | A plan contains code bodies or invented tolerances | The altitude contract — §3 above; owners are `master-plan` and `plan-and-dispatch` |
-| A subagent reports `/code-review` failed with `disable-model-invocation` | Expected: it is user-triggered only. `commit-code-reviewer` is its replacement |
+| A subagent reports `/code-review` or `/verify` failed with `disable-model-invocation` | Expected: both are user-triggered only. `commit-code-reviewer` replaces the first; drive the flow directly instead of the second |
+| `pipeline-marker: this repo sets core.hooksPath=…` | The repo owns its hooks path, so the guard is **not** enforcing. Owner: `hooks/pipeline-marker.sh`; arm it by hand if you want it |
+| A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one that set `disable-model-invocation`) and it only warns in the debug log. Owner: `skills/reviewer-core/`, `skills/writer-core/` |
 | A commit seems to have stalled | Check the plan's §0 expected-effort estimate before intervening — the run is *supposed* to be long for gated experiments |
 | The pipeline keeps repeating a mistake across features | It belongs in the inbox → `/pipeline-maintenance`, not in a one-off correction to a running agent |

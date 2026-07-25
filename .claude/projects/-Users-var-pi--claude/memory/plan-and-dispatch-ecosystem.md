@@ -1,11 +1,11 @@
 ---
 name: plan-and-dispatch-ecosystem
-description: The three-altitude planning pipeline (2 skills + 5 subagents + git-guard hooks) and its design intent
+description: The three-altitude planning pipeline (3 skills + 2 preloaded cores + 7 subagents + git-guard hooks) and its design intent
 metadata: 
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-07-25T15:04:44.174Z
+  modified: 2026-07-25T18:44:31.220Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -104,15 +104,19 @@ runs through plan mode / `ExitPlanMode`, reordered to persist-*after*-approve; P
 git guard and sends a `PushNotification` on halt; a new **Phase 6** disarms the guard, notifies
 "ready to push", and writes cross-feature learnings to memory (planner-writes-at-feature-end);
 the implementer's empirical verification now routes through the `verify`/`run` skills.
-Key finding that shaped the guard: **CC `settings.json` hooks do NOT fire on `Agent`-subagent
+Key finding that shaped the guard: **CC `settings.json` hooks did NOT fire on `Agent`-subagent
 tool calls (GitHub #34692, closed "not planned"), and the harness runs each Bash call in a
 fresh shell** — so a runtime env var can't gate the subagent, hence the repo-local marker file.
+(**Half-superseded 2026-07-25:** hooks now *do* fire on subagent tool calls and carry
+`agent_type` — see the harness-substitution entry below. The fresh-shell half still holds, which
+is why enforcement stays at the git layer.)
 
 **Self-compaction was removed (2026-07-18).** The reviewers and planner previously told the model
 to run `/compact` on itself after each review. This can't work: `/compact` is a built-in
-interactive command with **no tool behind it**, so no model can self-trigger it — a subagent has
-no `Skill` tool and isn't its own session driver, and even the main-session model can't emit it as
-a command. Confirmed empirically: sending `/compact` to a subagent via `SendMessage` arrives as
+interactive command with **no tool behind it**, so no model can self-trigger it — it is not a skill,
+and even the main-session model can't emit it as a command. (The original entry also claimed
+subagents have no `Skill` tool; **that is false** — `Skill` is in their default pool. The `/compact`
+conclusion stands for the other reason.) Confirmed empirically: sending `/compact` to a subagent via `SendMessage` arrives as
 **literal wrapped text** (no `compact_boundary`, no token drop; the subagent just reads the string
 "/compact"). It's also unnecessary for the reviewers — they run ~2–3 passes and are resumed with
 their **full transcript intact** (prior reviews already in context), never nearing the ~95%
@@ -215,6 +219,39 @@ content) drove these changes:
   commit-code-reviewer ↔ plan-and-dispatch ↔ feature-plan-reviewer) and the **doc-style contract**
   (the implementer's bundle must pass a *superset* and let the writer select, or it competes with the
   writer's agreement and wins by accident). The improvement-inbox loop now spans four places.
+
+**Harness-substitution audit (2026-07-25, Claude Code 2.1.220).** Prompted by "has the harness grown
+builtins that replace parts of this?". Three of these are corrections of harness facts the files
+rested on — all three had failed *silently*, which is the generalizable lesson.
+- **`reasoning_effort:` was never a real frontmatter key.** All seven agents carried it; the schema
+  field is `effort:`. Frontmatter parses loose, so the key was dropped with no warning and every
+  agent inherited the session's `effortLevel: high` — meaning the two "xhigh" plan reviewers had
+  **never actually run at xhigh**. Renamed in all seven; operator chose to keep xhigh as designed.
+- **Marker arm/disarm retired (`hooks/pipeline-marker.sh`, new).** Hooks now fire on subagent tool
+  calls and `SubagentStart`/`SubagentStop` take an `agent_type` matcher, so the marker's lifetime is
+  bound to a `commit-plan-implementer` dispatch via two `settings.json` wirings. plan-and-dispatch
+  Phase 5/6 and the halt path no longer arm, disarm, or mention the marker. Gains: the operator's own
+  push is never blocked between commits, and a halt cannot strand an armed marker. The git hooks
+  **stay** as the enforcement — the git layer catches a commit by any route, a `PreToolUse` Bash
+  matcher only catches one made through Bash. *Rejected alt:* `disallowedTools: Bash(git push:*)` on
+  the implementer to replace `pre-push` — the frontmatter-parsing risk (it might resolve to removing
+  `Bash` outright and break every dispatch) isn't worth duplicating a hook that already works.
+- **Shared cores are now preloaded skills.** `shared/*.md` → `skills/reviewer-core/SKILL.md` +
+  `skills/writer-core/SKILL.md`, `user-invocable: false`, listed in the four agents' `skills:`
+  frontmatter, which injects the full body at startup instead of trusting a "read this file first"
+  instruction the agent could skip. `shared/` is gone. Two constraints: a preloaded skill must **not**
+  set `disable-model-invocation: true` (that also blocks preloading), and a missing core is skipped
+  with only a debug-log warning — hence each core now opens by stating it is preloaded and what to do
+  if it is absent.
+- **`/verify` joined `/code-review` as user-triggered-only** (2.1.215); the implementer's empirical
+  verification now names only `/run`.
+- **Checked and rejected:** agent teams (experimental, off by default, explicitly worse than
+  subagents for sequential/dependent work, much higher token cost); packaging the ecosystem as a
+  **plugin** (plugin subagents silently ignore `hooks`/`mcpServers`/`permissionMode`, which would
+  break the marker wiring, and skills get namespaced — the benefit is distribution, which the
+  dotfiles repo already covers); `isolation: worktree` (commits would land in a throwaway worktree);
+  `maxTurns` (could abort a legitimate long gated run); the builtin task list for Phase 5 (the
+  persisted plan set is already that queue).
 
 **Visual map added (2026-07-25).** `~/.claude/PIPELINE.md` — Mermaid diagrams (end-to-end lifecycle
 with both human gates and the session boundary; the implementer's inner loop as a sequence diagram;

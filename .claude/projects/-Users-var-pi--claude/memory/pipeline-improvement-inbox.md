@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: b5754bbc-be30-4fea-9c42-56f330fe29c6
-  modified: 2026-07-25T14:42:11.842Z
+  modified: 2026-07-25T18:43:44.892Z
 ---
 
 Rolling inbox of **pipeline-improvement suggestions**. The `pipeline-retrospector` subagent files
@@ -30,8 +30,10 @@ now recorded in [[plan-and-dispatch-ecosystem]]); on deferring, append `— defe
   the plan's pinned **contract surface** already serves this for the implementer; build only if a
   future run shows implementation-file reads are a real token sink (context is not the bottleneck).
 - Route **Explore** onto a cheaper model than the session's Opus — deferred: Explore was ~35k
-  (right-sized), and its model is harness-controlled (inherits the session, capped at Opus), so
-  there is nothing cheap to change in our files.
+  (right-sized), so there is nothing worth changing. *Correction 2026-07-25:* the stated reason
+  ("its model is harness-controlled") is **wrong** — the `Agent` tool takes a per-invocation `model`
+  parameter that overrides any agent's model, so `Agent(subagent_type: "Explore", model: "haiku")`
+  is available whenever the survey is ever large enough to matter. The right-sizing reason stands.
 - A dedicated **planner context-offload subagent** — still deferred *as context relief* (planner
   context peaked at ~33%; context is not the bottleneck). Partly overtaken 2026-07-25: Phase 6's
   retrospective moved to the new `pipeline-retrospector` subagent — but for **independence**, not
