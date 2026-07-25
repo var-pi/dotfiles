@@ -44,6 +44,12 @@ reader*).
   numeric bounds** — the implementer does.
 - `skills/pipeline-maintenance/SKILL.md` — **this file**.
 
+**Orientation (`~/.claude/PIPELINE.md`, read by humans):**
+- The **visual map** — Mermaid diagrams of the lifecycle, the commit inner loop, the guard's
+  decision logic, the improvement loop, plus the artifact-path table and file index. **Pointer-only:
+  it names the owning file for every rule and states none itself**, so it can never compete with the
+  agreements. Mirror-only, so it goes stale silently — see the coupling below.
+
 **Subagents (`agents/*.md`):**
 - `master-plan-reviewer` (Opus, xhigh) — reviews the master plan. Persistent across rounds.
 - `feature-plan-reviewer` (Opus, xhigh) — reviews the whole feature set as a unit. Persistent
@@ -133,6 +139,13 @@ multiple files; edit them together or you leave a relic.**
   implementer's bundle sections. The implementer must pass a **superset** and let the writer select
   — a bundle that dictates content competes with the writer's agreement and wins by accident.
   Changing what docs contain means checking the bundle lists too.
+- **The visual map:** `~/.claude/PIPELINE.md` mirrors the map above, the altitude contract, the
+  artifact paths, the guard's branch logic and thresholds, the file index (model/effort per agent),
+  and the improvement loop. It is a **mirror with no authority** — nothing may be recorded only
+  there, because a rule stated in a file that governs nothing still gets read and obeyed, and then
+  drifts from the file that does govern. Change any of the mirrored facts → update it in the same
+  edit and re-date its "verified against the files" line; a stale diagram is worse than none,
+  because it is trusted at a glance.
 
 ## Editing discipline
 
@@ -184,6 +197,8 @@ Run this before declaring an ecosystem edit done:
    the session's own available-skills listing (a bundled command absent from it is **not**
    model-invocable, whatever it did last month); confirm before an agreement depends on it.
 7. **Update the record** — reflect any structural change in [[plan-and-dispatch-ecosystem]] and, if
-   the map or a coupling changed, in this skill's *map* and *dependency graph*.
+   the map or a coupling changed, in this skill's *map* and *dependency graph*. Then update
+   `~/.claude/PIPELINE.md` for anything it mirrors (flow, ownership, paths, guard logic, models,
+   agent roster) and re-date its verified line.
 8. **Reconcile the inbox** — delete or annotate every [[pipeline-improvement-inbox]] item this
    session addressed, so it is not re-proposed next cycle.

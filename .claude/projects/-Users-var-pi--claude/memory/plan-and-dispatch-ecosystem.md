@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-07-25T14:41:56.184Z
+  modified: 2026-07-25T15:04:44.174Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -215,3 +215,17 @@ content) drove these changes:
   commit-code-reviewer ↔ plan-and-dispatch ↔ feature-plan-reviewer) and the **doc-style contract**
   (the implementer's bundle must pass a *superset* and let the writer select, or it competes with the
   writer's agreement and wins by accident). The improvement-inbox loop now spans four places.
+
+**Visual map added (2026-07-25).** `~/.claude/PIPELINE.md` — Mermaid diagrams (end-to-end lifecycle
+with both human gates and the session boundary; the implementer's inner loop as a sequence diagram;
+the guard's branch logic; the improvement loop) plus the altitude-contract table, the artifact-path
+table, a file index (model/effort/reads/dispatches), and a symptom→owning-file troubleshooting
+table. Written because orientation is the one thing 13 agent-facing files could not provide: each is
+prose for an agent about to act, so the *shape* of the whole — who dispatches whom, where the two
+human gates sit — was legible nowhere. Markdown+Mermaid chosen over an HTML artifact so it lives
+beside the files it documents, rides the dotfiles repo, and stays greppable. **Constraint that makes
+it safe: pointer-only.** It names the owning file for every rule and states none itself; nothing may
+be recorded only there, since a rule in a file that governs nothing is still read and obeyed and then
+drifts. Registered as a coupling ("the visual map") in the maintenance skill's graph and in post-edit
+checklist #7, because a mirror with no authority goes stale silently and a stale diagram is worse
+than none — it is trusted at a glance.
