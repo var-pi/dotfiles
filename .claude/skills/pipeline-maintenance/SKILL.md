@@ -20,10 +20,17 @@ against the actual files** — memories and maps drift; the files are ground tru
 ## Intake — read the improvement inbox first
 
 Before editing, read [[pipeline-improvement-inbox]] — the memory the `pipeline-retrospector`
-subagent files to at feature close (dispatched by `plan-and-dispatch` Phase 6). It is a **queue**:
-act on the relevant items this session, then **reconcile it** — delete each item you implemented,
-and annotate each you deliberately deferred with a one-line reason so it is not re-proposed. An
-item left untouched resurfaces (the point); an item silently dropped loses the feedback.
+subagent files to at feature close (dispatched by `plan-and-dispatch` Phase 6), and that the
+operator files to directly. It is a **queue**: act on the relevant items this session, then
+**reconcile it** — delete each item you implemented, and annotate each you deliberately deferred
+with a one-line reason so it is not re-proposed. An item left untouched resurfaces (the point); an
+item silently dropped loses the feedback.
+
+**Except items marked `APPROVAL-GATED`.** Those are the operator's standing agenda, not your
+backlog: research one, cost it, bring a concrete proposal — but **do not implement it, and do not
+defer it away, without explicit approval in this session.** The marker means the operator wants to
+think about the idea, which is not the same as having decided on it, and these files govern every
+future run. Reconcile such an item only once they have said so.
 
 The retrospector **proposes only** — it never edits an ecosystem file. Applying a change is this
 skill's job, with the operator present, because these files govern every future run and an
