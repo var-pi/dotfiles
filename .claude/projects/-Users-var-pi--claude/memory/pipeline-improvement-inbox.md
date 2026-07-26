@@ -34,6 +34,93 @@ deferring it away.
 
 ---
 
+## 2026-07-26 — 06-fbm (retrospector)
+
+A six-commit run with **zero operator interventions and zero re-dispatches**; every finding below is
+about a rule that was ambiguous or absent, not about an agent performing badly.
+
+- **Who *verifies* a number, not who *writes it down*, is the altitude line.** *Principle:* a planner
+  may pin a numeric gate value **when it measured that value against infrastructure that already
+  exists and the plan reviewer independently re-measured it**; a value that cannot be measured at plan
+  time (the code it would run against is not written yet) stays the implementer's to derive
+  theory-first. The current rule bans planner numbers outright and gives no way to distinguish the two
+  cases. *Evidence:* every gate threshold in `06-fbm` was measured during planning against the real
+  library and re-measured by the reviewer, which caught two wrong ones (a circulant eigenvalue quoted
+  at the wrong `n`; a 5 % amplitude gate that sat at ~1.6σ and was widened to 10 %) — deterministic
+  gates then reproduced to the digit and stochastic ones landed within ~1–2σ, with no commit
+  re-dispatched. *Owning files:* `skills/plan-and-dispatch/SKILL.md` — "What the plan pins" (which
+  forbids it) vs. template §6 (which already half-permits it: "pin the near-final starting
+  configuration … the run is a check, not a search"); `agents/feature-plan-reviewer.md`, whose "do not
+  fault a plan for leaving numbers out" needs its converse — *re-measure every number a plan does
+  pin*; `PIPELINE.md` §3's altitude table ("must never contain: numeric bounds and tolerances").
+  *Coupling:* this is the **altitude contract** (master-plan ↔ plan-and-dispatch ↔
+  commit-plan-implementer) plus the `PIPELINE.md` mirror — a four-file change, and the three files
+  currently disagree with each other regardless of which way it is resolved. *Also undocumented:* no
+  phase authorizes the planner to **run code** during planning, which is what made the measurement
+  possible. *Cost of not doing it:* the practice that produced this run's clean execution is presently
+  a rule violation, so the next planner either does it against its own agreement or skips it and hands
+  the implementer a costly search.
+
+- **An agent must never return control in a waiting state, and a delegated child that does not return
+  is a failure the parent owns.** *Principle:* a subagent has no operator to wait for; if something it
+  dispatched fails to come back, it re-dispatches once, else proceeds with that step recorded as
+  not-performed — it never hands back mid-workflow, because its dispatcher cannot distinguish "waiting"
+  from "done". The symmetric rule belongs upstream: **a dispatch that returns without its commit landed
+  is neither success nor failure** — verify the tree yourself and *resume the same session* with the
+  verified state, rather than halting the chain or re-dispatching cold. *Evidence:* implementer 04
+  returned saying it was waiting for a `commit-code-reviewer` notification that could not arrive (the
+  child had been interrupted by an API error); the orphaned reviewer then completed and delivered its
+  result to the **orchestrator**. Not a one-off: the same waiting-on-a-child shape stalled *every*
+  dispatch of the preceding feature. *Owning files:* `agents/commit-plan-implementer.md` (the
+  independent-review section + the handoff section) and `skills/plan-and-dispatch/SKILL.md` Phase 5,
+  whose only failure branch today is "halt the chain". *Coupling:* the **independent code review**
+  coupling (four files cite that pass) and Phase 5's gating paragraph. *Cost of not doing it:* ~30 min
+  and a manual recovery inside a run that is supposed to be unattended, twice in two features — and the
+  recovery procedure the planner improvised is written down only in a *project* memory
+  (`implementer-stalls-pre-commit`, under the StochasticProcesses project), where `pipeline-maintenance`
+  will never read it.
+
+- **A negative control has to be certified to actually fail.** *Principle:* naming a control is not
+  proposing one — a plan that specifies a negative control must state what it checked that shows the
+  control genuinely violates the hypothesis, and the plan reviewer must verify that independently.
+  *Evidence:* review round 1 caught a proposed PSD control, `½(t^H + s^H − |t−s|^H)`, which is exactly
+  `R_{H/2}` — a perfectly valid covariance, so the test meant to fail would have passed. *Owning
+  file:* `agents/feature-plan-reviewer.md`, review objectives, "Test intent" bullet (it currently says
+  "with a negative control", which the bad control satisfied); trigger in
+  `skills/plan-and-dispatch/SKILL.md` template §6. *Coupling:* the implementer's "ship a negative
+  control per feature" is the third site and should keep saying the same thing. *Cost of not doing it:*
+  a control that cannot fail is a green test certifying nothing — the most expensive false assurance
+  there is. It was caught here by reviewer diligence, not because any objective directed the check.
+
+- **When a plan knows of a systematic effect that can make a correct implementation look like a failing
+  gate, the pass conditions must name it as the first hypothesis — and name the parameters that must
+  not be "fixed" in response.** *Principle:* the planner's knowledge of a bias is otherwise lost at the
+  dispatch boundary, and the implementer's default response to a marginal gate (enlarge N, widen the
+  gate) is exactly wrong when the deviation is a bias rather than scatter. *Evidence:* plan 05's pass
+  condition 4 pinned the trapezoid edge term as the first non-bug explanation for gate 05a and forbade
+  widening `SE_MULT`; 05a then ran at 2.3× margin in precisely the regime the note anticipated.
+  *Owning file:* `skills/plan-and-dispatch/SKILL.md`, Phase 2 template §7 (Pass conditions).
+  *Coupling:* the implementer's "a factor-of-2 or convention offset is a bug, never a tuning knob" and
+  "fix root causes" — the new clause must read as *diagnosis*, never as licence to retune. *Cost of not
+  doing it:* marginal gates get resolved by enlarging the ensemble, which makes a biased gate
+  systematically *worse*, and the failure looks like a code defect.
+
+- **The effort estimate must separate agent wall-clock from the heavy run's compute time; only the
+  former can support a stall diagnosis.** *Principle:* these are different quantities by an order of
+  magnitude, and a stall judgement made against the wrong one is worse than none. *Evidence:* this
+  feature's execution budget concluded "a dispatch running past ~10 min of wall clock is a stall"
+  — derived from a sub-minute experiment — while all six dispatches legitimately ran 12–32 min; had the
+  planner believed its own line it would have interrupted five healthy dispatches. *Owning file:*
+  `skills/plan-and-dispatch/SKILL.md` template §0, which today permits "the magnitude of the heavy
+  runs, **or** a legitimate wall-clock band", and Phase 5, which then tells the planner to judge a
+  stall against that §0 estimate. *Coupling:* `agents/commit-plan-implementer.md` "Respect the commit's
+  effort budget" and `PIPELINE.md` §9's stall row. *Cost of not doing it:* a healthy long dispatch gets
+  interrupted, or a genuinely stalled cheap commit has no threshold at all — and the ambiguity is in
+  the word "or", so it recurs on every feature. (Evidence from one feature; the defect is in the
+  wording, not the run.)
+
+---
+
 ## 2026-07-25 — operator-filed candidates from the FOSS survey (**all `APPROVAL-GATED`**)
 
 Five ideas surfaced by a survey of open-source agentic-development tooling, filed by the operator
