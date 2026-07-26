@@ -15,7 +15,10 @@ vim.pack.add{
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
 
     -- Features basedon code tree representation.
-    { src = 'https://github.com/nvim-treesitter/nvim-treesitter' },
+    {
+        src = 'https://github.com/nvim-treesitter/nvim-treesitter',
+        version = 'main',
+    },
 
     -- Automatically add a pairing bracket, quote etc.
     { src = 'https://github.com/windwp/nvim-autopairs' },
@@ -28,6 +31,9 @@ vim.pack.add{
 
     -- Icons for diffview
     { src = 'https://github.com/nvim-tree/nvim-web-devicons' },
+
+    -- Makrdown web-preview
+    { src = 'https://github.com/brianhuster/live-preview.nvim' },
 }
 
 require'plugins.blink'
@@ -37,3 +43,4 @@ require'plugins.render-markdown'
 require'plugins.telescope'
 require'plugins.diffview'
 require'plugins.nvim-web-devicons'
+require'plugins.live-preview'
