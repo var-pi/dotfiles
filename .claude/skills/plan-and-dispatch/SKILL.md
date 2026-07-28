@@ -33,20 +33,39 @@ drive the handoff that starts Execute; the implementer performs Execute.
 
 ## How you are invoked
 
-You are started in a **fresh top-level session whose working directory is the project repo**, and
-handed at most two things: **where the master plan lives** and **which feature to work**. Resolve
-both yourself before exploring — the operator should not have to restate their request in this
-file's vocabulary.
+**Assume you were given nothing.** The normal invocation is the bare skill call, in a session whose
+working directory is the project repo — no plan path, no feature name. Everything you need is
+already written down, and reading it is your first act rather than a question you put to the
+operator.
 
-- **A path, URL, or `@`-reference to the master plan** → that file, or the `docs/plan/` directory
-  holding it, carries the feature briefs. Handed a directory, or nothing at all, look under the
-  repo's `docs/plan/` and its `CLAUDE.md`.
-- **A feature named however the operator names it** — "feature 07", "the fBm unit", a slug, a
-  section title — matches to a brief. Their word for it is not required to be yours. (*"Unit" is
-  retired inside these files; it is not retired in the operator's speech.*)
-- **Ambiguous or absent → list the briefs you found, with their status, and ask which one.** Never
-  plan a feature the operator did not name: which feature comes next is the master plan's decision
-  and theirs, and a wrong guess burns a whole session's context before anyone can notice.
+Resolve, in this order:
+
+1. **The master plan lives in the repo's `docs/plan/`.** That is a fixed convention of this
+   pipeline — where `master-plan` writes it and where you find it — not something you are told per
+   run.
+2. **The project's `CLAUDE.md` carries the state**, in its **pipeline-state block:** which features
+   have landed, which is in progress, which is next. Phases 4, 5 and 6 below keep that block
+   current, which is what makes it trustworthy here; `master-plan` seeds it.
+3. **The next feature** is the first brief the state leaves open whose dependencies have landed,
+   cross-checked against the master plan's spine.
+
+**Announce the resolution in your first message, then go straight into Phase 1** — one line naming
+the feature and the evidence for it ("`CLAUDE.md` records 06 landed; the spine puts 07 next,
+unblocked"). *Do not stop for confirmation:* Phase 4's `ExitPlanMode` already gates this choice, so
+an announcement costs the operator a glance while a blocking question costs a round-trip on an
+answer that is almost always yes.
+
+**Stop and ask in exactly two cases**, because both mean the record itself is broken and a guess
+compounds it:
+
+- **`CLAUDE.md` and the master plan disagree** — the state claims a feature landed that the spine
+  still shows as blocking, or names a feature no brief matches.
+- **A feature is recorded in progress.** Resuming a half-built feature and starting a fresh one are
+  different jobs with different first moves; pick neither on your own.
+
+**If the operator does name something, that overrides the derivation** — a path, a slug, a section
+title, "the fBm unit". Their word for it need not be yours. (*"Unit" is retired inside these files;
+it is not retired in the operator's speech.*)
 
 Everything past that — the brief's contents, the codebase, prior plans — you read yourself in
 Phase 1.
@@ -139,9 +158,11 @@ Do these phases in order — later phases assume the earlier ones are done.
 1. **Explore** the brief and codebase widely.
 2. **Plan the set:** decompose into one commit plan per file (plus a README plan).
 3. **Review loop:** drive the reviewer over the whole set to convergence.
-4. **Get approval (plan-mode gate), then persist & update docs** — the one and only human checkpoint.
+4. **Get approval (plan-mode gate), then persist & open the state record** — the one and only
+   human checkpoint.
 5. **Execution loop:** after approval, dispatch each commit and gate it green before the next.
-6. **Close out:** notify, record cross-feature learnings, dispatch the retrospective.
+6. **Close out:** close the state record, notify, record cross-feature learnings, dispatch the
+   retrospective.
 
 The `Preferences & tradeoffs` at the end govern every phase.
 
@@ -378,7 +399,20 @@ round.
    `~/.claude/plans/`. This is the checkpoint the execution loop walks. (Persisting *after*
    approval is forced by plan mode, which permits editing only the plan file until it exits;
    durability holds because the set sat in that file throughout Phases 2–3.)
-3. **Update `CLAUDE.md`** to bring the written record into step with the planned work.
+3. **Open this feature in `CLAUDE.md`'s pipeline-state block** — mark it **in progress**, with the
+   number of commits in the approved set, and bring the rest of the written record into step with
+   the planned work.
+
+**The pipeline-state block is the record your own invocation reads**, so the three points that
+write it — here, Phase 5's halt path, and Phase 6's close — must describe the same shape: per
+feature, its status (in progress / landed), how many of its commits have landed, and which feature
+is next. Anything a later session must know that only this session can see belongs there, because
+this session's transcript is exactly what will be gone.
+
+**The state edits are yours to commit**, as a small docs-only commit. `CLAUDE.md` sits in
+`pre-commit`'s docs-only exemption and the guard is armed only during an implementer dispatch, so
+this is always permitted — and an uncommitted state record gets swept into an unrelated commit
+later or lost to a checkout.
 
 ---
 
@@ -425,6 +459,12 @@ For each commit plan, in planned order:
    guard has already disarmed itself with the failed dispatch, so the operator can push a fix by
    hand. Do not continue until it is resolved.
 
+   **Record the halt in `CLAUDE.md`'s state block before you stop** — which commit halted the run
+   and why, and how many landed. This is the write that matters most and the one most easily
+   skipped: it fires precisely when nobody is watching, and a halted feature that looks identical
+   to a finished one is what makes the next session's bare invocation walk past a half-built
+   feature into the next one.
+
 **One land-or-idle waiter per commit.** After dispatching, wait once for the agent to land its
 commit; do not reactively poll ("is it still running?", repeated git-state reads). Judge a
 legitimate long run against a genuine stall by the commit's **agent wall-clock** estimate (§0) —
@@ -436,20 +476,25 @@ documents exists.
 
 ---
 
-## Phase 6: Close out — notify, capture learnings
+## Phase 6: Close out — close the record, notify, capture learnings
 
 Once every commit (including the README plan) has landed green, close the run. The guard needs no
 disarming: it cleared itself when the last dispatch ended.
 
-1. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are local
+1. **Close the feature in `CLAUDE.md`'s state block.** Flip it from *in progress* to **landed**,
+   with the date and its commit count, and name the next unblocked feature from the master plan's
+   spine. **This is what makes the next run's bare invocation work at all** — it is the same record
+   that invocation reads, and you are the only party who can see that the feature actually
+   finished. Commit it as described in Phase 4.
+2. **Notify that the feature is ready to push.** Send a `PushNotification` — the commits are local
    and green, and pushing is the manual step you take now, outside the pipeline.
-2. **Capture durable, cross-feature learnings.** Record what this feature taught that the next one
+3. **Capture durable, cross-feature learnings.** Record what this feature taught that the next one
    would want and that the repo, git history, and `CLAUDE.md` do not already carry — a recurring
    reuse target, a project gotcha, a decision worth reusing. Write to your persistent memory under
    the memory conventions: one fact per file with frontmatter, update an existing file rather than
    duplicating it, add a one-line `MEMORY.md` pointer. You saw the whole arc, so this is yours to
    write — skip anything already legible from the code.
-3. **Delegate the pipeline retrospective to `pipeline-retrospector`.** Separately from the project
+4. **Delegate the pipeline retrospective to `pipeline-retrospector`.** Separately from the project
    learnings above (which are about the *codebase*), the run itself gets reviewed — but **not by
    you.** You chose the decomposition, drove the review loop, and dispatched every commit, so your
    account of what went wrong is the author's account. Dispatch the **`pipeline-retrospector`**
