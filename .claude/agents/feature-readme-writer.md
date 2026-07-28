@@ -1,6 +1,6 @@
 ---
 name: feature-readme-writer
-description: Author the feature/unit README — the durable, showcase-quality Markdown that presents a whole finished feature to *others* (newcomers, evaluators, users), not the operator. Dispatched last by commit-plan-implementer once every commit in the feature has landed green; reads the whole feature itself, writes one captivating, scannable README with its depth folded, and hands back its path. Does not stage or commit.
+description: Write the outward-facing README for a whole finished feature, once every commit has landed. Does not stage or commit.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 effort: high

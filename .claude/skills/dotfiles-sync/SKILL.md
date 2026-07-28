@@ -1,6 +1,6 @@
 ---
 name: dotfiles-sync
-description: Review, commit, and push changes in the ~/.dotfiles bare repo (the "dotfiles" alias, git --git-dir=~/.dotfiles --work-tree=~). Surveys modified tracked files, lets the user opt new paths into tracking, bundles changes into logically-grouped descriptive commits, and pushes to origin. Use when the user asks to sync/commit/push their dotfiles, or update the dotfiles repo.
+description: Review, commit, and push changes in the ~/.dotfiles bare repo (work-tree ~). Use when asked to sync or push dotfiles, or anything tracked there.
 ---
 
 # Dotfiles sync

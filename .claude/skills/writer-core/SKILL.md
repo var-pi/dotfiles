@@ -1,6 +1,6 @@
 ---
 name: writer-core
-description: Shared doc craft for the planning pipeline's doc writers — the rushed-team-lead reader, layering and folding, signal hierarchy, the cut list, the stand-alone evidence bar. Preloaded into commit-doc-writer and feature-readme-writer; not a standalone workflow.
+description: Shared doc craft for the planning pipeline's doc writers. Preloaded into commit-doc-writer and feature-readme-writer; not a standalone workflow.
 user-invocable: false
 ---
 

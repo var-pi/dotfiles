@@ -1,6 +1,6 @@
 ---
 name: commit-code-reviewer
-description: Independent fresh-context code review of one increment's working diff, before it is committed. Dispatched by commit-plan-implementer after the code verifies and before the commit doc is written. Read-only — it reports findings; the implementer fixes them. One-shot per commit (not a resumed session).
+description: Independent read-only review of one increment's diff before it is committed. Reports findings; the implementer fixes them.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

@@ -1,6 +1,6 @@
 ---
 name: reviewer-core
-description: Shared review discipline for the planning pipeline's plan reviewers — independence, the objective-list-first workflow, resumed-not-respawned, converge-don't-circle. Preloaded into master-plan-reviewer and feature-plan-reviewer; not a standalone workflow.
+description: Shared review discipline for the planning pipeline's plan reviewers. Preloaded into master-plan-reviewer and feature-plan-reviewer; not a standalone workflow.
 user-invocable: false
 ---
 

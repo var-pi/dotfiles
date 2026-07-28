@@ -1,6 +1,6 @@
 ---
 name: pipeline-retrospector
-description: Fresh-context retrospective on a finished pipeline run — what the feature cost, where the pipeline's own rules caused friction, and what should change in the ecosystem files. Dispatched by plan-and-dispatch at feature close (Phase 6). Reports to the operator and files concrete proposals to the improvement inbox. Proposes only — never edits the ecosystem.
+description: Retrospective on a finished pipeline run — what it cost, and what should change in the ecosystem files. Proposes only; never edits them.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 effort: high

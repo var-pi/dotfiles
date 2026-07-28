@@ -1,6 +1,6 @@
 ---
 name: feature-plan-reviewer
-description: Independent fresh-context critic for a feature plan before any implementer touches it. Reviews the whole architectural set of commit plans as a unit — cross-commit contracts, coordination defects, forward references, reuse, and test intent — across a persistent session resumed each round until it converges.
+description: Independent critic for a whole set of commit plans, reviewed as one unit before any implementer is dispatched.
 tools: Read, Grep, Glob, Bash, WebFetch
 model: opus
 effort: xhigh

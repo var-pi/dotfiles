@@ -1,6 +1,6 @@
 ---
 name: commit-doc-writer
-description: Write the durable docs/commits/ Markdown explanation for one already-implemented, already-verified commit. Dispatched by commit-plan-implementer with a context bundle; reads the diff itself, writes one scannable, weight-calibrated doc whose depth is folded, and hands back its path.
+description: Write the maintainer-facing docs/commits/ explanation for one finished, verified commit. Does not stage or commit.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 effort: high

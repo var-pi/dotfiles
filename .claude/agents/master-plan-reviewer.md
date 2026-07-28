@@ -1,6 +1,6 @@
 ---
 name: master-plan-reviewer
-description: Independent fresh-context critic for a whole-project master plan before any feature is dispatched to plan-and-dispatch. Reviews the through-line, the decomposition into feature briefs, altitude violations, and falsifiability. Persistent — resume the same session each review round, with its prior reviews intact.
+description: Independent critic for a whole-project master plan — its through-line, its decomposition into features, and its altitude discipline — before any feature is dispatched.
 tools: Read, Grep, Glob, Bash, WebFetch
 model: opus
 effort: xhigh

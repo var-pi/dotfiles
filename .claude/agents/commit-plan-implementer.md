@@ -1,6 +1,6 @@
 ---
 name: commit-plan-implementer
-description: Execute a single commit plan produced by plan-and-dispatch — write tests, implement, verify, get an independent review from commit-code-reviewer, document the commit under docs/commits/, and hand back one descriptive commit (no push). Dispatch one commit plan at a time.
+description: Execute one commit plan — write the tests and code, verify, document, and hand back one local commit. Dispatch one plan at a time.
 model: opus
 effort: high
 ---
