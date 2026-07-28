@@ -61,9 +61,10 @@ reader*).
 - `master-plan-reviewer` (Opus, xhigh) — reviews the master plan. Persistent across rounds.
 - `feature-plan-reviewer` (Opus, xhigh) — reviews the whole feature set as a unit. Persistent
   across rounds.
-- `commit-plan-implementer` (Sonnet, high) — executes one commit plan: **writes the code**,
-  derives test bounds theory-first, verifies, dispatches `commit-code-reviewer`, commits locally
-  (never pushes). Delegates doc *authoring* to the two writers.
+- `commit-plan-implementer` (Opus, high) — executes one commit plan: **writes the code**, owns
+  **all test mechanics and every numeric bound** (derived theory-first), verifies, dispatches
+  `commit-code-reviewer`, commits locally (never pushes). Delegates doc *authoring* to the two
+  writers.
 - `commit-code-reviewer` (Opus, high, **read-only**) — independent fresh-context review of one
   increment's diff, dispatched by the implementer before it commits. **One-shot per commit**, not
   resumed — so it does *not* read `reviewer-core.md` (that core assumes a session resumed across
@@ -82,10 +83,12 @@ that list them in their `skills:` frontmatter — not read via a tool call):**
   objective-list workflow, resumed-not-respawned, converge-don't-circle). Each reviewer file carries
   only its altitude-specific objectives. Deliberately **not** preloaded into `commit-code-reviewer`.
 - `skills/writer-core/` — the craft both **doc writers** share: the rushed-team-lead reader and
-  the reader-time economics, layering (`<details>` folds, front-loading, heading navigability),
-  signal hierarchy (bold/callouts, used sparingly), denser-form selection, the cut list, figure
-  embedding + the self-explanatory bar, style constraints, weight calibration, handoff. Each writer
-  file carries only its audience, sources, sections, and altitude.
+  the reader-time economics, layering (`<details>` folds, front-loading, heading navigability,
+  one-section-one-object, and the rule that **a fold buys opt-in, not exemption**), signal hierarchy
+  (bold/callouts, used sparingly), denser-form selection **capped at ~5 unbroken prose sentences**,
+  the cut list, the **stand-alone bar for figures *and* tables/display blocks**, claim-strength
+  calibration, style constraints, weight calibration, handoff. Each writer file carries only its
+  audience, sources, sections, and altitude.
 
 **Hooks (POSIX sh, `#!/bin/sh`):**
 - `hooks/pipeline-marker.sh` — arms the marker (and points the repo at these hooks) on
@@ -108,11 +111,27 @@ that list them in their `skills:` frontmatter — not read via a tool call):**
 Before changing a file, check whether you are touching one of these couplings. **Each spans
 multiple files; edit them together or you leave a relic.**
 
-- **The altitude contract** spans `master-plan` ↔ `plan-and-dispatch` ↔ `commit-plan-implementer`.
-  Each rung owns exactly one thing and copies nothing from another: master-plan owns
+- **The altitude contract** spans `master-plan` ↔ `plan-and-dispatch` ↔ `commit-plan-implementer`
+  ↔ `feature-plan-reviewer` (which enforces it) ↔ `PIPELINE.md` §3 (which mirrors it). Each rung
+  owns exactly one thing and copies nothing from another: master-plan owns
   philosophy/decomposition (no signatures, stubs, or tolerances); plan-and-dispatch owns contracts
-  + decisions + test *targets*; the implementer owns code + measured numbers. A copy upstream is a
-  competing source of truth. Changing *what a rung owns* means editing all three.
+  + decisions + each test's intent/target/**method class**/**discrimination**; the implementer owns
+  code + **all test mechanics** + **every numeric bound**. A copy upstream is a competing source of
+  truth. Changing *what a rung owns* means editing all five.
+  - **Measurement splits by question, not by rung** — the subtlety most likely to be lost in a
+    future edit. The planner may run code at plan time to certify that a gate *discriminates*
+    (because that answer can add or delete a commit, and the implementer reading one plan cannot see
+    across the set); it writes the margin. Tolerances are never its. Owned by
+    `plan-and-dispatch` — "Measuring during planning"; the reviewer's converse duty (re-verify
+    discrimination claims, **fault a plan that contains an expression or a tolerance**) is the other
+    half and must move with it.
+- **The delta / consolidation shape** spans `plan-and-dispatch` template §3 ("Files & delta"),
+  `commit-plan-implementer` ("Build only what the increment needs"), and `feature-plan-reviewer`
+  ("Declared deltas"). The load-bearing guarantee in all three is the same sentence: **the existing
+  test-set must stay green *unmodified* in that commit**, and a legacy test that must change is a
+  contract change needing its own step. Weaken it in one place and the other two are promising
+  something nothing enforces. (A fuller brownfield form — deltas at *feature* altitude in
+  master-plan's briefs — is a separate, still `APPROVAL-GATED` inbox item.)
 - **The docs/commits path** is **named** by plan-and-dispatch (template §8), **authored** by
   `commit-doc-writer`, **staged + committed** by the implementer, and **enforced** by `pre-commit`.
   Change the path convention or the exemption and all four must agree.
@@ -193,9 +212,12 @@ multiple files; edit them together or you leave a relic.**
   motivational framing.
 - **Single source of truth.** Each concern gets ONE owning file/section; others reference it by
   name. A rule restated 3–4× with drifting wording reads as several rules — the exact defect to hunt.
-- **Calibrate by reader.** Tersest, imperative-first for the weaker model (the Sonnet
-  implementer); lighter touch for the stronger ones (Opus reviewers/writers); hardest dedup on the
-  most capable + most repetitive file.
+- **Calibrate by the file's job, not by model tier.** Every agent now runs Opus, so capability no
+  longer differentiates them — what does is what the file is *for*. The implementer's agreement is a
+  checklist executed under production pressure: tersest, imperative-first, every rule actionable
+  without re-reading. The reviewers' and writers' agreements are judgment instruments: rationale
+  earns more room there, because they must generalize to cases nobody enumerated. Hardest dedup on
+  the most repetitive file, whichever that is.
 - **Preserve decision records.** A rationale carrying its rejected alternative is the most
   expensive, least-recoverable content — it survives a rewrite even when the prose around it does not.
 

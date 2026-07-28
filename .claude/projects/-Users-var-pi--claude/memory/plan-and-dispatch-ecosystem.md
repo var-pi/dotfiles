@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-07-25T18:44:31.220Z
+  modified: 2026-07-28T15:14:52.173Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -252,6 +252,67 @@ rested on — all three had failed *silently*, which is the generalizable lesson
   dotfiles repo already covers); `isolation: worktree` (commits would land in a throwaway worktree);
   `maxTurns` (could abort a legitimate long gated run); the builtin task list for Phase 5 (the
   persisted plan set is already that queue).
+
+**Altitude re-cut + implementer promoted to Opus (2026-07-28).** Operator review of the `06-fbm`
+artifacts, plus the five retrospector inbox items from that run (all shipped).
+- **`commit-plan-implementer` is now Opus/high.** No non-Opus node remains. What this *retired* is
+  the argument for handing over near-final configs ("so a weak implementer doesn't search"); the
+  "guaranteed-sufficient hard stop" marker went with it, having never been used by any commit.
+  Consequence for maintenance: `pipeline-maintenance`'s "calibrate by reader" rule no longer keys on
+  model tier — it now keys on the *file's job* (checklist vs. judgment instrument).
+- **Measurement splits by question, not by rung** — the session's central decision. The planner may
+  run code at plan time, against **already-existing** infrastructure, for one purpose: certifying a
+  gate **discriminates** and a negative control genuinely fails. It writes the **margin** ("a wrong
+  exponent moves this by O(0.1)"); every `atol`/`rtol`/SE-multiple/sample size is the implementer's,
+  theory-first. Template §6's columns are now *intent / target / method class / discrimination*.
+  *Why not simply forbid planner numbers:* the measurement's real job is **timing and scope**, never
+  capability — the circulant-margin measurement is what *created* `06-fbm`'s probe commit and
+  corrected the master plan's risk line, and the implementer (reading one plan) structurally cannot
+  check a control in the last commit against a kernel in the first. *Rejected alts:* (a) planner
+  measures nothing — decomposition-changing findings would then surface as a halt during the last
+  commit; (b) legitimize the status quo (any measured number, tolerances included, reviewer
+  re-measures) — it is what produced the frozen expressions below, and made three passes measure the
+  same quantities. Redundancy now collapses to one pass per question.
+- **The plan states what a test must distinguish, never how it is written.** A `method` naming an
+  expression, fixture, grid size, or loop is code. *Motivating evidence:* `06-fbm` commit 01 shipped
+  a provably no-op `eigvals(Symmetric(Matrix(Σ)))` because simplifying it "would be an unrecorded
+  override of a plan-pinned decision", and a plan-pinned PSD check had to be rewritten after
+  contributing 82 % of the suite's assertions for something other than what its comment claimed. The
+  matching half is the implementer's new **"plan-stated mechanics are yours"** (an expression in a
+  plan is illustration, not a decision) and `feature-plan-reviewer`'s new converse duty: *fault a
+  plan that contains* a body, mechanic, or tolerance — not only one that omits them.
+- **Additive-only relaxed to planner-declared consolidation.** Template §3 → "Files & delta": a
+  commit may declare what it alters, subsumes, or removes. The guarantee that makes it safe, stated
+  identically in three files: **the existing test-set stays green *unmodified* in that commit**; a
+  legacy test that must change is a *contract change* needing its own declared step, never a quiet
+  edit inside the commit whose implementation that test guarded. The implementer's ban on
+  *opportunistic* restructuring is untouched. This is the commit-altitude half of the
+  `APPROVAL-GATED` brownfield inbox item; the feature-altitude half (deltas in master-plan's briefs)
+  stays gated.
+- **Four more inbox items shipped:** never return in a waiting state (implementer re-dispatches a
+  silent child once, else proceeds recording the step as not-performed) with its upstream half in
+  Phase 5 (*a dispatch returning without its commit landed is neither success nor failure* — verify
+  the tree, resume that same session, don't halt and don't re-dispatch cold); negative controls must
+  be **certified** to fail, not merely named; §7 pass conditions must name a known systematic bias as
+  the first hypothesis *and* the parameters that must not move; §0 effort splits **agent wall-clock**
+  from **compute** (only wall-clock supports a stall diagnosis — `06-fbm` derived "past ~10 min is a
+  stall" from a sub-minute experiment while all six dispatches legitimately ran 12–32 min).
+- **Writer rules restated as caps/bounds**, because each already existed as an encouragement and
+  failed to bite: a fold buys opt-in, **not exemption** from structure or the cut list; `<summary>`
+  under ~8 words; **≤ ~5 consecutive prose sentences** without a structural break (a multi-sentence
+  bullet counts as prose); **one section, one object**; the stand-alone bar extends from figures to
+  **tables and display blocks**; claim strength must match evidence *and stay consistent across the
+  doc*; the **antithesis tic capped at one per doc** with the tell named (*was Y ever on the table?* —
+  "the nugget is reported rather than assumed" says nothing). commit-doc-writer additionally: every
+  item under a heading must be an **instance** of that heading (a padded section is worse than an
+  absent one); mechanical "What changed" items get **one line**; a decision earns a row only if the
+  rejected alternative was **genuinely tempting**; never compare the work against the plan; notes
+  aimed at the next editor of a line are **code comments**. feature-readme-writer: **≤ ~6 lines** from
+  title to the first concrete thing. *No rule was written from the operator's praise* — every praised
+  device already followed an existing rule, and the war-story precedent is why.
+- **New coupling registered:** the delta/consolidation shape (plan-and-dispatch §3 ↔ implementer ↔
+  feature-plan-reviewer), plus the altitude contract now explicitly spanning five files (the
+  reviewer enforces it, `PIPELINE.md` §3 mirrors it).
 
 **Visual map added (2026-07-25).** `~/.claude/PIPELINE.md` — Mermaid diagrams (end-to-end lifecycle
 with both human gates and the session boundary; the implementer's inner loop as a sequence diagram;

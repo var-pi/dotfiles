@@ -8,7 +8,7 @@ the map and a governing file disagree, the file wins and this map is stale.
 To change anything in the ecosystem, invoke **`/pipeline-maintenance`** — it carries the editing
 discipline and the cross-file dependency graph.
 
-> Verified against the files on **2026-07-25** (Claude Code 2.1.220).
+> Verified against the files on **2026-07-28** (Claude Code 2.1.220).
 
 ---
 
@@ -54,7 +54,7 @@ flowchart TD
 
     subgraph L3["COMMIT altitude · one dispatch per commit plan"]
         direction TB
-        LOOP["for each commit plan, in order"] --> IMP(["<b>commit-plan-implementer</b><br/>Sonnet high · writes the code"])
+        LOOP["for each commit plan, in order"] --> IMP(["<b>commit-plan-implementer</b><br/>Opus high · writes the code"])
         IMP -. "landed green — only then the next plan" .-> LOOP
         IMP --> RM(["README plan dispatched LAST<br/>authored by feature-readme-writer"])
     end
@@ -90,13 +90,21 @@ start; it is a second source of truth that drifts the moment the real one is dec
 | Rung | Owns | Must never contain | Artifact |
 |------|------|--------------------|----------|
 | **master-plan** | Through-line · decomposition into features · repo architecture · cross-cutting conventions · risk register · falsifier per feature | Call signatures, schemas, code bodies, stubs, tolerances, sample sizes | `docs/plan/[slug]` |
-| **plan-and-dispatch** | Decomposition into commits · the **contract surface** between them · pre-resolved decisions *with rejected alternatives* · each test's **intent / target / method** · the effort estimate · the `docs/commits/` path | Code bodies, numeric bounds and tolerances | `~/.claude/plans/*.md` |
-| **commit-plan-implementer** | **Code bodies** · numeric bounds derived **theory-first** · verification · the commit itself | — (it reads only its one plan; never the master plan or sibling plans) | the git commit |
+| **plan-and-dispatch** | Decomposition into commits · the **contract surface** between them · pre-resolved decisions *with rejected alternatives* · each test's **intent / target / method class / discrimination** · a declared **delta** where a commit alters shipped behavior · the effort estimate · the `docs/commits/` path | Code bodies, **test mechanics** (expressions, fixtures, grid sizes, loops), numeric bounds and tolerances | `~/.claude/plans/*.md` |
+| **commit-plan-implementer** | **Code bodies** · **all test mechanics** · **every numeric bound**, derived **theory-first** · verification · the commit itself | — (it reads only its one plan; never the master plan or sibling plans) | the git commit |
 
 The reason the plan carries no code: a pre-written body turns the implementer into a transcriber
 that stops checking whether the code integrates, and grounds "final" code in infrastructure that
-does not exist yet. The safety net is the **pinned test target** plus the implementer's verification
-loop. *(Owned by `skills/plan-and-dispatch/SKILL.md` — "What the plan pins".)*
+does not exist yet. The safety net is the **pinned test target and discrimination margin** plus the
+implementer's verification loop. *(Owned by `skills/plan-and-dispatch/SKILL.md` — "What the plan
+pins".)*
+
+**Measurement splits by question, not by rung.** The planner may run code while planning, against
+infrastructure that **already exists**, for one purpose only: certifying that a gate discriminates
+and that a negative control genuinely fails — because that answer can add or delete a commit, and the
+implementer (reading one plan) cannot see across the set. It writes the **margin**, never the
+tolerance. Every `atol` / `rtol` / SE multiple / sample size is the implementer's, derived against
+real code. *(Owned by `skills/plan-and-dispatch/SKILL.md` — "Measuring during planning".)*
 
 ---
 
@@ -106,17 +114,17 @@ loop. *(Owned by `skills/plan-and-dispatch/SKILL.md` — "What the plan pins".)*
 sequenceDiagram
     autonumber
     participant PAD as plan-and-dispatch · Opus
-    participant IMP as commit-plan-implementer · Sonnet
+    participant IMP as commit-plan-implementer · Opus
     participant REV as commit-code-reviewer · Opus, read-only
     participant DOC as commit-doc-writer · Opus
     participant GIT as git guard hooks
 
-    PAD->>IMP: one commit plan — goal, contract surface, decisions,<br/>test intent, pass conditions, the docs path
+    PAD->>IMP: one commit plan — goal, contract surface, decisions,<br/>test intent + discrimination, pass conditions, the docs path
     Note over IMP,GIT: SubagentStart arms the git guard here,<br/>SubagentStop disarms it — nobody arms it by hand
     Note over IMP: reads ONLY this plan plus the project's<br/>CLAUDE.md / README.md — never a sibling plan
     IMP->>IMP: write the tests first
     IMP->>IMP: MUTATION GATE — a test that passes before the<br/>feature exists is vacuous; rewrite it
-    IMP->>IMP: implement · derive bounds theory-first
+    IMP->>IMP: implement · own the mechanics · derive bounds theory-first
     IMP->>IMP: verify empirically — ONE synchronous gated run,<br/>foreground, exactly once
     IMP->>REV: the diff, its goal, contracts, test intent
     REV-->>IMP: findings organised by objective — no write tools
@@ -130,13 +138,16 @@ sequenceDiagram
 
 Three things this diagram is making visible:
 
-- **The implementer is the only Sonnet node**, and the only one with write access to the repo. Its
-  agreement is deliberately the tersest and most imperative file in the ecosystem.
+- **The implementer is the only node with write access to the repo**, and it makes the most
+  judgment calls of any of them — it owns the code, the test mechanics, and every numeric bound.
+  Its agreement is deliberately the tersest and most imperative file in the ecosystem.
 - **The independent review is a control, not ceremony** — it exists because the built-in
   `/code-review` command stopped being model-invocable, and the pipeline briefly ran with no
   independent review at all.
-- **The implementer never pushes.** It hands back a summary; `plan-and-dispatch` gates the next
-  commit on it and does *not* re-run the expensive experiment as a second ground truth.
+- **The implementer never pushes, and never returns mid-workflow.** It hands back a summary;
+  `plan-and-dispatch` gates the next commit on it and does *not* re-run the expensive experiment as a
+  second ground truth. A dispatch that returns *without* its commit landed is resumed, not halted and
+  not re-dispatched cold.
 
 ---
 
@@ -232,13 +243,13 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 | `skills/pipeline-maintenance/SKILL.md` | Meta-skill: edits the ecosystem | main session · Opus | the inbox, then the ecosystem files | the ecosystem files, the memories |
 | `agents/master-plan-reviewer.md` | Critic of the master plan | Opus · xhigh | the plan | reports only · **persistent, resumed each round** |
 | `agents/feature-plan-reviewer.md` | Critic of the whole commit-plan set | Opus · xhigh | the whole set, every round | reports only · **persistent, resumed each round** |
-| `agents/commit-plan-implementer.md` | Executes one commit plan | **Sonnet** · high | its one plan + project docs/code | `commit-code-reviewer`, `commit-doc-writer`, `feature-readme-writer` → code + one local commit |
+| `agents/commit-plan-implementer.md` | Executes one commit plan | Opus · high | its one plan + project docs/code | `commit-code-reviewer`, `commit-doc-writer`, `feature-readme-writer` → code + one local commit |
 | `agents/commit-code-reviewer.md` | Independent review of one diff | Opus · high · **read-only** | the working diff | reports only · **one-shot per commit** |
 | `agents/commit-doc-writer.md` | Authors the per-commit doc | Opus · high | one diff + the bundle | `docs/commits/...` · does not stage or commit |
 | `agents/feature-readme-writer.md` | Authors the showcase README | Opus · high | the whole finished feature | `README.md` · does not stage or commit |
 | `agents/pipeline-retrospector.md` | Retrospective on the run | Opus · high | run artifacts + ecosystem files | the inbox memory **only** |
 | `skills/reviewer-core/SKILL.md` | Shared review discipline | — | **preloaded** into `master-plan-reviewer` + `feature-plan-reviewer` via their `skills:` frontmatter | — · deliberately **not** preloaded into `commit-code-reviewer`, which is one-shot, not resumed |
-| `skills/writer-core/SKILL.md` | Shared doc craft | — | **preloaded** into `commit-doc-writer` + `feature-readme-writer` | — · the rushed-team-lead reader, folding, signal hierarchy, figure bar |
+| `skills/writer-core/SKILL.md` | Shared doc craft | — | **preloaded** into `commit-doc-writer` + `feature-readme-writer` | — · the rushed-team-lead reader, folding, signal hierarchy, the stand-alone evidence bar |
 | `hooks/pre-commit`, `pre-push`, `commit-msg` | The git guard | POSIX sh | the staged set / the message | allow or reject · marker-gated, see §5 |
 | `hooks/pipeline-marker.sh` | Arms/disarms the guard | POSIX sh | — | wired in `settings.json` as `SubagentStart`/`SubagentStop` on `commit-plan-implementer` |
 
@@ -252,9 +263,11 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 | `pre-commit: stage this commit's docs/commits/ file` | A code commit without its doc. Owner: `hooks/pre-commit` + the path pinned in the plan's §8 |
 | `commit-msg: write a descriptive commit message` | Subject under 15 chars, or no body. Owner: `hooks/commit-msg` + the implementer's commit conventions |
 | Commit docs feel bloated or same-weight throughout | `skills/writer-core/SKILL.md` (scannability, folding, the cut list) and `agents/commit-doc-writer.md` (what belongs in a commit doc at all) |
-| A plan contains code bodies or invented tolerances | The altitude contract — §3 above; owners are `master-plan` and `plan-and-dispatch` |
+| A plan contains code bodies, test expressions, or tolerances | The altitude contract — §3 above; owners are `master-plan` and `plan-and-dispatch`. `feature-plan-reviewer` is required to fault their *presence*, not only their absence |
+| An implementer preserved something redundant "because the plan pinned it" | Plan-stated mechanics are the implementer's to replace. Owner: `agents/commit-plan-implementer.md` — "Plan-stated mechanics are yours" |
 | A subagent reports `/code-review` or `/verify` failed with `disable-model-invocation` | Expected: both are user-triggered only. `commit-code-reviewer` replaces the first; drive the flow directly instead of the second |
 | `pipeline-marker: this repo sets core.hooksPath=…` | The repo owns its hooks path, so the guard is **not** enforcing. Owner: `hooks/pipeline-marker.sh`; arm it by hand if you want it |
 | A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one that set `disable-model-invocation`) and it only warns in the debug log. Owner: `skills/reviewer-core/`, `skills/writer-core/` |
-| A commit seems to have stalled | Check the plan's §0 expected-effort estimate before intervening — the run is *supposed* to be long for gated experiments |
+| A commit seems to have stalled | Check the plan's §0 **agent wall-clock** estimate — not its compute figure, which is far smaller and makes every healthy dispatch look stalled. The run is *supposed* to be long for gated experiments |
+| A dispatch came back saying it is "waiting" for a subagent | It should never do that. Owner: `agents/commit-plan-implementer.md` — "Never return in a waiting state"; the dispatcher's side is `plan-and-dispatch` Phase 5, which verifies the tree and **resumes that same session** |
 | The pipeline keeps repeating a mistake across features | It belongs in the inbox → `/pipeline-maintenance`, not in a one-off correction to a running agent |
