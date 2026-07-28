@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-07-28T15:14:52.173Z
+  modified: 2026-07-28T15:36:24.508Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -313,6 +313,37 @@ artifacts, plus the five retrospector inbox items from that run (all shipped).
 - **New coupling registered:** the delta/consolidation shape (plan-and-dispatch §3 ↔ implementer ↔
   feature-plan-reviewer), plus the altitude contract now explicitly spanning five files (the
   reviewer enforces it, `PIPELINE.md` §3 mirrors it).
+
+**Readability + invocation pass (2026-07-28, second session that day).** Operator feedback: the
+descriptions read like abstracts, the meta-skill has no stated workflow, and starting
+plan-and-dispatch required spoon-feeding it "read file X, plan unit Y" every time.
+- **`pipeline-maintenance` gained a six-phase spine** (read feedback → read ground truth →
+  synthesize + ask → plan & `ExitPlanMode` → implement + checklist → **`/dotfiles-sync` commit and
+  push**). Its existing sections became the detail behind phases 1, 2 and 5. Two bounds written with
+  the rules: the question round asks only where two readings give *materially different edits* and
+  arrives **batched** (a ritual round trains the operator to skim the one that mattered), and Phase 4
+  is the sole gate (nobody else reads this diff — the same reason the retrospector is propose-only).
+- **Phase 6 is new and load-bearing.** The ecosystem is distributed through the `~/.dotfiles` bare
+  repo, so an uncommitted edit is one machine's local divergence and every other session keeps
+  running the old rules with nothing reporting it. Scope bound: commit **only this session's edits**,
+  name anything else dirty and leave it, so `git log` on these files stays a record of *why the rules
+  are what they are*. New coupling registered ("the sync step"): a rename of `dotfiles-sync`, or an
+  untracked new ecosystem file, fails silently — post-edit check 6's exact mode.
+- **Description convention, now an editing-discipline rule with a cap.** A `description:` states
+  *what + when*, **never how**, at **~25 words / two sentences**; mechanism there is an abstract of
+  the body that owns the rule, free to drift, and the operator reads it in the `/` menu. Two things
+  survive the cut: the **nearest-neighbour** discriminator and any **caller instruction** ("one plan
+  at a time", "read-only"). All eleven descriptions rewritten (7 agents, 4 skills + `dotfiles-sync`).
+  *Deliberate deletion:* "persistent — resumed each round" left both reviewer descriptions; it was a
+  fourth copy of a protocol already owned by plan-and-dispatch Phase 3, master-plan step 3, and
+  `reviewer-core`, and the dispatcher is the file that already states it.
+- **`## How you are invoked` on both planner skills.** p-a-d: fresh session, cwd is the project repo,
+  operator hands *where the master plan lives* + *which feature* — resolve both before exploring,
+  accept the operator's word for the feature ("unit" is retired in the files, not in their speech),
+  and when it is ambiguous **list the briefs and ask** rather than guessing, since a wrong guess
+  burns a session's context. master-plan: same shape plus the distinction that actually bites — **a
+  path to an existing `docs/plan/` plan means correction mode, not a fresh plan**, because the two
+  are indistinguishable at invocation and re-planning discards the decision records.
 
 **Visual map added (2026-07-25).** `~/.claude/PIPELINE.md` — Mermaid diagrams (end-to-end lifecycle
 with both human gates and the session boundary; the implementer's inner loop as a sequence diagram;
