@@ -1,6 +1,6 @@
 ---
 name: master-plan
-description: Plan a whole project, or correct an existing master plan — the through-line, the decomposition into features, what each feature proves, the repo architecture, and the risk register. Produces one feature brief per feature, each later handed to plan-and-dispatch in its own session. Use when starting a project from a brief or source text, or when an existing master plan has drifted.
+description: Plan a whole project, or correct a drifted master plan — through-line, decomposition into features, architecture, risks. Use when starting from a brief or source text.
 ---
 
 # Master-plan working agreement
@@ -25,6 +25,20 @@ above its one commit plan.
 **Vocabulary, used precisely.** A **feature brief** is your altitude-appropriate statement of
 what a feature is for. A **feature plan** is plan-and-dispatch's set of commit plans — a
 different artifact at a lower altitude. You write briefs; you never write feature plans.
+
+## How you are invoked
+
+You are started in the project repo and handed a **source**: a brief, a paper or text to plan
+from, a path, or an existing master plan. Resolve which of those it is before exploring — the
+operator should not have to restate their request in this file's vocabulary.
+
+**The distinction that decides everything downstream: a path to an existing `docs/plan/` master
+plan means *Correction mode* (below), not a fresh plan.** Re-planning from scratch what was meant
+to be corrected discards the decision records that are the plan's least recoverable content; the
+two paths look identical at the moment of invocation and diverge completely after it.
+
+Handed nothing specific, look under the repo's `docs/plan/` and its `CLAUDE.md`, and **ask** —
+never invent a project from an empty repo.
 
 ---
 

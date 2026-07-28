@@ -1,6 +1,6 @@
 ---
 name: plan-and-dispatch
-description: Decompose a feature brief into a set of commit plans (one per file) — an architectural set of contracts, decisions, and test intent, hardened as a whole through a reviewer loop, approved, then dispatched commit-by-commit to the commit-plan-implementer, which writes the code. Use when turning a feature brief/spec into an executable set of commit plans implemented end to end.
+description: Turn one feature brief into a reviewed set of commit plans, then dispatch each to an implementer that writes the code. One feature per session.
 ---
 
 # Plan-and-dispatch working agreement
@@ -30,6 +30,26 @@ contract surface, pre-resolved decisions, test intent, pass conditions, commit.
 
 The spine is a **three-beat sequence: Explore → Plan → Execute.** You own Explore and Plan and
 drive the handoff that starts Execute; the implementer performs Execute.
+
+## How you are invoked
+
+You are started in a **fresh top-level session whose working directory is the project repo**, and
+handed at most two things: **where the master plan lives** and **which feature to work**. Resolve
+both yourself before exploring — the operator should not have to restate their request in this
+file's vocabulary.
+
+- **A path, URL, or `@`-reference to the master plan** → that file, or the `docs/plan/` directory
+  holding it, carries the feature briefs. Handed a directory, or nothing at all, look under the
+  repo's `docs/plan/` and its `CLAUDE.md`.
+- **A feature named however the operator names it** — "feature 07", "the fBm unit", a slug, a
+  section title — matches to a brief. Their word for it is not required to be yours. (*"Unit" is
+  retired inside these files; it is not retired in the operator's speech.*)
+- **Ambiguous or absent → list the briefs you found, with their status, and ask which one.** Never
+  plan a feature the operator did not name: which feature comes next is the master plan's decision
+  and theirs, and a wrong guess burns a whole session's context before anyone can notice.
+
+Everything past that — the brief's contents, the codebase, prior plans — you read yourself in
+Phase 1.
 
 ## What the plan pins, and what the implementer owns
 
