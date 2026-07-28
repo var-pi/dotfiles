@@ -64,10 +64,14 @@ git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" add <files in this cluster>
 git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" commit -m "$(cat <<'EOF'
 <what changed and why, one cluster's worth>
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Co-Authored-By: <the model writing the commit> <noreply@anthropic.com>
 EOF
 )"
 ```
+
+Name the model that actually wrote the commit — your harness instructions state the exact trailer
+to use. Do not copy a model name out of this file: it goes stale the moment the default changes,
+and a wrong trailer misattributes the work.
 
 Write the message from the diff content, not the filename — say what changed and why it
 matters, matching this harness's normal commit-message conventions.
