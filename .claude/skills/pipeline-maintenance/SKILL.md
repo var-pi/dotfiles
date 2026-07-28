@@ -1,6 +1,6 @@
 ---
 name: pipeline-maintenance
-description: Edit the planning-pipeline ecosystem — the master-plan / plan-and-dispatch skills, their reviewer / implementer / writer subagents, the git-guard hooks, and the shared cores — without breaking the couplings between them. Carries the ecosystem map, the cross-file dependency graph, and the editing discipline. Use whenever you are about to change any of those files, or reason about how such a change ripples.
+description: Edit the planning-pipeline skills, subagents, hooks and cores under ~/.claude without breaking the couplings between them. Use before changing any pipeline file.
 ---
 
 # Pipeline-maintenance working agreement
@@ -16,6 +16,34 @@ Read this first, then the two memories it points to: [[plan-and-dispatch-ecosyst
 point-in-time record of the design and its rationale) and [[editing-subagent-guideline-files]]
 (how to compact a guideline file without dulling it). **Before editing, verify the map below
 against the actual files** — memories and maps drift; the files are ground truth.
+
+---
+
+## The workflow, in order
+
+Do these in order; later phases assume the earlier ones are done. Each points at the section
+below that details it.
+
+1. **Read the feedback** — the operator's message this session, then [[pipeline-improvement-inbox]].
+   See *Intake*.
+2. **Read the ground truth** — the two memories above, then the actual files the change touches.
+   See *The map* and *The dependency graph*.
+3. **Synthesize objectives, then ask.** Restate and extend the stated objectives (see *Editing
+   discipline*), then put your open questions to the operator in **one batched round**.
+4. **Surface a plan and get approval** via `ExitPlanMode`. **No ecosystem file is edited before
+   the operator approves.**
+5. **Implement, then run the *Post-edit checklist*.**
+6. **Commit and push with `dotfiles-sync`.** See *Phase 6*.
+
+**Phase 3 is bounded, not ritual.** Ask where two readings of the feedback would produce
+*materially different edits* — and do everything an answer does not block first, so the questions
+arrive together rather than trickling. *Why both halves:* these files govern every future run, so a
+misread ships silently and surfaces a feature later; but a question round on unambiguous feedback
+trains the operator to skim the one round that mattered.
+
+**Phase 4 is the only gate.** These files are read by nobody but the agents that obey them, so an
+unapproved edit changes every future run with no diff review — the same reason
+`pipeline-retrospector` may propose but never edit.
 
 ## Intake — read the improvement inbox first
 
@@ -180,6 +208,11 @@ multiple files; edit them together or you leave a relic.**
   implementer's bundle sections. The implementer must pass a **superset** and let the writer select
   — a bundle that dictates content competes with the writer's agreement and wins by accident.
   Changing what docs contain means checking the bundle lists too.
+- **The sync step:** Phase 6 depends on `skills/dotfiles-sync/SKILL.md` being present and
+  model-invocable, and on the ecosystem files being tracked in the `~/.dotfiles` bare repo. Rename
+  or retire that skill and this phase names a capability that no longer exists — post-edit check 6's
+  exact silent failure. Untrack a file and the edit stops propagating to other machines with no
+  error anywhere; a new ecosystem file must be added to that repo in the same pass that creates it.
 - **The visual map:** `~/.claude/PIPELINE.md` mirrors the map above, the altitude contract, the
   artifact paths, the guard's branch logic and thresholds, the file index (model/effort per agent),
   and the improvement loop. It is a **mirror with no authority** — nothing may be recorded only
@@ -212,6 +245,14 @@ multiple files; edit them together or you leave a relic.**
   motivational framing.
 - **Single source of truth.** Each concern gets ONE owning file/section; others reference it by
   name. A rule restated 3–4× with drifting wording reads as several rules — the exact defect to hunt.
+- **A `description:` says what the thing does and when to reach for it — never how it works.**
+  Cap: **~25 words, at most two sentences.** Mechanism in a description ("across a persistent
+  session resumed each round") is an abstract of the body that owns the rule, so it is a copy free
+  to drift, and it is read in the `/` menu by an operator who wants to know which file this is.
+  Keep exactly two things beyond the *what*: the cue distinguishing the file from its **nearest
+  neighbour** (`commit-doc-writer` vs `feature-readme-writer`; the three reviewers by altitude),
+  and any **caller instruction the dispatcher cannot get right without it** — "one plan at a time",
+  "read-only". Those are *what*, not *how*.
 - **Calibrate by the file's job, not by model tier.** Every agent now runs Opus, so capability no
   longer differentiates them — what does is what the file is *for*. The implementer's agreement is a
   checklist executed under production pressure: tersest, imperative-first, every rule actionable
@@ -251,3 +292,22 @@ Run this before declaring an ecosystem edit done:
    agent roster) and re-date its verified line.
 8. **Reconcile the inbox** — delete or annotate every [[pipeline-improvement-inbox]] item this
    session addressed, so it is not re-proposed next cycle.
+
+## Phase 6 — commit and push the change
+
+An edit that stays uncommitted is one machine's local divergence: the ecosystem is distributed
+through the `~/.dotfiles` bare repo, so until it is pushed, every other session keeps running the
+old rules and nothing anywhere reports the discrepancy. **The run is not finished until the change
+is pushed.**
+
+Invoke the **`dotfiles-sync`** skill, which owns that repo's mechanics and its own
+confirm-before-push step — do not hand-roll the git commands, and do not add a second gate.
+
+Two scope rules:
+
+- **Commit only the files this session changed.** Name anything else dirty in that repo and leave
+  it, so the ecosystem's history reads as a series of deliberate pipeline changes rather than a
+  mixed config sweep — which is what makes `git log` on these files a usable record of *why the
+  rules are what they are*.
+- **The message says which coupling moved and why**, not which files changed. The diff already
+  lists the files; only you can state the intent, and that is what a later reader is looking for.

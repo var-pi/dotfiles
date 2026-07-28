@@ -9,6 +9,9 @@ To change anything in the ecosystem, invoke **`/pipeline-maintenance`** — it c
 discipline and the cross-file dependency graph.
 
 > Verified against the files on **2026-07-28** (Claude Code 2.1.220).
+>
+> Ecosystem files are distributed through the `~/.dotfiles` bare repo — an edit is not live
+> anywhere else until `/dotfiles-sync` has pushed it.
 
 ---
 
@@ -22,7 +25,7 @@ human steps:
 | 1 | Fresh session → **`/master-plan`** on the brief → approve at `ExitPlanMode` | Persists the master plan + one **feature brief** per feature to `docs/plan/` |
 | 2 | **A new session per feature** → **`/plan-and-dispatch`** on that brief → approve the commit-plan set **and its execution budget** at `ExitPlanMode` | Runs unattended: dispatches every commit, gating each green before the next |
 | 3 | Wait for the **"ready to push"** notification → review the local commits → **push by hand** | Nothing — the guard blocks a *dispatched implementer* from pushing, deliberately |
-| 4 | **`/pipeline-maintenance`** when the improvement inbox has items | Applies the retrospector's proposals with you present |
+| 4 | **`/pipeline-maintenance`** when the improvement inbox has items | Reads the inbox, asks what it must, plans, then applies the proposals **with you present** and pushes them via `/dotfiles-sync` |
 
 Step 2's `ExitPlanMode` is **the only gate between a plan and code being written**.
 
@@ -220,6 +223,7 @@ flowchart LR
     IN --> PM["<b>/pipeline-maintenance</b> · Intake step<br/>reads the queue before editing"]
     PM --> FILES["edits the ecosystem files<br/>WITH YOU PRESENT"]
     PM --> REC["reconciles the queue —<br/>delete what shipped, annotate what was deferred"]
+    FILES --> SYNC["<b>/dotfiles-sync</b> — commit + push<br/>until then the edit is local only"]
     REC -.-> IN
 
     classDef store fill:#e0e7ff,stroke:#4338ca,color:#111;
@@ -240,7 +244,8 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 |------|------|----------------|-------|---------------------|
 | `skills/master-plan/SKILL.md` | Project planner | main session · Opus | brief, source text, codebase | `master-plan-reviewer`, `Explore` → `docs/plan/` |
 | `skills/plan-and-dispatch/SKILL.md` | Feature planner + execution loop | main session · Opus | one feature brief, codebase | `feature-plan-reviewer`, `Explore`, `commit-plan-implementer` ×N, `pipeline-retrospector` → `~/.claude/plans/` |
-| `skills/pipeline-maintenance/SKILL.md` | Meta-skill: edits the ecosystem | main session · Opus | the inbox, then the ecosystem files | the ecosystem files, the memories |
+| `skills/pipeline-maintenance/SKILL.md` | Meta-skill: edits the ecosystem | main session · Opus | the inbox, then the ecosystem files | the ecosystem files, the memories → `dotfiles-sync` (its Phase 6) |
+| `skills/dotfiles-sync/SKILL.md` | Distributes the ecosystem | main session · Opus | the `~/.dotfiles` bare repo | the commit + push that makes an ecosystem edit live elsewhere |
 | `agents/master-plan-reviewer.md` | Critic of the master plan | Opus · xhigh | the plan | reports only · **persistent, resumed each round** |
 | `agents/feature-plan-reviewer.md` | Critic of the whole commit-plan set | Opus · xhigh | the whole set, every round | reports only · **persistent, resumed each round** |
 | `agents/commit-plan-implementer.md` | Executes one commit plan | Opus · high | its one plan + project docs/code | `commit-code-reviewer`, `commit-doc-writer`, `feature-readme-writer` → code + one local commit |
