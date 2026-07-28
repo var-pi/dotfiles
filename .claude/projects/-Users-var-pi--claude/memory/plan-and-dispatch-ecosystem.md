@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-07-28T15:36:24.508Z
+  modified: 2026-07-28T16:16:16.811Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -344,6 +344,40 @@ plan-and-dispatch required spoon-feeding it "read file X, plan unit Y" every tim
   burns a session's context. master-plan: same shape plus the distinction that actually bites — **a
   path to an existing `docs/plan/` plan means correction mode, not a fresh plan**, because the two
   are indistinguishable at invocation and re-planning discards the decision records.
+
+**Bare invocation + the project-state record (2026-07-28, third session).** The operator's
+correction to the invocation sections written earlier the same day: they had assumed a plan path and
+a feature name would be handed over, and ended with *"never plan a feature the operator did not
+name."* **The intended model is the opposite — `/plan-and-dispatch` is called with no arguments at
+all**, in the project repo. `docs/plan/` is a fixed convention it already knows, the master plan
+carries the spine, and the project's `CLAUDE.md` carries the state, so the feature is derivable and
+asking for it was the per-run friction.
+- **The rule was reversed, not softened.** Now: derive the next feature from the record, **announce
+  it in the first message and proceed** (Phase 4's `ExitPlanMode` already gates the choice, so a
+  blocking question buys nothing an announcement doesn't), and stop to ask in exactly two cases —
+  `CLAUDE.md` and the master plan **disagree**, or a feature is recorded **in progress** (resuming a
+  half-built feature and starting a fresh one are different jobs). An operator-named feature still
+  overrides, in whatever words they use.
+- **The blocking gap this exposed.** `CLAUDE.md` was written **once**, at Phase 4, describing the
+  *planned* work; `commit-plan-implementer` touches it only incidentally; **Phase 6 had no
+  `CLAUDE.md` step at all.** Nothing recorded that a feature *landed*, so a halt at commit 3 of 6
+  left a record indistinguishable from a clean finish — and a bare invocation would have walked past
+  a half-built feature into the next one. Deriving is only safe once the record is bracketed.
+- **The run is now bracketed in a pipeline-state block:** Phase 4 opens the feature (in progress +
+  commit count), **Phase 5's halt path records where it stopped**, Phase 6 flips it to landed and
+  names the next; `master-plan` step 4 seeds the block for a fresh project, since p-a-d reads a
+  missing block as a broken record. The planner commits these itself as docs-only commits —
+  `CLAUDE.md` is already in `pre-commit`'s exemption set. *The halt write is the one to defend in
+  any future compaction:* it fires unattended, and it is the only thing separating a half-built
+  feature from a finished one.
+- **`master-plan` leads with the convention** rather than with what it was handed: the plan lives at
+  `docs/plan/`, and **what is on disk picks the mode** — a plan already there means correction mode.
+  Same rationale as before (the two modes are indistinguishable at invocation and re-planning
+  discards decision records); only the trigger moved from *a path you were given* to *what you find*.
+- **New coupling — the project-state record**, spanning five places (master-plan step 4, p-a-d
+  Phases 4/5/6, p-a-d's invocation) plus `pre-commit`'s exemption. Its failure mode is not an error
+  but a plausible wrong feature. The **session boundary** coupling was updated to say what crosses
+  it is written, not spoken.
 
 **Visual map added (2026-07-25).** `~/.claude/PIPELINE.md` — Mermaid diagrams (end-to-end lifecycle
 with both human gates and the session boundary; the implementer's inner loop as a sequence diagram;

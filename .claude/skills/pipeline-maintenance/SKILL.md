@@ -195,9 +195,20 @@ multiple files; edit them together or you leave a relic.**
   implementer dispatches to `feature-readme-writer`; it is docs-only (no commit-doc, exempt from
   the guard). Spans plan-and-dispatch + implementer + feature-readme-writer + pre-commit.
 - **The session boundary:** `master-plan` names the next feature and *stops*; the human starts
-  `plan-and-dispatch` in a fresh top-level session. master-plan's "never dispatch p-a-d as a
-  subagent" rationale (ExitPlanMode gate + budget) depends on p-a-d keeping its Phase 4 human gate;
-  if that gate ever changes, revisit the rationale.
+  `plan-and-dispatch` in a fresh top-level session, **bare — no plan path, no feature name**.
+  master-plan's "never dispatch p-a-d as a subagent" rationale (ExitPlanMode gate + budget) depends
+  on p-a-d keeping its Phase 4 human gate; if that gate ever changes, revisit the rationale. What
+  crosses the boundary is written, not spoken: the master plan at `docs/plan/` plus the state block
+  below. Both ends must agree on both — master-plan seeds the block (workflow step 4) and p-a-d
+  derives its feature from it.
+- **The project-state record:** the pipeline-state block in the *project's* `CLAUDE.md` is
+  **written** by `plan-and-dispatch` at three points (Phase 4 opens the feature, Phase 5's halt path
+  records where a run stopped, Phase 6 closes it), **seeded** by `master-plan` step 4, and **read**
+  by p-a-d's own *How you are invoked*. It rides `pre-commit`'s docs-only exemption, so the planner
+  can commit it mid-run. Five places must agree on one shape; change the shape and the bare
+  invocation silently starts reading a format nothing writes — and its failure mode is not an error
+  but a plausible wrong feature. The halt write is the one to defend in any future compaction: it
+  fires unattended, and it is the only thing distinguishing a half-built feature from a finished one.
 - **The shared cores:** an agent that lists a core in its `skills:` frontmatter assumes the content
   arrives preloaded and is *not* duplicated locally. Move a rule into a core → delete it from every
   referrer. Move it out → the referrers must re-inline or re-point. Two harness constraints the

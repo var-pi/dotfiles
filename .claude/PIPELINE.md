@@ -24,7 +24,7 @@ human steps:
 | # | You do | Then the pipeline |
 |---|--------|-------------------|
 | 1 | Fresh session → **`/master-plan`** on the brief → approve at `ExitPlanMode` | Persists the master plan + one **feature brief** per feature to `docs/plan/` |
-| 2 | **A new session per feature** → **`/plan-and-dispatch`** on that brief → approve the commit-plan set **and its execution budget** at `ExitPlanMode` | Runs unattended: dispatches every commit, gating each green before the next |
+| 2 | **A new session per feature, in the project repo** → **`/plan-and-dispatch`** with **no arguments** → approve the commit-plan set **and its execution budget** at `ExitPlanMode` | Derives which feature is next from `CLAUDE.md`'s state block + the plan's spine, announces it, then runs unattended: dispatches every commit, gating each green before the next |
 | 3 | Wait for the **"ready to push"** notification → review the local commits → **push by hand** | Nothing — the guard blocks a *dispatched implementer* from pushing, deliberately |
 | 4 | **`/pipeline-maintenance`** when the improvement inbox has items | Reads the inbox, asks what it must, plans, then applies the proposals **with you present** and pushes them via `/dotfiles-sync` |
 
@@ -52,7 +52,7 @@ flowchart TD
         P2 --> P3["Phase 3 · Review loop"]
         P3 <--> FPR(["feature-plan-reviewer<br/>Opus xhigh · persistent · sees the WHOLE set every round"])
         P3 --> G2{{"HUMAN GATE · ExitPlanMode<br/>the set + the execution budget"}}
-        G2 --> P4["Phase 4 · persist to ~/.claude/plans/ · update CLAUDE.md"]
+        G2 --> P4["Phase 4 · persist to ~/.claude/plans/<br/>open the feature in CLAUDE.md's state block"]
         P4 --> P5["Phase 5 · walk the set<br/>strictly sequential, gated on each commit landing green"]
     end
 
@@ -63,7 +63,7 @@ flowchart TD
         IMP --> RM(["README plan dispatched LAST<br/>authored by feature-readme-writer"])
     end
 
-    DP -. "SESSION BOUNDARY — you open a fresh session per feature<br/>state travels in the persisted plan, not a live session" .-> PAD
+    DP -. "SESSION BOUNDARY — you open a fresh session per feature and call it bare<br/>state travels in the persisted plan + CLAUDE.md's state block, not a live session" .-> PAD
     P5 --> LOOP
     RM --> P6["Phase 6 · notify 'ready to push'<br/>planner writes project learnings to memory"]
     P6 --> RETRO(["pipeline-retrospector<br/>Opus · reviews the RUN, not the code · propose-only"])
@@ -206,6 +206,7 @@ route, not only one made through Bash.)
 | Path | Written by | Read by | Notes |
 |------|-----------|---------|-------|
 | `docs/plan/[slug]` | `/master-plan` (after approval) | `/plan-and-dispatch`, you | Master plan + the feature briefs; **crosses the session boundary**, so each brief has to stand alone for a cold reader |
+| the project's `CLAUDE.md` — **pipeline-state block** | seeded by `/master-plan` step 4; written by `/plan-and-dispatch` Phases 4, 5 (halt) and 6 | `/plan-and-dispatch`'s own invocation, you | Which features landed, which is in progress, which is next. **This is what lets step 2 be called bare.** Rides `pre-commit`'s docs-only exemption so the planner can commit it mid-run |
 | `~/.claude/plans/*.md` | `/plan-and-dispatch` Phase 4 | the execution loop | One file per commit plan, plus the README plan; the checkpoint the loop walks |
 | `docs/commits/[feature]/[NN]-[commit].md` | **authored** by `commit-doc-writer` | maintainers | **Four owners, one path:** the planner *names* it (template §8), the writer *authors* it, the implementer *stages and commits* it, `pre-commit` *enforces* it |
 | feature `README.md` | `feature-readme-writer` | newcomers, evaluators | Dispatched **last**, once every commit has landed; a docs-only commit, so guard-exempt and it gets no `docs/commits/` file |
