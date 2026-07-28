@@ -37,14 +37,23 @@ matches exactly what a later commit consumes, that the seams line up, and that n
 depends on something a sibling changes. This coordination review is the thing only a whole-set
 pass can do.
 
-**What the plan does and does not contain.** The plan pins the architecture: the decomposition,
-the **contract surface**, decisions with rationale and rejected alternative, and each test's
-**intent/target/method**. It deliberately does **not** contain method bodies or numeric bounds —
-the implementer writes the code against the real infrastructure and derives the bounds
-theory-first, and an independent `commit-code-reviewer` pass checks that real code. So do **not**
-fault a plan for leaving
-bodies or numbers out. Do check that what defines correctness — the contracts, decisions, and
-test targets — is complete and sound enough that the implementer cannot get it wrong.
+**What the plan does and does not contain.** The plan pins the architecture: the decomposition, the
+**contract surface**, decisions with rationale and rejected alternative, and each test's **intent,
+target, method class, and discrimination margin**. It deliberately does **not** contain method
+bodies, test mechanics, or numeric bounds — the implementer writes the code against the real
+infrastructure and derives the bounds theory-first, and an independent `commit-code-reviewer` pass
+checks that real code.
+
+This cuts both ways, and the second half is the one reviewers miss:
+
+- Do **not** fault a plan for leaving bodies or numbers out.
+- **Do** fault a plan that *contains* them. A `method` column carrying an executable expression, a
+  fixture shape, a grid size, a loop, or a tolerance is a finding — it reads to the implementer as a
+  decision it may not override, and a past run shipped a provably redundant idiom rather than
+  simplify one the plan had pinned.
+
+Do check that what defines correctness — the contracts, decisions, test targets, and discrimination
+margins — is complete and sound enough that the implementer cannot get it wrong.
 
 The **plan-and-dispatch** skill governs the planner's side of the loop; **this agreement plus
 the preloaded `reviewer-core` govern how you review.**
@@ -57,7 +66,9 @@ To review a plan you read the plan itself, the shared reviewer discipline, and t
 plan will be held to:
 
 - the **preloaded `reviewer-core`** — the shared reviewer discipline, already in your context;
-- the **feature plan handed to you** — the overview document and every commit plan;
+- the **feature plan handed to you** — the overview document and every commit plan — together with
+  the planner's **measurement record**, listing each discrimination claim it measured, how, and the
+  value;
 - the **plan-and-dispatch** skill — the planning discipline the plan must satisfy (independent
   verifiability, one commit plan = one commit, no forward references, decisions pre-resolved with
   rationale *and* rejected alternative, contracts coordinated across the set, reuse-first);
@@ -81,14 +92,30 @@ write the review by objective, verdict). Scope the objectives for a *feature-pla
 - **Independent verifiability & no forward references** — each commit stands on its own, leaves
   the tree green, and relies only on contracts earlier commits built.
 - **Decisions pre-resolved** — every non-obvious choice carries rationale *and* a rejected
-  alternative; nothing load-bearing is left silent for a weaker implementer to guess.
-- **Test intent** — each test's target and method actually pin the behavior claimed, with a
-  negative control; the target is sound enough that the implementer's theory-first bound will
-  bite (a FAIL will read as real breakage).
+  alternative; nothing load-bearing is left silent for the implementer to guess.
+- **Test intent** — each test's target and method class actually pin the behavior claimed; the
+  target is sound enough that the implementer's theory-first bound will bite (a FAIL will read as
+  real breakage).
+- **Discrimination claims, re-verified independently** — for every margin the plan pins, check it
+  yourself against the real code rather than accepting the planner's measurement record. That record
+  exists to tell you *what* was measured and how, so your pass is a re-verification rather than a
+  rediscovery; it is not a reason to skip the check. This is the only place in the pipeline where a
+  planner's number is independently tested, and it has caught wrong ones.
+- **Negative controls are certified, not merely named** — a plan that specifies a control must state
+  what it checked showing the control genuinely violates the hypothesis, and you verify that
+  independently. "With a negative control" is satisfied by a control that cannot fail: one round
+  caught a proposed positive-definiteness control that was algebraically the same kernel at half its
+  parameter, so the test meant to fail would have passed. A control that cannot fail is a green test
+  certifying nothing.
+- **Declared deltas** — where a commit alters, subsumes, or removes shipped behavior, check the
+  declaration is complete (what changes, what a caller of the old surface sees) and that the existing
+  test-set actually covers what would break. The plan's guarantee is that the legacy suite stays
+  green *unmodified*; if the coverage isn't there, that guarantee is empty.
 - **Reuse-first** — no commit reinvents machinery an earlier commit or the existing codebase
   already builds.
-- **Template conformance** — each plan fills the skeleton; contracts pinned, bodies and numeric
-  bounds correctly left to the implementer (do not fault their absence).
+- **Template conformance** — each plan fills the skeleton; contracts pinned, bodies, mechanics, and
+  numeric bounds correctly left to the implementer (do not fault their absence — do fault their
+  presence).
 
 ---
 

@@ -58,7 +58,9 @@ This is the load-bearing section. Everything else follows from it.
 **Where the line falls.** You pin the *claim* and the *class of evidence* — "the headline
 artifact is a fitted log-log slope against the analytic rate, gated stochastically." You never
 pin the number. Choosing which analytic target a feature is checked against is philosophy, and
-yours. Choosing the tolerance is measurement, and belongs to whoever can measure.
+yours. **The tolerance belongs to the implementer**, derived against real code. (plan-and-dispatch
+may measure one thing at its own altitude — whether a gate can discriminate at all, since that
+answer can add or remove a commit — but not the tolerance either.)
 
 ---
 
