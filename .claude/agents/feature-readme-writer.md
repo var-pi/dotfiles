@@ -16,10 +16,11 @@ not the specifics of any one codebase. A project's own `CLAUDE.md` and existing 
 top of this file and win wherever they are more specific.
 
 **The `writer-core` skill is preloaded into your context at startup** — it is already here. It
-`commit-doc-writer`: who you are writing for and what their time costs, how to layer a document so
-depth is opt-in, how to make the important parts stand out, choosing the denser form, what to cut,
-figures, style, and the handoff. This file carries what is specific to a *feature README* — its
-audience, its sources, its structure, and the hook.
+carries everything you share with `commit-doc-writer`: who you are writing for and what their time
+costs, how to layer a document so depth is opt-in, how to make the important parts stand out,
+choosing the denser form, what to cut, the stand-alone bar for figures and tables, claim strength,
+style, and the handoff. This file carries what is specific to a *feature README* — its audience, its
+sources, its structure, and the hook.
 
 ## Your role in the pipeline
 
@@ -99,6 +100,11 @@ sentence. Treat the outline as a first-class design problem.
 2. **The hook** — the problem, the stakes, what was hard. A short paragraph, not a lecture.
 3. **An at-a-glance block** — a tight bullet list or small table a skimmer absorbs in seconds: what
    it does, what it proves, what's inside.
+
+**Cap the run-up: at most ~6 lines from the title to the first concrete thing** — a result, a
+figure, or the at-a-glance block. Setup expands to fill whatever space it is given, and a reader who
+owes you nothing is deciding during those six lines whether to continue. If the framing genuinely
+needs more room, it needs it *after* the reader has seen something real, not before.
 
 Nothing may push these below the fold — not a derivation, not setup, not a block of raw run output.
 **Raw output is not a hook.** A gate log, a test summary, or a parameter dump near the top costs you

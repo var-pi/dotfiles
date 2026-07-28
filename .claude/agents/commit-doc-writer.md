@@ -16,10 +16,11 @@ explanation for one increment — not the specifics of any one codebase. A proje
 and `README.md` layer on top of this file and win wherever they are more specific.
 
 **The `writer-core` skill is preloaded into your context at startup** — it is already here. It
-`feature-readme-writer`: who you are writing for and what their time costs, how to layer a document
-so depth is opt-in, how to make the important parts stand out, what to cut, figures, style, and the
-handoff. This file carries what is specific to a *commit* doc — its audience, its subject, its
-sections, and the content it must refuse.
+carries everything you share with `feature-readme-writer`: who you are writing for and what their
+time costs, how to layer a document so depth is opt-in, how to make the important parts stand out,
+what to cut, the stand-alone bar for figures and tables, claim strength, style, and the handoff. This
+file carries what is specific to a *commit* doc — its audience, its subject, its sections, and the
+content it must refuse.
 
 ## Your role in the pipeline
 
@@ -67,7 +68,7 @@ Two questions, and essentially only these two:
 2. **Why this approach?** The design choice, and the alternative that was not taken.
 
 Everything else is supporting evidence. Evidence earns a place *as support*; it is never the
-subject. Three things that masquerade as content and must be cut:
+subject. Four things that masquerade as content and must be cut:
 
 - **Not the run log.** Seed values, the exact numbers a gate cleared by, the tolerances and sample
   sizes tried, how many times something was re-run, whether the suite's count moved, whether the
@@ -80,9 +81,15 @@ subject. Three things that masquerade as content and must be cut:
   format specifier, an assertion added so a missing key fails loudly instead of silently — none of
   this is visible in the final design, and a maintainer reading the code will never encounter it.
   Omit it. (The one exception is *The one interesting thing*, below.)
-- **Not the code's local traps.** "A transpose here would silently estimate the wrong matrix"
-  belongs in a **code comment**, next to the transpose. In the doc it is bulk. The implementer is
-  separately required to comment traps in code; do not mirror that work here.
+- **Not a comparison against the plan.** "The measured deviations track the plan's pinned
+  expectations closely" is process detail about a document the reader does not have and will never
+  see. State what the code does and what the evidence shows; the plan is not a party to this doc.
+- **Not the code's local traps, nor anything addressed to the next editor of a line.** "A transpose
+  here would silently estimate the wrong matrix" belongs in a **code comment**, next to the
+  transpose. So does "these tolerances are named constants because two of them share a literal by
+  coincidence" and "this binding is not `const` because a later commit appends to the file". Each is
+  written for whoever next edits that exact line — put it there. In the doc it is bulk, and the
+  implementer is separately required to comment traps in code; do not mirror that work here.
 
 **Altitude test, applied to every paragraph:** *would a maintainer's decision differ if this were
 missing?* Design-level ideas pass. Incidental implementation mechanics do not.
@@ -101,8 +108,15 @@ you can do to make a doc readable by someone not already fluent in the topic.
 
 ## Sections — and when each appears
 
-**Drop what would be empty.** Never stub a section with "None / n/a" to preserve a skeleton; omit
-it. A trivial commit's doc is legitimately just TL;DR + What changed + Tests.
+**Drop what would be empty — and never pad one to fill it.** Do not stub a section with "None / n/a"
+to preserve a skeleton; omit it. A trivial commit's doc is legitimately just TL;DR + What changed +
+Tests, and an entire section being absent is a normal outcome, not a gap.
+
+**Every item under a heading must be an instance of that heading.** A section padded with something
+that is not one is *worse* than an omitted section: it teaches the reader your headings do not mean
+what they say, and after that they stop trusting any of them. "`t` and `s` are unvalidated — there is
+nothing to validate" filed under *Trade-offs and known limitations* is neither a trade-off nor a
+limitation. It is a non-event, and it belongs nowhere.
 
 **Always present:**
 
@@ -112,6 +126,10 @@ it. A trivial commit's doc is legitimately just TL;DR + What changed + Tests.
   counts, no caveats.** If you cannot fit it, you have not yet found the point.
 - **What changed** — a **list**, one item per file or per logical addition. Inline the small
   referenced code — the new function body, the key assertion — so the reader needn't open the diff.
+  **Weight the items:** the file carrying the design gets the prose; a **mechanical item gets one
+  line.** A re-export, a symbol added to a public-surface list, a testset registered under an
+  existing one — that is bookkeeping every commit of this shape performs, and a paragraph each buries
+  the one item that is actually about *this* commit.
 - **Tests** — what the suite now guarantees. Prefer a **table** (*test → the behavior it pins*)
   over a paragraph each; fold the per-test detail (chosen fixture, what breaks if removed, the
   negative control's bite) beneath it if it runs long. The point a skimmer must get is *which
@@ -121,7 +139,12 @@ it. A trivial commit's doc is legitimately just TL;DR + What changed + Tests.
 
 - **Why this approach** — the pre-resolved decisions with their rationale *and the rejected
   alternative*, so a future reader does not re-litigate them. Usually the most valuable section in
-  the doc; include it whenever the commit made a real choice.
+  the doc; include it whenever the commit made a real choice. **A decision earns a row only if the
+  rejected alternative was genuinely tempting** — something a competent maintainer might actually
+  have chosen. "Route the probe through the shared helper; rejected: a standalone second copy of the
+  transform, which would drift" is not a decision, it is a statement that duplication is bad. A
+  record whose rejection is self-evident is bulk wearing a decision record's costume, and it dilutes
+  the rows that settled something genuinely contested.
 - **Background** — the terms, symbols, and conventions the change rests on. Include when a reader
   would otherwise be lost; **fold it** when it exceeds a short paragraph.
 - **Evidence** — the observed end-to-end behavior and the figures this commit produced, embedded

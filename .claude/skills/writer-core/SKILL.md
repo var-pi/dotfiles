@@ -1,6 +1,6 @@
 ---
 name: writer-core
-description: Shared doc craft for the planning pipeline's doc writers — the rushed-team-lead reader, layering and folding, signal hierarchy, the cut list, the figure bar. Preloaded into commit-doc-writer and feature-readme-writer; not a standalone workflow.
+description: Shared doc craft for the planning pipeline's doc writers — the rushed-team-lead reader, layering and folding, signal hierarchy, the cut list, the stand-alone evidence bar. Preloaded into commit-doc-writer and feature-readme-writer; not a standalone workflow.
 user-invocable: false
 ---
 
@@ -49,14 +49,23 @@ Serve the skimmer and the deep reader at once, without making either pay the oth
   legitimately skip: a long derivation, a parameter dump, raw run output, an extended narrative.
   Depth becomes **opt-in** instead of a wall the reader must scroll past. Reach for a fold whenever
   a passage is valuable-but-not-load-bearing; that is most long passages.
-- **Write the `<summary>` as a real title** — short, specific, honest about what is inside, so the
-  reader can decide without opening it. "The threshold that budgeted the wrong quantity" is a
-  summary; "More details" is not.
+- **Write the `<summary>` as a real title — under ~8 words.** Short, specific, honest about what is
+  inside, so the reader can decide without opening it. "The threshold that budgeted the wrong
+  quantity" is a summary; "More details" is not; and neither is "Two ways a deterministic result like
+  this can quietly lie, and what rules each one out" — a sentence in the title slot is not a title.
+- **A fold buys opt-in, not exemption.** Everything inside `<details>` obeys every rule outside it:
+  the cut list, the denser form, the structural-break cap below. Folded content that runs long needs
+  its **own subheadings** — a fold is not a place to put an unstructured wall you did not want to
+  edit. If the material is not worth structuring, it is not worth keeping.
 - **Never hide anything essential behind a fold.** Some Markdown previews render `<details>`
   pre-expanded as plain text (still readable), and a skimmer will not open it. If the reader must
   know it, it goes above the fold.
 - **Short, descriptive headings and subheadings** so the heading list alone works as a table of
   contents — a reader should be able to navigate by headings and skip what they don't need now.
+- **One section, one object.** A passage covering two distinct named things gets **split**, with each
+  named in its own heading. Headings are the navigation surface: a name a reader might scan or search
+  for — a gate id, a function, a parameter — belongs in one, not buried in the fourth sentence of a
+  shared paragraph.
 
 ---
 
@@ -90,8 +99,14 @@ otherwise reach for:
   glance, which is worth having;
 - **a mermaid diagram** — where a paragraph of "A feeds B feeds C" would otherwise be dense.
 
-**Vary the rhythm.** A wall of uniform prose reads as heavy no matter how good the content is;
-alternate short prose, a list, a table, a figure.
+**Vary the rhythm — and treat it as a cap, not a taste.** Never run more than about **five
+consecutive prose sentences** without a structural break: a heading, a table, a figure, a list, a
+code block, a callout, or a fold. A multi-sentence bullet counts as prose, so a list of paragraphs
+does not break anything. A wall of uniform prose reads as heavy no matter how good the content is,
+and it is simply not read.
+
+When a passage is long *and* genuinely insightful, that is not an exemption — it is the case the fold
+exists for. Put it behind a titled `<summary>` and give it subheadings.
 
 ---
 
@@ -107,15 +122,23 @@ cut on sight —
   the doc, where it is bulk. (The implementer is separately required to comment traps in code; do
   not duplicate that here.)
 - **Negative space.** An inventory of what the change did *not* do. A single punchy scope line
-  ("No library changes") is welcome; a catalogue is not. Same for the contrastive "X, not Y"
-  construction worn past the one time the contrast is the actual point. Keep a negative only when it
-  answers a question a reader would genuinely raise — a deliberately narrow scope, a tempting
-  generalization declined on purpose.
+  ("No library changes") is welcome; a catalogue is not. Keep a negative only when it answers a
+  question a reader would genuinely raise — a deliberately narrow scope, a tempting generalization
+  declined on purpose.
+- **The antithesis tic — at most one per document.** "X, not Y" / "X rather than Y" / "X is A, but
+  it is really B" is a rhetorical cadence that reads as insight and usually carries none. **The tell:
+  was Y ever actually on the table?** "The nugget is reported rather than assumed" says nothing —
+  nobody proposed assuming it. Use the construction once, where the contrast is the genuine point
+  and the reader might really have expected Y; everywhere else, delete the negated half and state
+  what is true.
+- **Narration of the artifact's own structure.** "The body is deliberately the whole implementation:
+  no re-derived FFT, no re-mirroring"; "the docstring carries the `r` convention and the raw-value
+  contract". The reader wants the thing or what it does, never a tour of where it is written down.
 - **Throat-clearing and filler transitions.** No "in this section we will", no motivational framing.
 
 ---
 
-## Figures — embed them, and make sure they stand alone
+## Evidence must stand alone — figures, tables, display blocks
 
 Embed the figures the work already produced, by relative path, **where you discuss them**
 (`![caption](relative/path)`), so the evidence sits in the reader's line of sight instead of in a
@@ -127,6 +150,22 @@ encodes, and *what the plotted quantity actually is*: an aggregate over replicat
 differently from a single realization) that a reader would otherwise have to guess. **You do not
 generate or fix figures.** If one fails that bar, **flag it in your handoff** rather than embedding
 something the reader cannot read.
+
+**The same bar applies to every block a reader can land on out of order** — a table, a fenced display
+block, a quoted log. Column headers alone are not a caption: a table whose first column is `H` and
+whose next two are `n = 1024` and `n = 4096` does not say *what is being tabulated*. Give each one a
+lead-in or caption naming the quantity and its units, in the same sentence-or-less budget a figure
+caption gets. A skimmer's eye lands on tables and code blocks first, which is exactly why an
+unlabeled one costs more than an unlabeled paragraph.
+
+## Never claim more than the evidence supports
+
+Match the strength of every claim to the strength of what backs it, and **keep that calibration
+consistent across the whole document.** A doc that says "shown numerically, not proved" in its
+limitations and then asserts the same result as established mechanism elsewhere ("that is the
+cancellation driving `D* → 0`") has contradicted itself, and the reader cannot tell which sentence to
+believe. When you hedge a result once, carry the hedge everywhere it appears — or drop the hedge
+because it was never warranted. Pick one.
 
 ---
 
