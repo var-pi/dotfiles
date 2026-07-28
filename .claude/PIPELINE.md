@@ -8,7 +8,8 @@ the map and a governing file disagree, the file wins and this map is stale.
 To change anything in the ecosystem, invoke **`/pipeline-maintenance`** — it carries the editing
 discipline and the cross-file dependency graph.
 
-> Verified against the files on **2026-07-28** (Claude Code 2.1.220).
+> Verified against the files on **2026-07-28** (Claude Code 2.1.220). Mechanically re-checkable
+> with `sh ~/.claude/skills/pipeline-maintenance/validate-config.sh`.
 >
 > Ecosystem files are distributed through the `~/.dotfiles` bare repo — an edit is not live
 > anywhere else until `/dotfiles-sync` has pushed it.
@@ -92,7 +93,7 @@ start; it is a second source of truth that drifts the moment the real one is dec
 
 | Rung | Owns | Must never contain | Artifact |
 |------|------|--------------------|----------|
-| **master-plan** | Through-line · decomposition into features · repo architecture · cross-cutting conventions · risk register · falsifier per feature | Call signatures, schemas, code bodies, stubs, tolerances, sample sizes | `docs/plan/[slug]` |
+| **master-plan** | Through-line · decomposition into features · repo architecture · cross-cutting conventions · risk register · falsifier per feature · a per-feature **delta** (modules added/altered/removed, and every shipped guarantee the feature means to break) | Call signatures, schemas, code bodies, stubs, tolerances, sample sizes — a delta names **modules, never signatures** | `docs/plan/[slug]` |
 | **plan-and-dispatch** | Decomposition into commits · the **contract surface** between them · pre-resolved decisions *with rejected alternatives* · each test's **intent / target / method class / discrimination** · a declared **delta** where a commit alters shipped behavior · the effort estimate · the `docs/commits/` path | Code bodies, **test mechanics** (expressions, fixtures, grid sizes, loops), numeric bounds and tolerances | `~/.claude/plans/*.md` |
 | **commit-plan-implementer** | **Code bodies** · **all test mechanics** · **every numeric bound**, derived **theory-first** · verification · the commit itself | — (it reads only its one plan; never the master plan or sibling plans) | the git commit |
 
@@ -255,6 +256,8 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 | `agents/pipeline-retrospector.md` | Retrospective on the run | Opus · high | run artifacts + ecosystem files | the inbox memory **only** |
 | `skills/reviewer-core/SKILL.md` | Shared review discipline | — | **preloaded** into `master-plan-reviewer` + `feature-plan-reviewer` via their `skills:` frontmatter | — · deliberately **not** preloaded into `commit-code-reviewer`, which is one-shot, not resumed |
 | `skills/writer-core/SKILL.md` | Shared doc craft | — | **preloaded** into `commit-doc-writer` + `feature-readme-writer` | — · the rushed-team-lead reader, folding, signal hierarchy, the stand-alone evidence bar |
+| `skills/handoff-core/SKILL.md` | The four handoff **bundles** | — | **preloaded** into `commit-plan-implementer` + the four receivers; `plan-and-dispatch` **invokes** it (a skill cannot preload a skill) | — · sender writes every field incl. `none`; receiver names any gap and proceeds |
+| `skills/pipeline-maintenance/validate-config.sh` | Schema + cross-reference check | POSIX sh | `agents/*.md`, `skills/*/SKILL.md`, `settings.json` | exit 1 on an unresolvable reference · run by post-edit check 6 **and** `plan-and-dispatch` Phase 1 |
 | `hooks/pre-commit`, `pre-push`, `commit-msg` | The git guard | POSIX sh | the staged set / the message | allow or reject · marker-gated, see §5 |
 | `hooks/pipeline-marker.sh` | Arms/disarms the guard | POSIX sh | — | wired in `settings.json` as `SubagentStart`/`SubagentStop` on `commit-plan-implementer` |
 
@@ -272,7 +275,9 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 | An implementer preserved something redundant "because the plan pinned it" | Plan-stated mechanics are the implementer's to replace. Owner: `agents/commit-plan-implementer.md` — "Plan-stated mechanics are yours" |
 | A subagent reports `/code-review` or `/verify` failed with `disable-model-invocation` | Expected: both are user-triggered only. `commit-code-reviewer` replaces the first; drive the flow directly instead of the second |
 | `pipeline-marker: this repo sets core.hooksPath=…` | The repo owns its hooks path, so the guard is **not** enforcing. Owner: `hooks/pipeline-marker.sh`; arm it by hand if you want it |
-| A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one that set `disable-model-invocation`) and it only warns in the debug log. Owner: `skills/reviewer-core/`, `skills/writer-core/` |
+| A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one that set `disable-model-invocation`) and it only warns in the debug log. Owner: `skills/reviewer-core/`, `skills/writer-core/`, `skills/handoff-core/` — and `validate-config.sh` is what catches it before a run |
+| An agent says its bundle was missing a field | Working as designed: the receiver names the gap and proceeds. The sender dropped it. Owner: `skills/handoff-core/` for the field set, the sending agreement for filling it |
+| `/plan-and-dispatch` opens by reporting a config failure | `validate-config.sh` found an unresolvable reference — a renamed agent, a core that no longer loads, a dead hook path. Fix it in `/pipeline-maintenance`, not mid-run |
 | A commit seems to have stalled | Check the plan's §0 **agent wall-clock** estimate — not its compute figure, which is far smaller and makes every healthy dispatch look stalled. The run is *supposed* to be long for gated experiments |
 | A dispatch came back saying it is "waiting" for a subagent | It should never do that. Owner: `agents/commit-plan-implementer.md` — "Never return in a waiting state"; the dispatcher's side is `plan-and-dispatch` Phase 5, which verifies the tree and **resumes that same session** |
 | The pipeline keeps repeating a mistake across features | It belongs in the inbox → `/pipeline-maintenance`, not in a one-off correction to a running agent |

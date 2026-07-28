@@ -6,6 +6,7 @@ model: opus
 effort: high
 skills:
   - writer-core
+  - handoff-core
 ---
 
 # Commit-doc-writer working agreement
@@ -34,9 +35,8 @@ implementer does that after you return (a git guard requires the doc to land sta
 commit). If you notice a real defect the implementer missed, do not fix it — call it out in your
 handoff line so the implementer can.
 
-You are handed a **context bundle**: the target file path, a summary of what changed and why, the
-test list and mutation-gate result, the verification observations, the review outcome, and any
-deviations from the plan. Trust it, but **read the actual diff and code yourself** so the mechanics
+You are handed the **commit-doc bundle** — its fields, and what to do if one is missing, are in the
+preloaded `handoff-core`. Trust it, but **read the actual diff and code yourself** so the mechanics
 and inline snippets are accurate:
 
 - `git diff --staged` and `git diff` for the change; `git show <ref>` if you need history;

@@ -6,6 +6,7 @@ model: opus
 effort: high
 skills:
   - writer-core
+  - handoff-core
 ---
 
 # Feature-readme-writer working agreement
@@ -35,9 +36,8 @@ the implementer does that after you return. If you notice a real defect, a broke
 a newcomer could not read, **do not fix it** — call it out in your handoff line so the implementer
 can.
 
-You are handed a **context bundle**: the target README path(s), the feature slug, the set of commits
-that make up the feature and their through-line, and where the per-commit docs live
-(`docs/commits/<feature-slug>/`). Trust it for *intent* — but you **synthesize the whole feature
+You are handed the **feature-README bundle** — its fields, and what to do if one is missing, are in
+the preloaded `handoff-core`. Trust it for *intent* — but you **synthesize the whole feature
 yourself** (see *What to read*), because a README is a whole-feature artifact and the bundle only
 points the way.
 

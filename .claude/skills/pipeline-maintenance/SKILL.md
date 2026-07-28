@@ -77,7 +77,9 @@ reader*).
   a set of commit plans (one per file); pins contracts + decisions + test *intent/target/method*;
   hardens the set through a review loop; then dispatches each commit. **Writes no code bodies or
   numeric bounds** — the implementer does.
-- `skills/pipeline-maintenance/SKILL.md` — **this file**.
+- `skills/pipeline-maintenance/SKILL.md` — **this file**. Ships one script beside it,
+  `validate-config.sh` (POSIX sh) — the mechanical half of post-edit check 6, also run by
+  `plan-and-dispatch` Phase 1.
 
 **Orientation (`~/.claude/PIPELINE.md`, read by humans):**
 - The **visual map** — Mermaid diagrams of the lifecycle, the commit inner loop, the guard's
@@ -117,6 +119,12 @@ that list them in their `skills:` frontmatter — not read via a tool call):**
   the cut list, the **stand-alone bar for figures *and* tables/display blocks**, claim-strength
   calibration, style constraints, weight calibration, handoff. Each writer file carries only its
   audience, sources, sections, and altitude.
+- `skills/handoff-core/` — the four agent-to-agent **bundle** field sets (code-review, commit-doc,
+  feature-README, retrospective) plus the protocol both ends follow: sender writes every field
+  including `none`, receiver names any gap in its handback and proceeds rather than stalling.
+  Preloaded into the implementer and the four receivers. **`plan-and-dispatch` cannot preload it**
+  — `skills:` is a subagent-only frontmatter field — so the planner invokes it via the `Skill`
+  tool at Phase 6.
 
 **Hooks (POSIX sh, `#!/bin/sh`):**
 - `hooks/pipeline-marker.sh` — arms the marker (and points the repo at these hooks) on
@@ -158,8 +166,13 @@ multiple files; edit them together or you leave a relic.**
   ("Declared deltas"). The load-bearing guarantee in all three is the same sentence: **the existing
   test-set must stay green *unmodified* in that commit**, and a legacy test that must change is a
   contract change needing its own step. Weaken it in one place and the other two are promising
-  something nothing enforces. (A fuller brownfield form — deltas at *feature* altitude in
-  master-plan's briefs — is a separate, still `APPROVAL-GATED` inbox item.)
+  something nothing enforces. **The feature-altitude half spans two more files:** master-plan's
+  brief field 8 (*Delta*) and `master-plan-reviewer`'s "Declared deltas" objective, joined by
+  plan-and-dispatch Phase 2's "carry a brief's delta down into the set". Its two bounds are what
+  keep it from collapsing into the rung below — a brief **names modules, never signatures**, and it
+  must **name every shipped guarantee it intends to break**, since that is precisely the change the
+  green-unmodified test-set cannot cover. Loosen either and the brief starts competing with the
+  commit plans.
 - **The docs/commits path** is **named** by plan-and-dispatch (template §8), **authored** by
   `commit-doc-writer`, **staged + committed** by the implementer, and **enforced** by `pre-commit`.
   Change the path convention or the exemption and all four must agree.
@@ -213,6 +226,20 @@ multiple files; edit them together or you leave a relic.**
   or retire that skill and this phase names a capability that no longer exists — post-edit check 6's
   exact silent failure. Untrack a file and the edit stops propagating to other machines with no
   error anywhere; a new ecosystem file must be added to that repo in the same pass that creates it.
+- **The handoff bundles:** `skills/handoff-core/` owns all four field sets; the five agents that
+  preload it and `plan-and-dispatch` Phase 6 (which invokes it) may only **name** a bundle. A field
+  list that reappears inline in a sending or receiving agreement is the drift the core exists to
+  prevent — so adding a field means editing the core alone, and renaming the core means grepping
+  every `skills:` list plus that Phase 6 step. Keep it clear of the **doc-style contract**: the
+  core says what must *reach* an agent, never what its artifact contains. Its two rules are a
+  matched pair — the sender's explicit `none` is what gives the receiver's gap-check anything to
+  bite on, so dropping either leaves the other inert.
+- **The config validator:** `skills/pipeline-maintenance/validate-config.sh` is named by post-edit
+  check 6 **and** by `plan-and-dispatch` Phase 1; move or rename it and both go stale. Its field
+  lists are transcribed from the published frontmatter tables, so a harness change can make the
+  *validator* the stale party — which is why an unknown key is a warning and only an unresolvable
+  reference is an error. It cannot check whether a named capability is still *invocable*; that
+  half of check 6 stays human.
 - **The visual map:** `~/.claude/PIPELINE.md` mirrors the map above, the altitude contract, the
   artifact paths, the guard's branch logic and thresholds, the file index (model/effort per agent),
   and the improvement loop. It is a **mirror with no authority** — nothing may be recorded only
@@ -275,7 +302,13 @@ Run this before declaring an ecosystem edit done:
    generalize it to an unspelled case.
 5. **No relics** — no leftover reference to a retired concept, path, tier, or agent. Organic edits
    leave these; find them.
-6. **Named capabilities still exist, and named config keys are still read** — every skill, slash
+6. **Named capabilities still exist, and named config keys are still read.** Start with the
+   mechanical half: **run `sh ~/.claude/skills/pipeline-maintenance/validate-config.sh`** (it must
+   exit 0). It checks what a script can — frontmatter keys against the published field tables, that
+   every preloaded `skills:` entry resolves and does not block its own preload, that each agent's
+   `name` matches its filename, and that the `settings.json` matchers and command paths still
+   resolve. It cannot check whether a *named capability* is still invocable; that half is yours.
+   Every skill, slash
    command, or tool an agreement tells an agent to *use* must actually be invocable by that agent
    today, and every frontmatter/settings key must actually be one the harness parses. The harness
    changes underneath these files, and **both failure modes are silent**: `/code-review` and

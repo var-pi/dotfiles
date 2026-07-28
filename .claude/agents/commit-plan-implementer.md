@@ -3,6 +3,8 @@ name: commit-plan-implementer
 description: Execute one commit plan — write the tests and code, verify, document, and hand back one local commit. Dispatch one plan at a time.
 model: opus
 effort: high
+skills:
+  - handoff-core
 ---
 
 # Commit-plan-implementer working agreement
@@ -80,9 +82,9 @@ Once the increment verifies empirically, get an independent, fresh-context pass 
 **before** writing it up. This is the control most likely to catch a convention bug you cannot see,
 because you wrote the code — treat it as a control, not ceremony.
 
-**Dispatch the `commit-code-reviewer` subagent** (via the Agent tool) with a context bundle: the
-increment's goal, its contract surface and pre-resolved decisions, the test intent, and where the
-change lives. It reads the diff itself, has **no write tools**, and reports findings organized by
+**Dispatch the `commit-code-reviewer` subagent** (via the Agent tool) with the **code-review
+bundle** — its fields are in the preloaded `handoff-core`; send every one, writing `none` where
+there is nothing to report. It reads the diff itself, has **no write tools**, and reports findings organized by
 objective. You do the fixing — reviewing your own repair would destroy the independence that makes
 this worth running.
 
@@ -298,14 +300,9 @@ docs-only README commit — see below — which is exempt and carries no such do
 **Do not write this doc yourself.** Once the code is verified and the review is clean, dispatch the
 **`commit-doc-writer`** subagent (via the Agent tool) to write it. That agent runs on Opus and
 carries the standing agreement for *how* the doc should read — scannable, weight-calibrated, depth
-folded — so you hand it context, not formatting rules. Give it a **context bundle**:
-
-- the exact `docs/commits/...` path from your plan;
-- a summary of what changed and why (the pre-resolved decisions from your plan, restated);
-- the test list and the mutation-gate result;
-- the empirical / end-to-end verification observations;
-- any review finding that **changed the design** (not the fact that a review ran);
-- any deviation from the plan.
+folded — so you hand it context, not formatting rules. Send the **commit-doc bundle** — its fields
+are in the preloaded `handoff-core`; send every one, writing `none` where there is nothing to
+report.
 
 The writer reads the diff and code itself, so the bundle need not reproduce every line — it saves
 the writer rediscovering *intent*. Hand it the full picture, including process detail it may need to
@@ -326,12 +323,8 @@ subagent (via the Agent tool), the same way you delegate the commit doc to `comm
 It runs on Opus and carries the standing agreement for *how a showcase README should read* — it is
 written for outside readers, not the operator, so structure and captivation are its craft, not
 yours. It reads the whole finished feature itself (every `docs/commits/<feature-slug>/` doc, the
-code, the existing experiment figures), so hand it a **context bundle**, not formatting rules:
-
-- the exact README path(s) from your plan;
-- the feature slug and the set of commits that make up the feature, with the through-line/intent;
-- where the per-commit docs live (`docs/commits/<feature-slug>/`);
-- any deviation from the plan worth surfacing to a reader.
+code, the existing experiment figures), so hand it the **feature-README bundle** — fields in the
+preloaded `handoff-core`, every one present — not formatting rules.
 
 The writer creates the README and hands back its path (plus any gap, broken claim, or unreadable
 figure it noticed — act on those). This README increment is a **docs-only** commit: it is exempt

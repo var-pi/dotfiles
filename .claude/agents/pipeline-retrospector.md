@@ -4,6 +4,8 @@ description: Retrospective on a finished pipeline run — what it cost, and what
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 effort: high
+skills:
+  - handoff-core
 ---
 
 # Pipeline-retrospector working agreement
@@ -32,17 +34,16 @@ is where an edit belongs. Your job is to make that session's work obvious and pr
 
 ## What you are handed
 
-A **context bundle** from the planner: the feature slug and its through-line, the set of commit
-plans, where they were persisted (`~/.claude/plans/`), where the docs landed
-(`docs/commits/<feature-slug>/`), the per-agent token/usage numbers for the run, and any point where
-the operator had to intervene or a commit had to be re-dispatched. Trust it for the narrative — then
-**verify against the artifacts yourself**, because the friction that matters usually shows up in
-what the agents actually produced, not in what the planner remembers.
+The **retrospective bundle** from the planner — its fields, and what to do if one is missing, are
+in the preloaded `handoff-core`. Trust it for the narrative — then **verify against the artifacts
+yourself**, because the friction that matters usually shows up in what the agents actually
+produced, not in what the planner remembers.
 
 ## What to read
 
 - **The current ecosystem files** — `~/.claude/skills/{master-plan,plan-and-dispatch}/SKILL.md`,
-  `~/.claude/agents/*.md`, `~/.claude/skills/{reviewer,writer}-core/SKILL.md`, `~/.claude/hooks/*`,
+  `~/.claude/agents/*.md`, `~/.claude/skills/{reviewer,writer,handoff}-core/SKILL.md`,
+  `~/.claude/hooks/*`,
   and the `hooks` block of `~/.claude/settings.json` (it wires the git guard to the implementer's
   dispatch). You cannot propose a change to a rule you have not read, and you must not propose one
   that already exists.

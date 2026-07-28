@@ -149,6 +149,15 @@ The `Preferences & tradeoffs` at the end govern every phase.
 
 ## Phase 1: Explore
 
+**First, validate the pipeline's own config:** run
+`sh ~/.claude/skills/pipeline-maintenance/validate-config.sh`. It resolves the agent frontmatter,
+the preloaded cores, and the git-guard wiring this run is about to depend on — and it is the only
+check that catches a **harness-side** change nobody edited a file for, such as a preloaded core
+that silently stopped loading or a hook matcher that stopped matching. On a non-zero exit, **report
+it to the operator before planning**: do not repair it yourself (that is `/pipeline-maintenance`'s
+job, with the operator present) and do not continue quietly, or the defect it named resurfaces
+mid-run as a mystery.
+
 To plan a whole feature you read broadly — the one stage where wide context is warranted,
 because you are the one who will decide how to carve it up:
 
@@ -186,6 +195,14 @@ Surface the reuse target in the plan so the implementer doesn't reinvent it.
 **Re-derive your own plan.** Even when handed a brief or outline, produce *your own* concrete
 plan first, grounded in the brief — this is how you surface a misread spec before it becomes
 code, and before an implementer inherits the misread with only your plan to check it against.
+
+**Carry a brief's delta down into the set.** When the brief declares what the feature alters or
+removes, every part of that delta must land in some commit plan's §3 — the brief names the change
+at feature altitude; you are where it becomes a per-commit declaration. It names modules and
+capabilities and never signatures, so re-specifying the replaced surface is yours, as it is for
+new work. A shipped guarantee the brief names as **broken** gets its own declared step: it cannot
+ride along inside the commit whose implementation the old test was guarding. A delta stated in the
+brief and in no commit plan is the feature quietly not doing what was approved.
 
 **Coordinate the contracts across the set — the heart of the plan.** You plan every commit at
 once so you can own the contracts that pass *between* them. Resolve each shared API, signature,
@@ -436,13 +453,10 @@ disarming: it cleared itself when the last dispatch ended.
    learnings above (which are about the *codebase*), the run itself gets reviewed — but **not by
    you.** You chose the decomposition, drove the review loop, and dispatched every commit, so your
    account of what went wrong is the author's account. Dispatch the **`pipeline-retrospector`**
-   subagent (via the Agent tool) with a **context bundle**:
-
-   - the feature slug and its through-line, and where the plans were persisted (`~/.claude/plans/`);
-   - where the docs landed (`docs/commits/<feature-slug>/`) and the README path;
-   - the **per-agent token/usage numbers** for the run — planning, review loop, each implementer
-     dispatch, the writers — since only you can see them;
-   - every point where the operator intervened, a commit was re-dispatched, or a gate went marginal.
+   subagent (via the Agent tool) with the **retrospective bundle**. Its fields live in
+   `handoff-core` — **invoke that skill** to read them (you are a skill, so you cannot preload it
+   the way the subagents do), and send every field, writing `none` where there is nothing to
+   report. Only you can see the per-agent token numbers, so a field you drop is unrecoverable.
 
    It reads the current ecosystem files and the run's artifacts itself, files concrete proposals to
    the rolling `pipeline-improvement-inbox` memory, and returns an operator-facing retrospective.

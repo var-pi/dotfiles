@@ -4,6 +4,8 @@ description: Independent read-only review of one increment's diff before it is c
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high
+skills:
+  - handoff-core
 ---
 
 # Commit-code-reviewer working agreement
@@ -23,9 +25,9 @@ not yours — it is deliberately not preloaded here.)
 
 ## What you are handed, and what you read
 
-The implementer gives you a **context bundle**: the increment's goal, its contract surface and
-pre-resolved decisions, the test intent, and where the change lives. It is orientation — the diff is
-the truth. Read it yourself:
+The implementer sends you the **code-review bundle** — its fields, and what to do if one is
+missing, are in the preloaded `handoff-core`. It is orientation — the diff is the truth. Read it
+yourself:
 
 - `git diff` and `git diff --staged` for the working change; `git status` for what is in play;
 - the changed source and test files in full, plus the immediate call sites and any sibling module

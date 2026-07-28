@@ -51,7 +51,8 @@ This is the load-bearing section. Everything else follows from it.
 - **The through-line** — the project's central object or thesis, and why each feature is a fact
   about it.
 - **The decomposition** into features, with a dependency spine and an explicit cut line.
-- **Per feature** — the one idea, what it proves, and what would falsify it.
+- **Per feature** — the one idea, what it proves, what would falsify it, and — when it changes
+  work already shipped — its **delta**.
 - **The repository architecture and its rationale**, together with that rationale's limits.
 - **Cross-cutting conventions**, stated once.
 - **A consolidated risk register** and the budget with its headroom.
@@ -91,6 +92,23 @@ One brief per feature. Each field is a line or two — a brief is orientation, n
 5. **Deliverable shape** — which areas of the repo it touches, in prose.
 6. **Effort & risk** — the estimate, and the one thing most likely to overrun it.
 7. **Cut status** — committed core, or a labelled forward pointer that nothing depends on.
+8. **Delta** — what the feature **adds, alters, and removes** relative to work already shipped.
+   Write `none — new ground` when it only adds, rather than dropping the field; an absent line
+   reads as "nobody considered it."
+
+**A delta names modules, not signatures.** Say which file, module, or capability changes and what
+a caller of the old surface sees afterwards, in prose — the same altitude as *Deliverable shape*,
+which already names repo areas. The signature that replaces it is plan-and-dispatch's, exactly as
+for new work: a brief that lists the replaced symbol has reached down a rung, and its version
+drifts the moment the planner decides the real one.
+
+**Name every shipped guarantee the feature intends to break.** A commit is allowed to alter or
+subsume shipped code precisely because the existing test-set stays green *unmodified* in that
+commit — that is what makes the change safe without anyone re-litigating it. A change that
+*cannot* honor that is not a delta but a **contract break**, and it belongs in the brief as one,
+with its migration as a declared step in the spine. A break nobody named upstream is discovered
+at the bottom of the ladder, where the implementer's only moves are to halt or to quietly edit
+the test that was guarding the old contract — and the second one is invisible.
 
 **A brief must be self-sufficient as a plan-and-dispatch input.** It is read by a *cold* session
 that has not seen you plan it — so it must carry enough for that planner to explore and decompose

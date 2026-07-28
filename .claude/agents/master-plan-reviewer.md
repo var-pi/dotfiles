@@ -54,6 +54,11 @@ write the review by objective, verdict). Scope the objectives for a *master-plan
   real — does anything in the committed core depend on what is declared cuttable?
 - **Falsifiability** — every feature states what would falsify it. A feature that cannot fail
   proves nothing, and nothing downstream will catch that.
+- **Declared deltas** — does a feature that changes shipped work say what it adds, alters, and
+  removes, and name every shipped guarantee it intends to break? An undeclared break surfaces at
+  the bottom of the ladder, where the implementer can only halt or quietly edit the test that was
+  guarding the old contract. The converse is equally your duty: **fault a delta that names a
+  signature.** *What* changes is yours to check; *how it is re-specified* is plan-and-dispatch's.
 - **Honest scoping** — claims external to the source flagged as external; rationales carrying
   their limits; the budget reconciling with the summed estimates.
 - **Reuse-first** — no feature reinvents machinery an earlier feature or the existing codebase
