@@ -358,3 +358,49 @@ be recorded only there, since a rule in a file that governs nothing is still rea
 drifts. Registered as a coupling ("the visual map") in the maintenance skill's graph and in post-edit
 checklist #7, because a mirror with no authority goes stale silently and a stale diagram is worse
 than none — it is trusted at a glance.
+
+**FOSS-survey items shipped (2026-07-28, second session that day).** Three of the five
+`APPROVAL-GATED` inbox items from the 2026-07-25 survey were approved and built; two the operator
+deferred (behavioural regression tests via `promptfoo`; a Semgrep pass beside the code review —
+note Semgrep is not believed to support Julia, so that one needs a fact checked before reopening).
+
+- **Feature-altitude brownfield delta** — completes the item whose commit-altitude half shipped
+  earlier the same day. master-plan's brief gains field 8 **Delta** (`none — new ground` when it
+  only adds, so an absent line cannot read as "nobody considered it"), `master-plan-reviewer` gains
+  a **Declared deltas** objective, and plan-and-dispatch Phase 2 gains **carry a brief's delta down
+  into the set**. Two bounds keep it from reaching down a rung: a brief **names modules, never
+  signatures**, and it must **name every shipped guarantee it intends to break** — that break is
+  exactly what the commit-altitude "existing test-set stays green *unmodified*" guarantee cannot
+  cover, so it needs its own declared migration step. *Why the bounds and not just the field:*
+  without them the brief re-specifies the replaced surface and becomes the competing source of
+  truth the altitude contract exists to prevent.
+- **`skills/handoff-core/SKILL.md` — the third preloaded core.** Owns all four agent-to-agent
+  bundle field sets (code-review, commit-doc, feature-README, retrospective) plus a two-part
+  protocol: the **sender writes every field including `none`**, the **receiver names any gap in its
+  handback and proceeds** (never stalls — same principle as the implementer's *never return in a
+  waiting state*). The two halves are a matched pair: without explicit `none` the receiver cannot
+  tell a dropped field from a genuine nothing, so the check has nothing to bite on. *Why a core
+  rather than a required-fields list in each agreement (the original proposal):* enforcement at
+  both ends means both ends need the list, and a list in two files is the drifting-restatement
+  defect. The sending and receiving agreements now only **name** a bundle. Boundary held
+  deliberately: the core says what must *reach* an agent, never what its artifact contains — the
+  **superset rule** stays with the doc-style contract. Harness constraint found and verified
+  against the published field tables: **`skills:` is a subagent-only frontmatter key**, so
+  `plan-and-dispatch` (a skill) cannot preload the core and invokes it via the `Skill` tool at
+  Phase 6 instead. Writing it exposed a live drift that vindicated the item: `pipeline-retrospector`
+  claimed the improvement-inbox path "is in your bundle" while the planner's list never carried it
+  — now a declared field.
+- **`skills/pipeline-maintenance/validate-config.sh` (new, POSIX sh).** The mechanical half of
+  post-edit check 6. Checks frontmatter keys against the published field tables, that every
+  preloaded `skills:` entry resolves and does not set `disable-model-invocation` (which would block
+  its own preload), that each agent's `name` matches its filename, and that `settings.json`
+  Subagent matchers and command paths still resolve. **Unknown key ⇒ warning; unresolvable
+  reference ⇒ error (exit 1)** — because the field lists are transcribed from docs that move, so
+  the validator can be the stale party. Verified against a fixture carrying all five historical
+  failure modes. Two triggers, no background automation: post-edit check 6 (drift you introduce)
+  and **plan-and-dispatch Phase 1** (drift the *harness* introduced with nobody editing a file —
+  the `reasoning_effort` mode). *Rejected alt:* a `SessionStart` hook — it fires in every unrelated
+  repo, and a warning seen 40 times a week stops being a warning. It cannot check whether a named
+  capability is still *invocable*; that half of check 6 stays human.
+- New couplings registered in the maintenance skill: **the handoff bundles** and **the config
+  validator**; the delta/consolidation coupling now explicitly spans the feature altitude too.

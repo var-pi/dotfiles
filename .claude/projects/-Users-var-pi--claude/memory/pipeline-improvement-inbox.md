@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: b5754bbc-be30-4fea-9c42-56f330fe29c6
-  modified: 2026-07-28T15:14:18.932Z
+  modified: 2026-07-28T16:01:26.249Z
 ---
 
 Rolling inbox of **pipeline-improvement suggestions**. The `pipeline-retrospector` subagent files
@@ -49,45 +49,18 @@ Sourced from external tools, so each needs its own design pass before it fits th
 altitude contract — adopting a foreign shape wholesale is how a pipeline acquires machinery that
 serves someone else's workflow.
 
-- **A first-class shape for changing an already-shipped contract** (`APPROVAL-GATED`). *Principle:*
-  the pipeline has exactly one shape — the new feature — so a change to a contract that already
-  exists gets re-planned as if nothing were there, and the diff against the current state is
-  nowhere stated. A brownfield change should be able to declare what it **adds, alters, and
-  removes** relative to what shipped. *Evidence:* OpenSpec's delta-marked change proposals, the
-  lightest of the three spec-driven frameworks surveyed and the only one with a first-class
-  brownfield form. *Owning file:* `skills/master-plan/SKILL.md` (the feature brief) and
-  `skills/plan-and-dispatch/SKILL.md` (the commit-plan template). *Cost of not doing it:* every
-  revision to shipped work is planned as a greenfield feature, so the reviewer cannot check the one
-  thing that matters most on a change — what breaks — and the altitude contract's "no competing
-  source of truth" rule silently degrades as the second plan restates the first.
-  **— 2026-07-28, partial: the operator approved the *commit-altitude* half only.** Template §3 is
-  now "Files & delta" (what a commit alters/subsumes/removes), guaranteed by "the existing test-set
-  stays green *unmodified*"; the implementer and `feature-plan-reviewer` carry the matching halves.
-  **Still gated and un-shipped:** the *feature*-altitude half in `master-plan`'s briefs, which is
-  where a whole brownfield feature would declare its delta. Remains an agenda item — do not
-  reconcile it away.
-- **Fixed, named handoff artifacts between rungs** (`APPROVAL-GATED`). *Principle:* what one rung
-  hands the next is currently composed fresh at each dispatch, so its completeness depends on the
-  dispatching agent remembering the list. Making the handoff a **named artifact with a fixed
-  shape** — as the plan template already is for the commit plan — would make an incomplete handoff
-  visible rather than silent. *Evidence:* BMAD-METHOD bakes handoff prompts into the workflow file
-  rather than composing them per-transition; it is the framework's organising idea, not a detail.
-  *Owning file:* `agents/commit-plan-implementer.md` (its bundles to the writers and the code
-  reviewer) and `skills/plan-and-dispatch/SKILL.md` (its bundle to `pipeline-retrospector`).
-  *Cost of not doing it:* a bundle that quietly loses a field degrades the receiving agent's output
-  with no error anywhere — the exact failure mode the doc-style contract already warns about.
-- **A schema check over the ecosystem's own config** (`APPROVAL-GATED`). *Principle:* agent
-  frontmatter and `settings.json` are parsed **loose** — an unknown key is dropped, never flagged —
-  so a config that has quietly stopped working looks identical to one that works. A validator run
-  over `agents/*.md`, `skills/*/SKILL.md` and `settings.json` against the published field tables
-  turns that class of silent failure into a loud one. *Evidence:* `reasoning_effort:` sat in all
-  seven agents for months, so the two "xhigh" plan reviewers ran at the session default the whole
-  time and nothing anywhere said so; `/code-review` and `/verify` failed the same way from the other
-  direction. *Owning file:* a new script + the `pipeline-maintenance` post-edit checklist (check 6
-  already names the failure but relies on a human remembering to look). *Cost of not doing it:* the
-  ecosystem keeps paying for capabilities it is not getting, and only notices by accident.
-- **Behavioural regression tests for the agent definitions** (`APPROVAL-GATED`). *Principle:* the
-  schema check above catches a dead key; nothing catches a **live rule that stopped biting** — a
+*(**2026-07-28:** the operator worked all five. Three shipped and are deleted — the
+feature-altitude brownfield delta, the fixed handoff artifacts as the new `handoff-core`, and the
+config schema check as `skills/pipeline-maintenance/validate-config.sh`; see
+[[plan-and-dispatch-ecosystem]]. The two below were **deferred by the operator**, not by a
+maintainer's judgement, and keep their marker: they are still gated if reopened.)*
+
+- **Behavioural regression tests for the agent definitions** (`APPROVAL-GATED`)
+  **— deferred 2026-07-28 by the operator ("pass on this for now").** It is a project rather than
+  an edit: a new dependency, real API spend per CI run, and LLM variance that tends to get
+  assertions loosened until they assert nothing. Reopen scoped to three or four cap-shaped
+  assertions, or not at all. *Principle:* the
+  schema check now shipped catches a dead key; nothing catches a **live rule that stopped biting** — a
   core compacted until a discipline is merely implied, a cap softened into an encouragement. Pinning
   a handful of observable behaviours (the reviewer emits its justified objective list before any
   finding; the implementer never attempts a push; a docs-only commit is exempted) as assertions run
@@ -99,7 +72,11 @@ serves someone else's workflow.
   enforced only by the next agent reading it carefully, and a dulled rule is invisible until a run
   goes wrong. Note the known trap first: a rule stated as a **cap** is assertable, one stated as an
   encouragement is not — so this would also be a forcing function on how rules are written.
-- **A deterministic static-analysis pass beside the LLM code review** (`APPROVAL-GATED`).
+- **A deterministic static-analysis pass beside the LLM code review** (`APPROVAL-GATED`)
+  **— deferred 2026-07-28 by the operator ("pass on it for now").** Check before reopening:
+  Semgrep is not believed to support Julia, which is what these projects are mostly written in — if
+  so the item largely evaporates and the real candidates are Julia-native (JET.jl, Aqua.jl) wired
+  into the implementer's verification order instead.
   *Principle:* `commit-code-reviewer` re-derives the same mechanical checks on every commit at Opus
   prices and with an LLM's variance, while the checks that *can* be expressed as rules should be
   run as rules — freeing the model pass for the judgement only it can make (does this test actually
