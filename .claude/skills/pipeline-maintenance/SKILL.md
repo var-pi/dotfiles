@@ -266,6 +266,25 @@ multiple files; edit them together or you leave a relic.**
     is *ignored*, absent from `git status` entirely. Nothing warns you; the edit simply never leaves
     this machine. Check with `git check-ignore -v <path>` and force-add, then confirm the file shows
     as `A` in the staged set before the sync.
+- **The dispatch shape — foreground, and two levels deep.** Two harness defaults this pipeline
+  depends on, both of which have already moved once and both of which fail *silently*:
+  - **Subagents run in the background by default** (since v2.1.198), so a dispatch without
+    `run_in_background: false` returns a notification in a later turn. Every handoff here is
+    sequential and dependent, so the rule is stated once in `skills/handoff-core/` (sender half of
+    the protocol) and only *named* by `commit-plan-implementer` — *Never return in a waiting state* —
+    and by `feature-plan` Phase 5 beat 1, which must carry its own copy of the instruction because a
+    skill cannot preload a core. The tell that this regressed is not an error: it is a dispatch that
+    "stalls", a child that never reports, or a result addressed to someone else. **Diagnose it from
+    the transcripts, not from the agreements** — grep the `Agent` tool_use inputs of the last run for
+    `run_in_background`; the two features that recorded stalls are exactly the two whose nested
+    dispatches went out backgrounded, and nine of twenty-two `commit-code-reviewer` dispatches were
+    backgrounded while the main session got it right 40 times out of 41.
+  - **Nesting depth ≥ 2.** The pipeline is main session → implementer → reviewer/writers. The
+    default limit was **1** until v2.1.219 raised it to 3, and `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`
+    can put it back. At the limit the harness simply **withholds the `Agent` tool** from the
+    implementer, so the failure is not a blocked dispatch but an implementer that quietly writes its
+    own commit doc and skips its independent review. Nothing in `validate-config.sh` can see this;
+    if the delegation layer ever appears to vanish, check that env var before editing an agreement.
 - **The handoff bundles:** `skills/handoff-core/` owns all four field sets; the five agents that
   preload it and `feature-plan` Phase 6 (which invokes it) may only **name** a bundle. A field
   list that reappears inline in a sending or receiving agreement is the drift the core exists to

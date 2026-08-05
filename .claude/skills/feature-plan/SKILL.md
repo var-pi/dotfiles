@@ -501,9 +501,14 @@ hand if you want it.)
 
 The beats:
 
-1. **Dispatch to `commit-plan-implementer`.** If the plan's Dispatch line named `model: opus`, pass
-   it explicitly (`Agent(subagent_type: "commit-plan-implementer", model: "opus")`); otherwise
-   dispatch with the default and say nothing about it. There is no effort parameter to pass.
+1. **Dispatch to `commit-plan-implementer`, in the foreground.** Always pass
+   `run_in_background: false`: subagents run in the background by default, and a backgrounded
+   implementer hands its result back as a notification in a *later* turn — which would let this
+   session reach beat 4, record a landed count, and stop while the commit is still being built.
+   If the plan's Dispatch line named `model: opus`, pass that explicitly too
+   (`Agent(subagent_type: "commit-plan-implementer", model: "opus", run_in_background: false)`);
+   otherwise dispatch with the default model and say nothing about it. There is no effort parameter
+   to pass.
 2. **Gate on the implementer's own result — do not re-run the heavy experiment.** The implementer
    owns the single authoritative gated run. Gate by confirming its handoff shows the commit landed,
    the returned log ends `ALL GATES: PASS`, and the **cheap** test suite is green. Do **not** re-run

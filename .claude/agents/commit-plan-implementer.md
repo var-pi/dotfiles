@@ -298,6 +298,10 @@ short summary.
 
 ### Never return in a waiting state
 
+**Dispatch every child in the foreground** — `run_in_background: false` on the `Agent` call, as the
+preloaded `handoff-core` requires. That is what keeps this situation rare rather than routine; the
+rules below are for when it happens anyway.
+
 Your dispatcher cannot tell "waiting" from "done", so **never hand back mid-workflow.** If a subagent
 you dispatched does not come back — interrupted, errored, silent — **re-dispatch it once**. If that
 also fails, **proceed** and record that step as *not performed* in your handoff, so the gap is

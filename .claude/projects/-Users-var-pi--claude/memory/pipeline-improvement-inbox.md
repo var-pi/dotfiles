@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: b5754bbc-be30-4fea-9c42-56f330fe29c6
-  modified: 2026-08-05T16:56:28.471Z
+  modified: 2026-08-05T18:02:39.900Z
 ---
 
 Rolling inbox of **pipeline-improvement suggestions**. The `pipeline-retrospector` subagent files
@@ -97,6 +97,18 @@ maintainer's judgement, and keep their marker: they are still gated if reopened.
   (which must then stop claiming the mechanical objectives as its own, or the two compete).
   *Cost of not doing it:* mechanical defects are caught non-deterministically and expensively, and
   the review's scarce attention is spent where a linter would do.
+  **Reframed 2026-08-05 — still gated, operator chose "leave gated, add the reframe".** Anthropic's
+  *Building verification loops in Claude Code with skills* argues the loop is the **skill, not the
+  tool**: a verification procedure packaged as a skill with an optional script behind it, deployed
+  standalone, embedded in a producing skill, or chained. That dissolves the Semgrep/Julia blocker —
+  the pass need not be one vendor's engine — and the ecosystem already has both halves of the
+  pattern: `validate-config.sh` *is* such a packaged loop, and the implementer already carries the
+  seam ("use the `run` skill when it is available, otherwise drive the flow directly"). **The
+  altitude question to settle before building:** these agreements are deliberately
+  project-agnostic, so a Julia-native pass (JET.jl, Aqua.jl) or a project's own check target belongs
+  in the *project's* `.claude/skills/`, leaving `~/.claude/` to own only the instruction to run one
+  if it exists. Deciding otherwise puts project-specific tooling into a project-agnostic agreement,
+  which is the altitude contract's failure mode one rung over.
 
 ---
 

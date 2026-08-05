@@ -31,6 +31,19 @@ into a signal.
 
 ## The protocol — both ends
 
+**Sender: dispatch in the foreground.** Pass `run_in_background: false` on the `Agent` call, every
+time. Since Claude Code v2.1.198 a subagent dispatched without it **runs in the background by
+default**, and a background result arrives as a completion notification in a *later* turn — so your
+own dispatch can end while the child is still working, and its result then surfaces to whoever is
+listening, which may not be you. Every handoff in this file is **sequential and dependent** — you
+cannot fix a review you have not read, stage a doc that is not written, or gate a commit that has
+not landed — so there is nothing to overlap and the default buys the pipeline nothing.
+
+*This is not hypothetical.* The two features that recorded stalled dispatches, children that never
+reported, and results "addressed to someone else" are exactly the two whose nested dispatches went
+out backgrounded. The recovery rules those incidents produced still stand — re-dispatch once, merge
+a late result rather than discarding it — but they are the net, not the fix.
+
 **Sender: every field appears, even when empty.** A field with nothing to report is written
 explicitly as `none` (`deviations from plan: none`). Omitting it is not the same message, and
 this is the half that makes the receiver's check mean anything — without it, a gap and a genuine

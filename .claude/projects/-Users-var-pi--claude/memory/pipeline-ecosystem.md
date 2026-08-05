@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-08-05T16:56:17.540Z
+  modified: 2026-08-05T18:03:11.251Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -494,7 +494,7 @@ asks about cost, pacing and naming; reframed by one finding that made most of th
   `commit-code-reviewer`, `writer-core`, [[figure-legibility-requirements]]). The implementer owns it
   because it owns the generating; the others name it and add only their own act. *Registered as a
   coupling.*
-- **Considered and rejected:** turning the two doc writers into skills invoked by the implementer
+- **Considered and rejected (2026-08-05, first session):** turning the two doc writers into skills invoked by the implementer
   (the operator's token-saving hypothesis). Measured the opposite — a writer subagent runs at
   1.3–3.7M cache-read against the implementer's 250–350k context, so inlining the same work would
   cost ~3.5× more *and* lose the fresh-context read of the diff. Also rejected: a new specialist
@@ -503,3 +503,55 @@ asks about cost, pacing and naming; reframed by one finding that made most of th
   commit is the war-story failure mode again). **Condensation was measured, not assumed:** the
   implementer's agreement is ~2% of its own dispatch cost, so condensation buys precision, not
   tokens — it was scoped to the dedup above rather than a global squeeze.
+
+**Foreground dispatch — the stall machinery was treating a symptom (2026-08-05, second session).**
+Triggered by an operator ask about two verification articles plus a sweep of recent Claude Code
+releases. The articles taught little; the harness sweep found the root cause of a defect the
+ecosystem had been patching for two features.
+
+- **The finding.** Since **Claude Code v2.1.198** subagents **run in the background by default**; a
+  background result arrives as a completion notification in a *later* turn, so a dispatching agent's
+  turn can end while its child still works, and the result surfaces to whoever is listening. **No
+  agreement in the ecosystem mentioned this.** Evidence from the actual transcripts (166 `Agent`
+  dispatches in the `pavliotis` project): the main session dispatched the implementer in the
+  foreground **40 of 41** times, but the implementer — one level down, where the agreements were
+  silent — backgrounded **9 of 22** `commit-code-reviewer` dispatches, plus doc- and README-writer
+  calls. The dates settle it: the three `rib=UNSET` nested dispatches are **2026-07-26** (`06-fbm`)
+  and the eleven `rib=true` ones are **2026-07-29 → 08-04** (`07-sde-bridge`) — precisely the two
+  features whose retrospectives produced *never return in a waiting state* (2026-07-28) and the
+  late/misrouted-result merge rules (2026-08-05). The pipeline had written recovery machinery for
+  the documented behaviour of a parameter nobody was setting.
+- **The fix, stated once.** `handoff-core` gains a **sender: dispatch in the foreground** rule
+  (`run_in_background: false`) as the first half of its protocol — it is squarely "what must *reach*
+  an agent", and every handoff in the pipeline is sequential and dependent, so the default buys
+  nothing. `commit-plan-implementer` and `feature-plan` Phase 5 beat 1 only **name** it; the planner
+  needs its own copy because `skills:` is subagent-only and a skill cannot preload a core.
+  **The recovery machinery was deliberately kept** — a background dispatch can still slip through,
+  and the rules cost little. *Generalizable lesson:* the symptom ("a child that never reports") was
+  diagnosed twice from inside the run, where the cause is invisible; it was only visible by grepping
+  the `Agent` tool inputs in the transcripts. Prefer the transcripts over the agreements when a
+  dispatch misbehaves.
+- **Nesting depth registered as a dependency.** The pipeline requires depth ≥ 2 (session →
+  implementer → reviewer/writers). The default was **1** until **v2.1.219** raised it to 3, and
+  `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` can restore it. At the limit the harness **withholds the
+  `Agent` tool** rather than erroring, so the failure mode is an implementer that quietly writes its
+  own commit doc and skips its independent review. `validate-config.sh` cannot see this.
+- **Both of the above are now one coupling** in `pipeline-maintenance` — *the dispatch shape* — and
+  two `PIPELINE.md` troubleshooting rows.
+- **The articles.** The *agentmarketcap* post (Opus 4.7, April 2026, third-party) claims models now
+  self-verify — which is what the Opus-5 re-baseline above already concluded when it **deleted** the
+  verification scaffolding. It confirms a decision rather than proposing one; its one unadopted idea
+  ("capture uncertainty signals before completion") was declined as ceremony, since declined findings
+  and plan deviations already ride the handback. Anthropic's *verification loops as skills* post
+  reframes the `APPROVAL-GATED` deterministic-checks inbox item — **the loop is the skill, not the
+  tool**, which dissolves the Semgrep/Julia blocker. Left gated at the operator's instruction, with
+  the reframe and its altitude question annotated in [[pipeline-improvement-inbox]].
+- **Harness sweep, checked and rejected:** `fallbackModel` (a silent downgrade on a load-bearing-math
+  commit is worse than a visible halt); dynamic workflows (rejected for the same reason as agent
+  teams — this work is strictly sequential); `/goal` (fights one-commit-per-session); Artifacts for
+  `PIPELINE.md` (the markdown-beside-the-files rationale stands); `Agent(model:opus)`-style
+  permission rules (the git layer catches a push by *any* route, a tool matcher only through Bash —
+  unchanged since 2026-07-25); `/usage` per-subagent attribution (`pipeline-stats.py` measures
+  better). `validate-config.sh` was **not** stale — its field lists already carried `background`,
+  `context` and `isolation`. Noted for the operator: 2.1.221/222 exist and fix subagent `model:`
+  override handling.
