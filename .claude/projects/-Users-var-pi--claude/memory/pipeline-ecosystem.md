@@ -1,27 +1,28 @@
 ---
-name: plan-and-dispatch-ecosystem
-description: The three-altitude planning pipeline (3 skills + 2 preloaded cores + 7 subagents + git-guard hooks) and its design intent
+name: pipeline-ecosystem
+description: The three-altitude planning pipeline (3 skills + 3 preloaded cores + 7 subagents + git-guard hooks + 2 check scripts) and its design intent
 metadata: 
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-07-28T16:16:16.811Z
+  modified: 2026-08-05T16:56:17.540Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
 interconnected files under `~/.claude/`, each read by a different model:
 
-- `skills/master-plan/SKILL.md` — the **master planner** (Opus 4.8). Top altitude: through-line,
+- `skills/project-plan/SKILL.md` — the **project planner** (Opus 4.8). Top altitude: through-line,
   decomposition into features, repo architecture, risk register. Emits one **feature brief** per
   feature. Added 2026-07-17.
-- `agents/master-plan-reviewer.md` — its **reviewer** subagent (Opus, xhigh). Persistent;
+- `agents/project-plan-reviewer.md` — its **reviewer** subagent (Opus, xhigh). Persistent;
   resumed with its full transcript (its prior reviews) intact each round.
-- `skills/plan-and-dispatch/SKILL.md` — the lead **planner** (Opus 4.8). Decomposes a feature
+- `skills/feature-plan/SKILL.md` — the lead **planner** (Opus 4.8). Decomposes a feature
   into one commit plan per file — the contract surface, decisions, and test intent — reviewed as
   one set. (Was "two tiers"; collapsed 2026-07-22, see below.)
 - `agents/feature-plan-reviewer.md` — the **reviewer** subagent (Opus, xhigh). Persistent
   session, resumed each round over the whole set until the architecture converges.
-- `agents/commit-plan-implementer.md` — the **implementer** subagent (Sonnet, high). Executes
+- `agents/commit-plan-implementer.md` — the **implementer** subagent (Sonnet, xhigh as of
+  2026-08-05; the planner may override one commit to Opus). Executes
   one commit plan at a time — **writes the code bodies and derives the test bounds theory-first**
   (as of 2026-07-22; the plan no longer carries code or numbers). It **delegates all durable doc
   *authoring* to two Opus writer subagents** (below) while owning verify/stage/commit itself.
@@ -75,24 +76,24 @@ differentiated and the overlap smaller; a candidate follow-up.) No global `~/.cl
 exists, so truly-general one-line preferences stay inline rather than being centralized there.
 
 **Altitude contract (2026-07-17).** Each rung owns exactly one thing and copies nothing from
-another: master-plan owns philosophy/decomposition and must contain **no signatures, no stubs,
-no tolerances**; plan-and-dispatch Tier 1 owns contracts; the implementer owns code; Tier 2
+another: project-plan owns philosophy/decomposition and must contain **no signatures, no stubs,
+no tolerances**; feature-plan Tier 1 owns contracts; the implementer owns code; Tier 2
 owns measured numbers. A copy upstream is not a head start — it is a competing source of truth
 that drifts once the real one is decided. The motivating artifact was
 `~/repo/pavliotis/.../pavliotis_ch1_project_plan_3.tex`, which reached down two altitudes (a
 450-line Julia stub appendix + per-feature signature tables + invented tolerances).
 
-**The master-plan → plan-and-dispatch handoff crosses a session boundary**, deliberately.
-master-plan names the next feature and *stops*; the human starts each feature in a fresh
+**The project-plan → feature-plan handoff crosses a session boundary**, deliberately.
+project-plan names the next feature and *stops*; the human starts each feature in a fresh
 top-level session. Two reasons: (1) `ExitPlanMode` doesn't exist for subagents, so dispatching
-plan-and-dispatch as one would silently delete the pipeline's only human gate; (2) a whole
+feature-plan as one would silently delete the pipeline's only human gate; (2) a whole
 project doesn't fit one context window, and an *in-session* gate doesn't help — it gates the
 start without refilling the budget. The persisted plan in `docs/plan/`, not a live session,
 carries state across the boundary. This is why a feature brief must be self-sufficient for a
 cold reader.
 
-Vocabulary collision to respect: a **feature brief** (master-plan's per-feature entry) is not a
-**feature plan** (plan-and-dispatch's Tier 1 set of commit stubs). "Unit" is retired.
+Vocabulary collision to respect: a **feature brief** (project-plan's per-feature entry) is not a
+**feature plan** (feature-plan's Tier 1 set of commit stubs). "Unit" is retired.
 
 On 2026-07-16 these files were refactored for consistency/compactness under the operative-why
 test — see [[editing-subagent-guideline-files]]. (The 2026-07-22 collapse above superseded the
@@ -134,7 +135,7 @@ commits; implementer tier ~730k of ~1.25M subagent tokens) drove these changes:
   foreground exactly once — no background monitors, no repeated "confirmation runs" (seeded +
   deterministic ⇒ a re-run only reproduces identical numbers at full cost). Biggest leak: the
   stall/re-run instinct was baked into the agent and ignored per-dispatch instructions.
-- **Single verification owner (model a).** plan-and-dispatch Phase 5 gates on the implementer's own
+- **Single verification owner (model a).** feature-plan Phase 5 gates on the implementer's own
   result (commit landed + `ALL GATES: PASS` in the returned log + cheap test suite) and does **not**
   re-run the heavy experiment as a second ground truth. Codified a **land-or-idle waiter** (one wait
   per commit; no reactive polling; judge stall-vs-legit-run by the effort estimate). *Rejected alt:*
@@ -152,7 +153,7 @@ commits; implementer tier ~730k of ~1.25M subagent tokens) drove these changes:
 - **`CLAUDE.md` added to the pre-commit docs-only exemption** (file set now
   `README.md` / `CLAUDE.md` / `docs/`), so a pure docs commit touching CLAUDE.md no longer forces a
   disarm.
-- **Phase 6 retrospective + improvement-inbox loop.** plan-and-dispatch emits an operator-facing
+- **Phase 6 retrospective + improvement-inbox loop.** feature-plan emits an operator-facing
   token/workflow retrospective and appends suggestions to [[pipeline-improvement-inbox]];
   pipeline-maintenance reads that inbox first (new **Intake** step) and reconciles it — a new
   coupling in the meta-skill's graph.
@@ -198,7 +199,7 @@ content) drove these changes:
   rounds, which a per-commit one-shot is not. The `verify`/`run` skills are likewise no longer
   guaranteed present; the implementer's empirical-verification rule is now phrased "use them if
   available, otherwise drive the flow directly."
-- **`agents/pipeline-retrospector.md` (new, Opus).** plan-and-dispatch Phase 6 no longer writes its
+- **`agents/pipeline-retrospector.md` (new, Opus).** feature-plan Phase 6 no longer writes its
   own run retrospective — it dispatches this agent, because the planner reviewing its own run is the
   author's account. It reads the run artifacts + the current ecosystem files, files proposals to
   [[pipeline-improvement-inbox]], and returns an operator-facing retrospective the planner relays
@@ -216,7 +217,7 @@ content) drove these changes:
   files; verify a skill/command an agreement depends on against the session's available-skills
   listing before relying on it.
 - New couplings in the maintenance skill's graph: the **independent code review** (implementer ↔
-  commit-code-reviewer ↔ plan-and-dispatch ↔ feature-plan-reviewer) and the **doc-style contract**
+  commit-code-reviewer ↔ feature-plan ↔ feature-plan-reviewer) and the **doc-style contract**
   (the implementer's bundle must pass a *superset* and let the writer select, or it competes with the
   writer's agreement and wins by accident). The improvement-inbox loop now spans four places.
 
@@ -229,7 +230,7 @@ rested on — all three had failed *silently*, which is the generalizable lesson
   **never actually run at xhigh**. Renamed in all seven; operator chose to keep xhigh as designed.
 - **Marker arm/disarm retired (`hooks/pipeline-marker.sh`, new).** Hooks now fire on subagent tool
   calls and `SubagentStart`/`SubagentStop` take an `agent_type` matcher, so the marker's lifetime is
-  bound to a `commit-plan-implementer` dispatch via two `settings.json` wirings. plan-and-dispatch
+  bound to a `commit-plan-implementer` dispatch via two `settings.json` wirings. feature-plan
   Phase 5/6 and the halt path no longer arm, disarm, or mention the marker. Gains: the operator's own
   push is never blocked between commits, and a halt cannot strand an armed marker. The git hooks
   **stay** as the enforcement — the git layer catches a commit by any route, a `PreToolUse` Bash
@@ -267,7 +268,7 @@ artifacts, plus the five retrospector inbox items from that run (all shipped).
   theory-first. Template §6's columns are now *intent / target / method class / discrimination*.
   *Why not simply forbid planner numbers:* the measurement's real job is **timing and scope**, never
   capability — the circulant-margin measurement is what *created* `06-fbm`'s probe commit and
-  corrected the master plan's risk line, and the implementer (reading one plan) structurally cannot
+  corrected the project plan's risk line, and the implementer (reading one plan) structurally cannot
   check a control in the last commit against a kernel in the first. *Rejected alts:* (a) planner
   measures nothing — decomposition-changing findings would then surface as a halt during the last
   commit; (b) legitimize the status quo (any measured number, tolerances included, reviewer
@@ -287,7 +288,7 @@ artifacts, plus the five retrospector inbox items from that run (all shipped).
   legacy test that must change is a *contract change* needing its own declared step, never a quiet
   edit inside the commit whose implementation that test guarded. The implementer's ban on
   *opportunistic* restructuring is untouched. This is the commit-altitude half of the
-  `APPROVAL-GATED` brownfield inbox item; the feature-altitude half (deltas in master-plan's briefs)
+  `APPROVAL-GATED` brownfield inbox item; the feature-altitude half (deltas in project-plan's briefs)
   stays gated.
 - **Four more inbox items shipped:** never return in a waiting state (implementer re-dispatches a
   silent child once, else proceeds recording the step as not-performed) with its upstream half in
@@ -310,13 +311,13 @@ artifacts, plus the five retrospector inbox items from that run (all shipped).
   aimed at the next editor of a line are **code comments**. feature-readme-writer: **≤ ~6 lines** from
   title to the first concrete thing. *No rule was written from the operator's praise* — every praised
   device already followed an existing rule, and the war-story precedent is why.
-- **New coupling registered:** the delta/consolidation shape (plan-and-dispatch §3 ↔ implementer ↔
+- **New coupling registered:** the delta/consolidation shape (feature-plan §3 ↔ implementer ↔
   feature-plan-reviewer), plus the altitude contract now explicitly spanning five files (the
   reviewer enforces it, `PIPELINE.md` §3 mirrors it).
 
 **Readability + invocation pass (2026-07-28, second session that day).** Operator feedback: the
 descriptions read like abstracts, the meta-skill has no stated workflow, and starting
-plan-and-dispatch required spoon-feeding it "read file X, plan unit Y" every time.
+feature-plan required spoon-feeding it "read file X, plan unit Y" every time.
 - **`pipeline-maintenance` gained a six-phase spine** (read feedback → read ground truth →
   synthesize + ask → plan & `ExitPlanMode` → implement + checklist → **`/dotfiles-sync` commit and
   push**). Its existing sections became the detail behind phases 1, 2 and 5. Two bounds written with
@@ -335,27 +336,27 @@ plan-and-dispatch required spoon-feeding it "read file X, plan unit Y" every tim
   survive the cut: the **nearest-neighbour** discriminator and any **caller instruction** ("one plan
   at a time", "read-only"). All eleven descriptions rewritten (7 agents, 4 skills + `dotfiles-sync`).
   *Deliberate deletion:* "persistent — resumed each round" left both reviewer descriptions; it was a
-  fourth copy of a protocol already owned by plan-and-dispatch Phase 3, master-plan step 3, and
+  fourth copy of a protocol already owned by feature-plan Phase 3, project-plan step 3, and
   `reviewer-core`, and the dispatcher is the file that already states it.
 - **`## How you are invoked` on both planner skills.** p-a-d: fresh session, cwd is the project repo,
-  operator hands *where the master plan lives* + *which feature* — resolve both before exploring,
+  operator hands *where the project plan lives* + *which feature* — resolve both before exploring,
   accept the operator's word for the feature ("unit" is retired in the files, not in their speech),
   and when it is ambiguous **list the briefs and ask** rather than guessing, since a wrong guess
-  burns a session's context. master-plan: same shape plus the distinction that actually bites — **a
+  burns a session's context. project-plan: same shape plus the distinction that actually bites — **a
   path to an existing `docs/plan/` plan means correction mode, not a fresh plan**, because the two
   are indistinguishable at invocation and re-planning discards the decision records.
 
 **Bare invocation + the project-state record (2026-07-28, third session).** The operator's
 correction to the invocation sections written earlier the same day: they had assumed a plan path and
 a feature name would be handed over, and ended with *"never plan a feature the operator did not
-name."* **The intended model is the opposite — `/plan-and-dispatch` is called with no arguments at
-all**, in the project repo. `docs/plan/` is a fixed convention it already knows, the master plan
+name."* **The intended model is the opposite — `/feature-plan` is called with no arguments at
+all**, in the project repo. `docs/plan/` is a fixed convention it already knows, the project plan
 carries the spine, and the project's `CLAUDE.md` carries the state, so the feature is derivable and
 asking for it was the per-run friction.
 - **The rule was reversed, not softened.** Now: derive the next feature from the record, **announce
   it in the first message and proceed** (Phase 4's `ExitPlanMode` already gates the choice, so a
   blocking question buys nothing an announcement doesn't), and stop to ask in exactly two cases —
-  `CLAUDE.md` and the master plan **disagree**, or a feature is recorded **in progress** (resuming a
+  `CLAUDE.md` and the project plan **disagree**, or a feature is recorded **in progress** (resuming a
   half-built feature and starting a fresh one are different jobs). An operator-named feature still
   overrides, in whatever words they use.
 - **The blocking gap this exposed.** `CLAUDE.md` was written **once**, at Phase 4, describing the
@@ -365,16 +366,16 @@ asking for it was the per-run friction.
   a half-built feature into the next one. Deriving is only safe once the record is bracketed.
 - **The run is now bracketed in a pipeline-state block:** Phase 4 opens the feature (in progress +
   commit count), **Phase 5's halt path records where it stopped**, Phase 6 flips it to landed and
-  names the next; `master-plan` step 4 seeds the block for a fresh project, since p-a-d reads a
+  names the next; `project-plan` step 4 seeds the block for a fresh project, since p-a-d reads a
   missing block as a broken record. The planner commits these itself as docs-only commits —
   `CLAUDE.md` is already in `pre-commit`'s exemption set. *The halt write is the one to defend in
   any future compaction:* it fires unattended, and it is the only thing separating a half-built
   feature from a finished one.
-- **`master-plan` leads with the convention** rather than with what it was handed: the plan lives at
+- **`project-plan` leads with the convention** rather than with what it was handed: the plan lives at
   `docs/plan/`, and **what is on disk picks the mode** — a plan already there means correction mode.
   Same rationale as before (the two modes are indistinguishable at invocation and re-planning
   discards decision records); only the trigger moved from *a path you were given* to *what you find*.
-- **New coupling — the project-state record**, spanning five places (master-plan step 4, p-a-d
+- **New coupling — the project-state record**, spanning five places (project-plan step 4, p-a-d
   Phases 4/5/6, p-a-d's invocation) plus `pre-commit`'s exemption. Its failure mode is not an error
   but a plausible wrong feature. The **session boundary** coupling was updated to say what crosses
   it is written, not spoken.
@@ -399,9 +400,9 @@ deferred (behavioural regression tests via `promptfoo`; a Semgrep pass beside th
 note Semgrep is not believed to support Julia, so that one needs a fact checked before reopening).
 
 - **Feature-altitude brownfield delta** — completes the item whose commit-altitude half shipped
-  earlier the same day. master-plan's brief gains field 8 **Delta** (`none — new ground` when it
-  only adds, so an absent line cannot read as "nobody considered it"), `master-plan-reviewer` gains
-  a **Declared deltas** objective, and plan-and-dispatch Phase 2 gains **carry a brief's delta down
+  earlier the same day. project-plan's brief gains field 8 **Delta** (`none — new ground` when it
+  only adds, so an absent line cannot read as "nobody considered it"), `project-plan-reviewer` gains
+  a **Declared deltas** objective, and feature-plan Phase 2 gains **carry a brief's delta down
   into the set**. Two bounds keep it from reaching down a rung: a brief **names modules, never
   signatures**, and it must **name every shipped guarantee it intends to break** — that break is
   exactly what the commit-altitude "existing test-set stays green *unmodified*" guarantee cannot
@@ -420,7 +421,7 @@ note Semgrep is not believed to support Julia, so that one needs a fact checked 
   deliberately: the core says what must *reach* an agent, never what its artifact contains — the
   **superset rule** stays with the doc-style contract. Harness constraint found and verified
   against the published field tables: **`skills:` is a subagent-only frontmatter key**, so
-  `plan-and-dispatch` (a skill) cannot preload the core and invokes it via the `Skill` tool at
+  `feature-plan` (a skill) cannot preload the core and invokes it via the `Skill` tool at
   Phase 6 instead. Writing it exposed a live drift that vindicated the item: `pipeline-retrospector`
   claimed the improvement-inbox path "is in your bundle" while the planner's list never carried it
   — now a declared field.
@@ -432,9 +433,73 @@ note Semgrep is not believed to support Julia, so that one needs a fact checked 
   reference ⇒ error (exit 1)** — because the field lists are transcribed from docs that move, so
   the validator can be the stale party. Verified against a fixture carrying all five historical
   failure modes. Two triggers, no background automation: post-edit check 6 (drift you introduce)
-  and **plan-and-dispatch Phase 1** (drift the *harness* introduced with nobody editing a file —
+  and **feature-plan Phase 1** (drift the *harness* introduced with nobody editing a file —
   the `reasoning_effort` mode). *Rejected alt:* a `SessionStart` hook — it fires in every unrelated
   repo, and a warning seen 40 times a week stops being a warning. It cannot check whether a named
   capability is still *invocable*; that half of check 6 stays human.
 - New couplings registered in the maintenance skill: **the handoff bundles** and **the config
   validator**; the delta/consolidation coupling now explicitly spans the feature altitude too.
+
+**Measurement, tier split, per-session dispatch, ladder rename (2026-08-05).** Triggered by operator
+asks about cost, pacing and naming; reframed by one finding that made most of them answerable.
+
+- **Every cost figure the ecosystem had ever produced was wrong by ~170×.** The only number an agent
+  can see is `totalTokens` on an Agent tool result, which **excludes cache reads** — and cache reads
+  are 60–95% of a run. `07-sde-bridge`'s six implementer dispatches reported 1.31M; the transcripts
+  say 222M. Measured truth: `06-fbm` 122.5M/$114, `07-sde-bridge` 478.8M/$445. Every prior
+  retrospective, and the tuning done from them, argued against fiction. Fixed by
+  **`skills/pipeline-maintenance/pipeline-stats.py`** (reads `projects/<slug>/<session>.jsonl` plus
+  the `<session>/subagents/` tree, which carries `agentType`/`parentAgentId`/`spawnDepth` and full
+  per-turn usage) plus the new [[pipeline-metrics]] memory. The bundle now carries **session ids, not
+  token counts** — deliberately, so a wrong number cannot travel by narration. *Registered as the
+  **measurement loop** coupling, spanning five places.*
+- **Cost scales as ~turns^1.56** (R²=0.948, n=7), not linearly — so turn count is the lever and model
+  tier the smaller one. Spend also concentrates hard: 2 of 8 commits were 60% of the implementer
+  tier, the cheapest 3%. Both facts are why the tier decision below is *per commit*.
+- **Implementer split by commit weight:** frontmatter `model: sonnet`, `effort: xhigh`, with the
+  planner marking `model: opus` on commits carrying load-bearing mathematics (template §0). *Why
+  xhigh:* `effort: high` was a **Sonnet-era holdover** — the 2026-07-28 Opus promotion changed
+  `model:` and never revisited `effort:`. *Empirical anchor:* `06-fbm` ran the implementer on
+  Sonnet 5 at 93 turns/commit and 35% of run cost; `07-sde-bridge` on Opus 5 at 217 turns/commit and
+  60% — confounded by feature size, but it rules out the worry that Sonnet needs more turns.
+  *Break-even:* Sonnet stops paying only past **+39% turns**. **Found and fixed while doing it:** §0
+  had offered a per-commit **effort** override since 2026-07-24 — the Agent tool takes `model` only,
+  so that half had never been deliverable.
+- **Dispatch is now one commit per session.** Phases 1–4 run once; Phase 5 runs per session and
+  stops. *Why:* the unattended chain accumulated 346 coordinator turns and 20% of `07-sde-bridge`'s
+  cost, and a usage limit hitting mid-chain interrupted the run at an arbitrary point. The state
+  block gains a **plan-set path** field — without it a fresh session can name the right commit and
+  still not find its plan. "A feature is in progress" flips from a stop-and-ask to *the* resume path;
+  the remaining stop-and-ask is *in progress but the plan set is missing*. Guard untouched: the
+  implementer is still a subagent, so both `settings.json` matchers still fire.
+- **Opus-5 re-baseline of the implementer.** The agreements were written for Opus 4.8. Deleted the
+  verification scaffolding the current models perform unprompted (it is a *delete*, not a rewrite —
+  telling these models to verify causes over-verification with no capability gain); capped review
+  re-dispatch at **one**; added the **marginal-gate protocol** (diagnose the mechanism before
+  touching a number — enlarging an ensemble makes a *biased* gate worse, and one feature's three
+  marginal gates each needed a different response); added a scope bound against unrequested helpers
+  and abstractions.
+- **Ladder rename:** `master-plan` → `project-plan`, `plan-and-dispatch` → `feature-plan`,
+  `master-plan-reviewer` → `project-plan-reviewer`, and this memory → `pipeline-ecosystem`. The
+  *agents* were already systematic (`<rung>-<artifact>-<role>`); only the skills were inconsistent.
+  **`commit-plan-implementer` deliberately keeps its name** — the git guard's two matchers key on it
+  and it appears in shipped `docs/commits/` files, so renaming would break the record for no
+  operator-facing gain. Timing chosen because the roadmap had just closed: no run in flight, no new
+  artifact carrying a retired name.
+- **The improvement-inbox loop had broken.** `07-sde-bridge`'s retrospector filed six well-argued
+  proposals to a **project-local** memory file the maintainer never reads. Fixed with an absolute
+  fallback path and an explicit "never create a second inbox"; the six items were merged into the
+  global file and shipped.
+- **Deduplicated the generated-artifact bar**, which was stated four times (implementer,
+  `commit-code-reviewer`, `writer-core`, [[figure-legibility-requirements]]). The implementer owns it
+  because it owns the generating; the others name it and add only their own act. *Registered as a
+  coupling.*
+- **Considered and rejected:** turning the two doc writers into skills invoked by the implementer
+  (the operator's token-saving hypothesis). Measured the opposite — a writer subagent runs at
+  1.3–3.7M cache-read against the implementer's 250–350k context, so inlining the same work would
+  cost ~3.5× more *and* lose the fresh-context read of the diff. Also rejected: a new specialist
+  agent (nothing a generic agent does is expensive enough to justify the preload + coupling —
+  `Explore` just needed routing to Sonnet), and having the implementer write memories (one per
+  commit is the war-story failure mode again). **Condensation was measured, not assumed:** the
+  implementer's agreement is ~2% of its own dispatch cost, so condensation buys precision, not
+  tokens — it was scoped to the dedup above rather than a global squeeze.

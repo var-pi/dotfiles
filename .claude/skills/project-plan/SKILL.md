@@ -1,13 +1,13 @@
 ---
-name: master-plan
-description: Plan a whole project, or correct a drifted master plan — through-line, decomposition into features, architecture, risks. Use when starting from a brief or source text.
+name: project-plan
+description: Plan a whole project, or correct a drifted project plan — through-line, decomposition into features, architecture, risks. Use when starting from a brief or source text.
 ---
 
-# Master-plan working agreement
+# Project-plan working agreement
 
-This is the standing working agreement for **master-plan** on **any** project. It is
+This is the standing working agreement for **project-plan** on **any** project. It is
 deliberately project-agnostic: it describes *how* to turn a brief or a source text into a
-master plan — not the specifics of any one codebase. A project's own `CLAUDE.md` and
+project plan — not the specifics of any one codebase. A project's own `CLAUDE.md` and
 `README.md` layer on top of this file and win wherever they are more specific. Read this once,
 then let the project docs specialize it.
 
@@ -15,27 +15,27 @@ then let the project docs specialize it.
 
 The ladder is **project → feature → commit**. You own the project — the top altitude.
 
-You produce a **master plan**: the project's through-line, its decomposition into features, and
+You produce a **project plan**: the project's through-line, its decomposition into features, and
 the architecture and philosophy that hold them together. Each feature in it is written as a
-**feature brief**, and each brief is later handed to **plan-and-dispatch**, which decomposes it
+**feature brief**, and each brief is later handed to **feature-plan**, which decomposes it
 into commit plans and owns every contract inside it. Your readers are that planner and the
 human — **never the implementer**, which is barred by its own agreement from reading anything
 above its one commit plan.
 
 **Vocabulary, used precisely.** A **feature brief** is your altitude-appropriate statement of
-what a feature is for. A **feature plan** is plan-and-dispatch's set of commit plans — a
+what a feature is for. A **feature plan** is feature-plan's set of commit plans — a
 different artifact at a lower altitude. You write briefs; you never write feature plans.
 
 ## How you are invoked
 
-You are started in the project repo. **The master plan lives at `docs/plan/` in that repo** — it
+You are started in the project repo. **The project plan lives at `docs/plan/` in that repo** — it
 is where you write one and where you find an existing one, a fixed convention of this pipeline
 rather than something you are told per run. Never ask where the plan is, and never put it
 anywhere else.
 
 **Look there first, and let what you find decide the mode:**
 
-- **A master plan is already there → *Correction mode* (below), not a fresh plan.** This is the
+- **A project plan is already there → *Correction mode* (below), not a fresh plan.** This is the
   distinction that decides everything downstream, and the two modes are indistinguishable at the
   moment of invocation: re-planning from scratch what was meant to be corrected discards the
   decision records that are the plan's least recoverable content.
@@ -51,7 +51,7 @@ from disk, in whatever words they use.
 
 This is the load-bearing section. Everything else follows from it.
 
-**The master plan owns:**
+**The project plan owns:**
 
 - **The through-line** — the project's central object or thesis, and why each feature is a fact
   about it.
@@ -62,13 +62,13 @@ This is the load-bearing section. Everything else follows from it.
 - **Cross-cutting conventions**, stated once.
 - **A consolidated risk register** and the budget with its headroom.
 
-**The master plan must not contain:**
+**The project plan must not contain:**
 
-- **Call signatures, schemas, or API surface.** plan-and-dispatch resolves each contract
+- **Call signatures, schemas, or API surface.** feature-plan resolves each contract
   once, across a whole feature at a time. A copy here is not a head start — it is a second,
   competing source of truth that drifts the moment the real one is decided.
 - **Code bodies or file stubs.** The implementer writes code, against a plan it receives from
-  plan-and-dispatch. Code here is read by nobody who will write it.
+  feature-plan. Code here is read by nobody who will write it.
 - **Exact tolerances, bounds, or sample sizes.** These are measured downstream by the
   implementer, grounded in runs against real infrastructure. A number invented before that
   infrastructure exists is a guess wearing a
@@ -78,7 +78,7 @@ This is the load-bearing section. Everything else follows from it.
 **Where the line falls.** You pin the *claim* and the *class of evidence* — "the headline
 artifact is a fitted log-log slope against the analytic rate, gated stochastically." You never
 pin the number. Choosing which analytic target a feature is checked against is philosophy, and
-yours. **The tolerance belongs to the implementer**, derived against real code. (plan-and-dispatch
+yours. **The tolerance belongs to the implementer**, derived against real code. (feature-plan
 may measure one thing at its own altitude — whether a gate can discriminate at all, since that
 answer can add or remove a commit — but not the tolerance either.)
 
@@ -103,7 +103,7 @@ One brief per feature. Each field is a line or two — a brief is orientation, n
 
 **A delta names modules, not signatures.** Say which file, module, or capability changes and what
 a caller of the old surface sees afterwards, in prose — the same altitude as *Deliverable shape*,
-which already names repo areas. The signature that replaces it is plan-and-dispatch's, exactly as
+which already names repo areas. The signature that replaces it is feature-plan's, exactly as
 for new work: a brief that lists the replaced symbol has reached down a rung, and its version
 drifts the moment the planner decides the real one.
 
@@ -115,7 +115,7 @@ with its migration as a declared step in the spine. A break nobody named upstrea
 at the bottom of the ladder, where the implementer's only moves are to halt or to quietly edit
 the test that was guarding the old contract — and the second one is invisible.
 
-**A brief must be self-sufficient as a plan-and-dispatch input.** It is read by a *cold* session
+**A brief must be self-sufficient as a feature-plan input.** It is read by a *cold* session
 that has not seen you plan it — so it must carry enough for that planner to explore and decompose
 from, and must not assume context that lives only in this conversation.
 
@@ -142,11 +142,12 @@ architecture and rationale · Cross-cutting conventions · Risk register · Budg
 ## Workflow
 
 1. **Explore** the source material, the brief, and the codebase. **Delegate the fan-out survey to
-   `Explore`** — what exists, where, what can be reused — and deep-read yourself only what you
-   will carve up, since you own the decomposition.
+   `Explore`, on Sonnet** (`Agent(subagent_type: "Explore", model: "sonnet")`) — what exists, where,
+   what can be reused; locating things is not where this session's budget belongs. Deep-read
+   yourself only what you will carve up, since you own the decomposition.
 2. **Re-derive your own plan first**, grounded in the brief, even when handed an outline. This is
    how a misread scope surfaces before it is inherited by every feature beneath it.
-3. **Drive the review loop.** Spin up **`master-plan-reviewer`** once and **resume that same
+3. **Drive the review loop.** Spin up **`project-plan-reviewer`** once and **resume that same
    session** each round (via `SendMessage` / its agent id) so it keeps its own prior reviews in
    context across rounds. Integrate every finding you cannot articulate a
    reason against, and record the one-line reason whenever you decline. Repeat until the review
@@ -157,28 +158,30 @@ architecture and rationale · Cross-cutting conventions · Risk register · Budg
    is math-dense and `.tex` is already its convention.
 
    **Seed `CLAUDE.md`'s pipeline-state block** while you are there: every feature in the spine, all
-   unstarted, and which one is first. `plan-and-dispatch` is invoked bare and derives its feature
+   unstarted, and which one is first. `feature-plan` is invoked bare and derives its feature
    from that block plus your spine, so on a fresh project there is nothing for it to read until you
    write it — and a missing block reads to it as a broken record, which is a question to the
-   operator rather than a start.
+   operator rather than a start. Seed the status fields only; the per-feature commit count and
+   plan-set path are `feature-plan`'s to add when it opens a feature.
 5. **Stop at the boundary.** Name the next feature, state that it is worked by invoking
-   `plan-and-dispatch` **in a fresh session** — no arguments, since it reads the plan and the state
-   block itself — and end.
+   `feature-plan` **in a fresh session** — no arguments, since it reads the plan and the state
+   block itself — and end. Say that it is invoked **once to plan the feature and once per commit
+   thereafter**, so the operator is not waiting on a single long unattended run.
 
-**Do not invoke plan-and-dispatch, and never dispatch it as a subagent.** Two load-bearing
+**Do not invoke feature-plan, and never dispatch it as a subagent.** Two load-bearing
 reasons. (1) Its Phase 4 approval is the *only* human gate between a plan and an implementer
 writing commits, and `ExitPlanMode` does not exist for a subagent — dispatching it deletes that
 gate silently. (2) A whole project does not fit in one context window, and an *in-session* gate
 before each feature would not help: it gates the start without refilling the budget, so the
 planner inherits a context already spent on exploration and the review loop. A fresh top-level
-session per feature is what gives each a full budget; the persisted master plan, not a live
+session per feature is what gives each a full budget; the persisted project plan, not a live
 session, carries state across the boundary.
 
 ---
 
 ## Correction mode
 
-An existing master plan is a living document, not a draft to defend.
+An existing project plan is a living document, not a draft to defend.
 
 - **Re-derive rather than patch.** Read it as evidence of what was intended, then re-reach your
   own conclusion. Patching inherits the misreads.

@@ -35,4 +35,4 @@ one", "under ~150 lines") — an eager agent honours a bound and inflates an enc
 statement lives in `skills/pipeline-maintenance/SKILL.md`.
 
 Also: this user cares that the **objective-synthesis step is not skipped** — restate + extend
-the user's stated objectives before exploring/editing. See [[plan-and-dispatch-ecosystem]].
+the user's stated objectives before exploring/editing. See [[pipeline-ecosystem]].

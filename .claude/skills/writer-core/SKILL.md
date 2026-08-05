@@ -144,12 +144,12 @@ Embed the figures the work already produced, by relative path, **where you discu
 (`![caption](relative/path)`), so the evidence sits in the reader's line of sight instead of in a
 directory they must go hunting through. Write a caption that says what the figure shows.
 
-**Every embedded figure must carry its meaning on its own** — a title, labeled axes with units, a
-legend where more than one series is drawn, and any annotation (scale, threshold, what a marker
-encodes, and *what the plotted quantity actually is*: an aggregate over replicates reads very
-differently from a single realization) that a reader would otherwise have to guess. **You do not
-generate or fix figures.** If one fails that bar, **flag it in your handoff** rather than embedding
-something the reader cannot read.
+**Every embedded figure must carry its meaning on its own.** The bar itself is owned by
+`commit-plan-implementer` → *Make outputs self-explanatory*, which is what generates the artifacts;
+your act is the check before embedding. Read the figure as a stranger would — can you say what it
+shows and read a value off it, without the code or your own context? **You do not generate or fix
+figures.** If one fails, **flag it in your handoff** rather than embedding something the reader
+cannot read.
 
 **The same bar applies to every block a reader can land on out of order** — a table, a fenced display
 block, a quoted log. Column headers alone are not a caption: a table whose first column is `H` and

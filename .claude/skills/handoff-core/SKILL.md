@@ -17,7 +17,7 @@ and `pipeline-retrospector`), so it is already here — you need not go read it.
 those agents and this text is *absent* from your context, the preload failed: read
 `~/.claude/skills/handoff-core/SKILL.md` before dispatching or before starting work.
 
-**`plan-and-dispatch` cannot preload this file** — `skills:` is a subagent-only frontmatter field,
+**`feature-plan` cannot preload this file** — `skills:` is a subagent-only frontmatter field,
 and the planner is a skill. It invokes `handoff-core` through the `Skill` tool when it reaches the
 retrospective bundle at Phase 6.
 
@@ -75,15 +75,19 @@ agreement.
 - **where the per-commit docs live** (`docs/commits/<feature-slug>/`);
 - any **deviation from the plan** worth surfacing to a reader.
 
-### Retrospective bundle — `plan-and-dispatch` → `pipeline-retrospector`
+### Retrospective bundle — `feature-plan` → `pipeline-retrospector`
 
 - the **feature slug** and its through-line, and **where the plans were persisted**
   (`~/.claude/plans/`);
-- the **improvement-inbox memory path** — the one file the retrospector may write, which it
-  cannot be expected to locate by guessing at the operator's memory directory;
+- the **two memory paths** it may write — the improvement inbox and the metrics record — since it
+  cannot be expected to locate the operator's memory directory by guessing;
 - **where the docs landed** (`docs/commits/<feature-slug>/`) and the **README path**;
-- the **per-agent token/usage numbers** for the run — planning, review loop, each implementer
-  dispatch, the writers — since only the planner can see them;
+- the **project slug and every session id the feature ran across**, so the retrospector can run
+  `pipeline-stats.py` over the whole run. Dispatch is one commit per session, so the feature spans
+  several sessions and no single transcript holds it; this list is the only thing that cannot be
+  recovered from disk afterwards. *Token counts are deliberately **not** a field:* the number the
+  planner can see excludes cache reads and understates by ~170×, so passing it forward would launder
+  a wrong figure into the record. The retrospector measures instead.
 - every point where the **operator intervened**, a **commit was re-dispatched**, or a **gate went
   marginal**.
 

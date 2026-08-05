@@ -5,14 +5,14 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: b5754bbc-be30-4fea-9c42-56f330fe29c6
-  modified: 2026-07-28T16:01:26.249Z
+  modified: 2026-08-05T16:56:28.471Z
 ---
 
 Rolling inbox of **pipeline-improvement suggestions**. The `pipeline-retrospector` subagent files
-here at feature close (dispatched by `plan-and-dispatch` Phase 6); `pipeline-maintenance` reads this
+here at feature close (dispatched by `feature-plan` Phase 6); `pipeline-maintenance` reads this
 first (its Intake step), acts on what it can, then **reconciles** — deletes an implemented item,
 annotates a deferred one with the reason. An item left here resurfaces next cycle; that is
-intentional. Part of the improvement-inbox loop recorded in [[plan-and-dispatch-ecosystem]].
+intentional. Part of the improvement-inbox loop recorded in [[pipeline-ecosystem]].
 
 **How to file (retrospector):** add a bullet under a `## <date> — <feature-slug>` heading carrying
 the **principle** (the rule that should exist, generalized — never the incident verbatim), the
@@ -28,16 +28,28 @@ operator wants to think about is not the same as one they have decided on. Treat
 un-reconciled, until it is explicitly approved and shipped, or explicitly dropped.
 
 **How to reconcile (maintainer):** on implementing a suggestion, delete its bullet (the change is
-now recorded in [[plan-and-dispatch-ecosystem]]); on deferring, append `— deferred: <reason>`.
+now recorded in [[pipeline-ecosystem]]); on deferring, append `— deferred: <reason>`.
 Never reconcile an `APPROVAL-GATED` item on your own judgement — neither by shipping it nor by
 deferring it away.
+
+**Where this file lives, and why that matters.** The one path is
+`~/.claude/projects/-Users-var-pi--claude/memory/pipeline-improvement-inbox.md`. A retrospector once
+filed six well-argued items to the *project's* memory directory instead; `/pipeline-maintenance`
+does not read there, and they sat unseen until someone went looking. **Never create a second inbox** —
+if you cannot resolve the path from your bundle, use the absolute one above.
 
 ---
 
 *(The `2026-07-26 — 06-fbm` retrospector block was fully reconciled on 2026-07-28 — all five items
 shipped. The altitude one shipped in a **narrower** form than proposed: the planner may measure only
 to certify that a gate *discriminates* and writes the **margin**, never a tolerance; every
-`atol`/`rtol`/SE-multiple/sample size is the implementer's. See [[plan-and-dispatch-ecosystem]].)*
+`atol`/`rtol`/SE-multiple/sample size is the implementer's. See [[pipeline-ecosystem]].)*
+
+*(The `2026-08-04 — 07-sde-bridge` block — six items, filed to the wrong directory — was merged here
+and **fully reconciled on 2026-08-05**: all six shipped. Two were folded into larger changes rather
+than shipped as written — the marginal-gate protocol became part of the Opus-5 implementer
+re-baseline, and the late/misrouted-result item was split across the implementer's merge half and
+`feature-plan` Phase 5's relay half. See [[pipeline-ecosystem]].)*
 
 ---
 
@@ -52,7 +64,7 @@ serves someone else's workflow.
 *(**2026-07-28:** the operator worked all five. Three shipped and are deleted — the
 feature-altitude brownfield delta, the fixed handoff artifacts as the new `handoff-core`, and the
 config schema check as `skills/pipeline-maintenance/validate-config.sh`; see
-[[plan-and-dispatch-ecosystem]]. The two below were **deferred by the operator**, not by a
+[[pipeline-ecosystem]]. The two below were **deferred by the operator**, not by a
 maintainer's judgement, and keep their marker: they are still gated if reopened.)*
 
 - **Behavioural regression tests for the agent definitions** (`APPROVAL-GATED`)

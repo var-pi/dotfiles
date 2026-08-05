@@ -4,7 +4,7 @@
 # Wired in ~/.claude/settings.json as a SubagentStart hook (`arm`) and a SubagentStop hook
 # (`disarm`), both matching ^commit-plan-implementer$. Claude Code hooks fire on subagent
 # lifecycle events, so the marker's lifetime can be bound to the dispatch itself — which is why
-# plan-and-dispatch no longer arms or disarms it by hand, and why a halted run cannot strand an
+# feature-plan no longer arms or disarms it by hand, and why a halted run cannot strand an
 # armed marker that blocks the operator's manual push.
 #
 # The marker is what activates hooks/pre-commit, hooks/pre-push and hooks/commit-msg; all three

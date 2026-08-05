@@ -74,10 +74,12 @@ These come from the increment's own standards; add whatever else the commit warr
   opportunistic restructuring of code outside it.
 - **Comments and docstrings carry the *why*** and are accurate against the body; traps are commented
   where they live.
-- **Generated artifacts are self-explanatory and headless** — title, labeled axes with units, a
-  legend where more than one series is drawn, and any annotation a reader would otherwise guess
-  (including *what the plotted quantity actually is*: an aggregate over replicates versus a single
-  realization). Check the code that saves them uses margins that fit every label.
+- **Generated artifacts meet the bar in `commit-plan-implementer` → *Make outputs self-explanatory***
+  (that agreement owns the bar, since it owns the generating). Two things only you can check: that
+  the saving code uses margins that fit every label — a required label rendered outside the visible
+  box counts as missing, not present — and that the artifact's claims match what the surrounding
+  narrative says about it. A figure labelled with the wrong quantity is a correctness defect, and it
+  is invisible to everyone who reads the caption instead of the code.
 
 ## Preferences & tradeoffs
 

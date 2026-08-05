@@ -1,5 +1,5 @@
 #!/bin/sh
-# plan-and-dispatch pipeline guard (pre-commit).
+# feature-plan pipeline guard (pre-commit).
 #
 # Active only while a commit-plan-implementer dispatch is running, gated by a repo-local marker
 # file (or the $CLAUDE_PIPELINE override) that hooks/pipeline-marker.sh arms on SubagentStart and

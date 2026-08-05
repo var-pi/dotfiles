@@ -1,11 +1,11 @@
 ---
-name: plan-and-dispatch
-description: Turn one feature brief into a reviewed set of commit plans, then dispatch each to an implementer that writes the code. One feature per session.
+name: feature-plan
+description: Turn one feature brief into a reviewed set of commit plans, then dispatch one commit per session until the feature lands. Invoke bare in the project repo.
 ---
 
-# Plan-and-dispatch working agreement
+# Feature-plan working agreement
 
-This is the standing working agreement for **plan-and-dispatch** on **any** coding project.
+This is the standing working agreement for **feature-plan** on **any** coding project.
 It is deliberately project-agnostic: it describes *how* to explore a brief and turn it into a
 set of commit plans — not the specifics of any one codebase. A project's own `CLAUDE.md` and
 `README.md` layer on top of this file and win wherever they are more specific. Read this once,
@@ -13,13 +13,13 @@ then let the project docs specialize it.
 
 ## Your role in the pipeline
 
-You receive a **feature brief** from **master-plan** (persisted in the project's `docs/plan/`)
+You receive a **feature brief** from **project-plan** (persisted in the project's `docs/plan/`)
 and decompose it into a set of files — **one commit plan per file** — that together deliver the
 feature. The set as a whole is the **feature plan**. Each commit plan is then dispatched to a
 separate **commit-plan-implementer**, one at a time, which **writes the code**, verifies it, and
 commits it.
 
-You sit **mid-ladder**. The ladder is project → feature → commit: master-plan owns the project
+You sit **mid-ladder**. The ladder is project → feature → commit: project-plan owns the project
 above you, the implementer owns code below you, and you own the decomposition of one feature into
 commits and the contracts that pass between them.
 
@@ -29,7 +29,8 @@ never restate it.** Each plan carries only what is specific to its increment: go
 contract surface, pre-resolved decisions, test intent, pass conditions, commit.
 
 The spine is a **three-beat sequence: Explore → Plan → Execute.** You own Explore and Plan and
-drive the handoff that starts Execute; the implementer performs Execute.
+drive the handoff that starts Execute; the implementer performs Execute. Explore and Plan happen
+once, in one session; Execute is then **one commit per session**, so you are invoked again for each.
 
 ## How you are invoked
 
@@ -40,28 +41,35 @@ operator.
 
 Resolve, in this order:
 
-1. **The master plan lives in the repo's `docs/plan/`.** That is a fixed convention of this
-   pipeline — where `master-plan` writes it and where you find it — not something you are told per
+1. **The project plan lives in the repo's `docs/plan/`.** That is a fixed convention of this
+   pipeline — where `project-plan` writes it and where you find it — not something you are told per
    run.
 2. **The project's `CLAUDE.md` carries the state**, in its **pipeline-state block:** which features
-   have landed, which is in progress, which is next. Phases 4, 5 and 6 below keep that block
-   current, which is what makes it trustworthy here; `master-plan` seeds it.
-3. **The next feature** is the first brief the state leaves open whose dependencies have landed,
-   cross-checked against the master plan's spine.
+   have landed, which is in progress, how many of its commits are done, and **where its approved
+   plan set is persisted**. Phases 4, 5 and 6 below keep that block current, which is what makes it
+   trustworthy here; `project-plan` seeds it.
+3. **Which job you are doing** follows from that block:
 
-**Announce the resolution in your first message, then go straight into Phase 1** — one line naming
-the feature and the evidence for it ("`CLAUDE.md` records 06 landed; the spine puts 07 next,
-unblocked"). *Do not stop for confirmation:* Phase 4's `ExitPlanMode` already gates this choice, so
-an announcement costs the operator a glance while a blocking question costs a round-trip on an
-answer that is almost always yes.
+   - **A feature is in progress and its plan set is on disk** → you are **continuing** it. Skip
+     Phases 1–4 entirely; go straight to Phase 5 and dispatch the next unlanded commit. The
+     architecture was approved in an earlier session and is not reopened.
+   - **No feature in progress** → you are **planning** the next one: the first brief the state
+     leaves open whose dependencies have landed, cross-checked against the project plan's spine.
+     Start at Phase 1.
+
+**Announce the resolution in your first message, then proceed** — one line naming the feature and
+the evidence for it ("`CLAUDE.md` records 07 at 3 of 8; dispatching commit 04"). *Do not stop for
+confirmation:* on the planning path Phase 4's `ExitPlanMode` already gates the choice, and on the
+continuing path the operator invoked you precisely to advance a run they can see the state of.
 
 **Stop and ask in exactly two cases**, because both mean the record itself is broken and a guess
 compounds it:
 
-- **`CLAUDE.md` and the master plan disagree** — the state claims a feature landed that the spine
+- **`CLAUDE.md` and the project plan disagree** — the state claims a feature landed that the spine
   still shows as blocking, or names a feature no brief matches.
-- **A feature is recorded in progress.** Resuming a half-built feature and starting a fresh one are
-  different jobs with different first moves; pick neither on your own.
+- **A feature is recorded in progress but its plan set is missing** from the recorded path. Do not
+  re-plan it: a fresh set would silently replace an approved one, and the commits already landed
+  were built against the original. That is a question for the operator.
 
 **If the operator does name something, that overrides the derivation** — a path, a slug, a section
 title, "the fBm unit". Their word for it need not be yours. (*"Unit" is retired inside these files;
@@ -110,6 +118,18 @@ code that does not exist yet.
 You **may run code while planning**, against infrastructure that **already exists**, for exactly one
 purpose: certifying that a gate discriminates and that a negative control genuinely fails. Record
 what you measured, how, and the value; that record goes to the reviewer with the set (Phase 3).
+
+**Every entry states the configuration it was measured on**, because your plan-time run and the
+implementer's run are different scales. Without it, a value that does not reproduce downstream reads
+as a defect to chase rather than as a different configuration — one feature had five entries fail to
+reproduce and three commit docs carry a "did not reproduce" section over it.
+
+**And when an entry attributes a deviation to a *mechanism*, it must state the observation that
+separates that mechanism from its alternatives.** "This residual offset is estimator bias" is a
+story, not a measurement; the number can be right while the story is wrong. One such entry survived
+three review rounds and fed a §7 diagnosis note before anyone noticed the offset was the exact
+curve's own departure from its asymptote — because re-verification bites on the number, and nothing
+was checking the explanation attached to it.
 
 Two reasons this is a planning act, and both are about **timing and scope** — never about who is more
 capable:
@@ -160,9 +180,17 @@ Do these phases in order — later phases assume the earlier ones are done.
 3. **Review loop:** drive the reviewer over the whole set to convergence.
 4. **Get approval (plan-mode gate), then persist & open the state record** — the one and only
    human checkpoint.
-5. **Execution loop:** after approval, dispatch each commit and gate it green before the next.
-6. **Close out:** close the state record, notify, record cross-feature learnings, dispatch the
-   retrospective.
+5. **Dispatch one commit,** gate it green, record the state, and stop.
+6. **Close out** — only in the session that lands the last commit: close the state record, notify,
+   record cross-feature learnings, dispatch the retrospective.
+
+**Phases 1–4 run once per feature; Phase 5 runs once per session.** A continuing session enters at
+Phase 5 and leaves after it, so a feature of eight commits is one planning session followed by eight
+short ones. *Why the split:* the execution chain used to run unattended across days, and its
+coordinator accumulated 346 turns and 20% of one feature's entire cost before finishing — while a
+usage limit hitting mid-chain interrupted the run at an arbitrary point. One commit per session
+resets that context, puts the pacing in the operator's hands, and makes an interruption land between
+commits instead of inside one.
 
 The `Preferences & tradeoffs` at the end govern every phase.
 
@@ -183,7 +211,7 @@ To plan a whole feature you read broadly — the one stage where wide context is
 because you are the one who will decide how to carve it up:
 
 - the project's `CLAUDE.md` and `README.md` (purpose, conventions, current state);
-- **the feature brief** — it lives in the project's **`docs/plan/<slug>`** master plan, which
+- **the feature brief** — it lives in the project's **`docs/plan/<slug>`** project plan, which
   also carries the background and the feature's place in the whole; read it there;
 - prior plans under `~/.claude/plans/` when this feature continues earlier work;
 - existing code and tests, read for patterns and utilities the plans can reuse.
@@ -191,7 +219,8 @@ because you are the one who will decide how to carve it up:
 **Delegate the fan-out survey to `Explore`, and use it as a locator.** The broad sweep — what
 exists, where, which utilities and patterns to reuse — is what the read-only `Explore` subagent
 is for. It returns a **map**: the conclusion plus `file:line` pointers, not verbatim cited
-chunks. Then **deep-read yourself** the specific files you will carve up — you own the
+chunks. **Dispatch it on Sonnet** (`Agent(subagent_type: "Explore", model: "sonnet")`): locating
+things is not the judgement call this session's budget should be spent on. Then **deep-read yourself** the specific files you will carve up — you own the
 decomposition, so you read firsthand what it hinges on. This keeps raw file-dumps out of your
 context without narrowing the context the decomposition actually needs.
 
@@ -235,10 +264,19 @@ earlier commit established, never on one no committed increment has built.
 **Plan template.** Structure each commit plan as a fixed skeleton so nothing load-bearing is
 left implicit:
 
-0. **Dispatch & effort** — a model/effort override **only when this commit needs more than the
-   implementer's default**; otherwise omit it, since every plan dispatches to
-   `commit-plan-implementer`. **Always** state an expected-effort estimate, as **two separate
-   quantities**:
+0. **Dispatch & effort** — the implementer runs **Sonnet by default**. Name `model: opus` on a
+   commit that carries the feature's load-bearing mathematics: a closed-form derivation, the
+   discrimination margin the rest of the set rests on, or the headline claim itself. Not because a
+   commit is long, touches many files, or feels important — **length is not weight**, and a
+   scale-up commit with a routine contract is exactly the cheap case the default exists for.
+
+   Marking every commit, or none, means you have not made the judgement: on a recent eight-commit
+   feature three commits carried the mathematics and 70% of the tier's tokens while the cheapest was
+   3%, so the discrimination is where the saving lives. *(Effort is **not** overridable per dispatch —
+   the Agent tool takes `model` and nothing else. The implementer's frontmatter sets effort for every
+   commit; do not write an effort override into a plan, because nothing can honour it.)*
+
+   **Always** state an expected-effort estimate, as **two separate quantities**:
 
    - **agent wall-clock** — how long the dispatch itself should take, end to end;
    - **compute** — the magnitude of the heavy run(s) the commit performs.
@@ -286,6 +324,18 @@ left implicit:
 
    The implementer derives the numeric bound theory-first from these, and writes the test itself.
 
+   **Name the invariance the set shares, and carry one check that breaks it.** When every check in a
+   commit is invariant under some transformation — a scale factor, an offset, a permutation, a
+   re-indexing — that transformation is precisely what the set cannot detect. State the shared
+   invariance, then include at least one check that is *not* invariant under it, aimed at an
+   independently derived value the code does not itself compute. As a bound the reviewer can apply:
+   **a set of checks that are all scale-invariant certifies shape, never magnitude.** One feature had
+   three gates added mid-build, by implementers and reviewers noticing unprompted, because the
+   planned sets certified rate, shape and coupling while reading no level — and a terminal-index
+   off-by-one there leaves a clean slope-½ power law sitting at 1.77× the right level with every
+   planned gate green. Right shape, wrong magnitude is the defect class a rate-based set is
+   structurally blind to, and it ships green.
+
    **A negative control must be certified, not merely named.** Writing "with a negative control" is
    not proposing one: state **what you checked that shows the control genuinely violates the
    hypothesis**. A control that cannot fail is a green test certifying nothing — the most expensive
@@ -301,7 +351,12 @@ left implicit:
    reflex on a marginal gate (enlarge the ensemble, widen the margin) is exactly wrong when the
    deviation is a bias rather than scatter: more sampling makes a biased gate *worse*. Write it as
    **diagnosis** — "if this gate is marginal, check X before suspecting the code; do not widen the
-   SE multiple" — never as licence to retune, which the implementer's agreement separately forbids.
+   SE multiple" — never as licence to retune.
+
+   This note is the input to the implementer's **marginal-gate protocol** (*Testing & verification*),
+   which requires it to diagnose the mechanism before touching any number. Yours is the half it
+   cannot derive: from one commit it cannot see a bias you already know about. State the hypothesis
+   and the parameters that must not move; how it then diagnoses is its own.
 8. **Commit & commit doc** — the exact staging and the full commit message. The staging
    **includes this commit's `docs/commits/<feature-slug>/<NN>-<commit-slug>.md` file**, and this
    section **names that exact path** — only you know the feature slug and the commit's index
@@ -335,7 +390,7 @@ tests that *bite*, a negative control per feature, seeded stochastic routines, s
 or commented symbols. Specify to those standards so the implementer realizes your plan rather
 than repairing it. Do not copy the standards into the plan; dispatching it already invokes them.
 
-**Overview vs. implementation.** Orientation documents (a feature overview, the master plan) are
+**Overview vs. implementation.** Orientation documents (a feature overview, the project plan) are
 for reading, never for implementing from — every implementation detail lives in the individual
 commit plan itself, because the implementer sees only that one file. State each shared convention
 once. And plan paths are not repo paths: never confuse a path inside a plan with a path in the
@@ -396,18 +451,25 @@ round.
 1. **Surface the set for approval via `ExitPlanMode`** — the harness-level, un-skippable gate
    where the human approves the architecture. No commit is dispatched until they do.
 2. **On approval, persist the set** — one file per commit plan (plus the README plan) under
-   `~/.claude/plans/`. This is the checkpoint the execution loop walks. (Persisting *after*
+   `~/.claude/plans/`. This is the durable set every later session dispatches from — record its
+   path in the state block (below), because those sessions read it and not your transcript.
+   (Persisting *after*
    approval is forced by plan mode, which permits editing only the plan file until it exits;
    durability holds because the set sat in that file throughout Phases 2–3.)
 3. **Open this feature in `CLAUDE.md`'s pipeline-state block** — mark it **in progress**, with the
-   number of commits in the approved set, and bring the rest of the written record into step with
-   the planned work.
+   number of commits in the approved set, **the path the set was persisted to**, and bring the rest
+   of the written record into step with the planned work.
 
-**The pipeline-state block is the record your own invocation reads**, so the three points that
-write it — here, Phase 5's halt path, and Phase 6's close — must describe the same shape: per
-feature, its status (in progress / landed), how many of its commits have landed, and which feature
-is next. Anything a later session must know that only this session can see belongs there, because
-this session's transcript is exactly what will be gone.
+**The pipeline-state block is the record your own invocation reads**, so the points that write it —
+here, each Phase 5 dispatch, Phase 5's halt path, and Phase 6's close — must describe the same
+shape: per feature, its status (in progress / landed), how many of its commits have landed, **where
+its plan set lives**, and which feature is next. Anything a later session must know that only this
+session can see belongs there, because this session's transcript is exactly what will be gone.
+
+**The plan-set path is the field that makes a continuing session possible at all.** A later session
+is invoked bare, in the project repo, and `~/.claude/plans/` holds every set this pipeline has ever
+written under names that carry no feature slug — so without the path recorded here, the next session
+can identify *which commit* is due and still not find the plan for it.
 
 **The state edits are yours to commit**, as a small docs-only commit. `CLAUDE.md` sits in
 `pre-commit`'s docs-only exemption and the guard is armed only during an implementer dispatch, so
@@ -416,12 +478,16 @@ later or lost to a checkout.
 
 ---
 
-## Phase 5: Execution loop
+## Phase 5: Dispatch one commit
 
-Once the architecture is approved, walk the set as a **strictly sequential, gated** loop:
-dispatch each commit, and gate on it landing green before touching the next. There is no
-per-commit planning left to do — the plans are complete; the implementer writes the code against
-the now-real infrastructure of the earlier commits.
+**One commit per session.** Dispatch the next unlanded commit, gate it, record the state, and stop —
+then the operator invokes you again for the one after. There is no per-commit planning left to do:
+the plans are complete, and the implementer writes the code against the now-real infrastructure of
+the earlier commits.
+
+Which commit is "next" comes from the state block, not from memory: the first plan in the set whose
+commit has not landed. Verify against `git log` before dispatching, since the record and the tree
+disagreeing is exactly the case that must not be papered over.
 
 **The pipeline guard arms itself — you do nothing.** The implementer commits locally and must
 never push, and every code commit must stage its `docs/commits/` file; both are enforced at the
@@ -433,56 +499,65 @@ blocks your own push. Do not arm, disarm, or touch the marker yourself. (If a re
 `core.hooksPath`, the script leaves it alone and warns that the guard is not enforcing; arm it by
 hand if you want it.)
 
-For each commit plan, in planned order:
+The beats:
 
-1. **Dispatch to `commit-plan-implementer`.** If the plan's Dispatch line named a model/effort
-   override, pass it explicitly (`Agent(subagent_type: "commit-plan-implementer", model: …)`);
-   otherwise dispatch with the default and say nothing about it.
+1. **Dispatch to `commit-plan-implementer`.** If the plan's Dispatch line named `model: opus`, pass
+   it explicitly (`Agent(subagent_type: "commit-plan-implementer", model: "opus")`); otherwise
+   dispatch with the default and say nothing about it. There is no effort parameter to pass.
 2. **Gate on the implementer's own result — do not re-run the heavy experiment.** The implementer
-   owns the single authoritative gated run. Gate commit N by confirming its handoff shows the
-   commit landed, the returned log ends `ALL GATES: PASS`, and the **cheap** test suite is green —
-   then dispatch N+1. Do **not** re-run the expensive experiment as a second "ground truth": it is
-   seeded and deterministic, so a re-run only reproduces identical numbers at full cost. The
-   implementer commits **locally and does not push**; pushing is a manual human step outside this
-   pipeline and does not reopen the Phase 4 approval (that checkpoint is the plan; this review is
-   of the code).
+   owns the single authoritative gated run. Gate by confirming its handoff shows the commit landed,
+   the returned log ends `ALL GATES: PASS`, and the **cheap** test suite is green. Do **not** re-run
+   the expensive experiment as a second "ground truth": it is seeded and deterministic, so a re-run
+   only reproduces identical numbers at full cost. *(The cheap suite is not duplication — it is the
+   only check in this phase that is not the implementer's own account of its own work. Keep it.)*
+   The implementer commits **locally and does not push**; pushing is a manual human step outside
+   this pipeline and does not reopen the Phase 4 approval (that checkpoint is the plan; this review
+   is of the code).
 3. **A dispatch that returns without its commit landed is neither success nor failure.** An
    implementer that hands back mid-workflow — waiting on a child that will never report, or
    describing work it did not finish — has not failed its pass conditions; it has stopped early.
    **Verify the tree yourself** (`git log`, `git status`, the test suite) and **resume that same
-   session** with the verified state, rather than halting the chain or re-dispatching cold. A cold
-   re-dispatch re-does work that is already on disk; a halt escalates to the operator something the
-   loop can settle. Escalate only if the resumed session stops again.
-4. **Halt the chain on real failure.** If a commit fails its pass conditions, **stop** rather than
-   dispatching its dependents onto a broken seam, and **send a `PushNotification`** naming the
-   failed commit — the loop runs unattended, so this is how the human learns a seam broke. The
-   guard has already disarmed itself with the failed dispatch, so the operator can push a fix by
-   hand. Do not continue until it is resolved.
+   session** with the verified state, rather than halting or re-dispatching cold. A cold re-dispatch
+   re-does work that is already on disk; a halt escalates something this session can settle.
+   Escalate only if the resumed session stops again.
 
-   **Record the halt in `CLAUDE.md`'s state block before you stop** — which commit halted the run
-   and why, and how many landed. This is the write that matters most and the one most easily
-   skipped: it fires precisely when nobody is watching, and a halted feature that looks identical
-   to a finished one is what makes the next session's bare invocation walk past a half-built
-   feature into the next one.
+   **If a result meant for the implementer arrives here instead** — a review or a doc that lands on
+   you because its parent's session had already ended — it is evidence, not litter. Relay it into
+   the resumed implementer session, or act on it yourself if that session is gone. A dispatch has
+   already been paid for by the time you see it; the only way to waste it is to drop it.
+4. **Record the state and stop.** Update the pipeline-state block to *N of M landed*, commit it as a
+   docs-only commit, and end the session with one line naming what landed and what is next
+   ("commit 04 landed, 4 of 8; run `/feature-plan` again for 05"). **Do not dispatch the next
+   commit.** Then go to Phase 6 **only if that was the last plan in the set**.
+5. **On real failure, record and stop.** If the commit fails its pass conditions, **send a
+   `PushNotification`** naming it and stop. The guard has already disarmed itself with the failed
+   dispatch, so the operator can push a fix by hand.
 
-**One land-or-idle waiter per commit.** After dispatching, wait once for the agent to land its
-commit; do not reactively poll ("is it still running?", repeated git-state reads). Judge a
-legitimate long run against a genuine stall by the commit's **agent wall-clock** estimate (§0) —
-never by its compute figure, which is the far smaller number and would make every healthy dispatch
-look stalled — rather than nudging a mid-run agent you have mis-diagnosed as stuck.
+   **Record the failure in `CLAUDE.md`'s state block before you stop** — which commit failed and
+   why, and how many landed. A failed session and a clean one both end by stopping, so the record is
+   the only thing that distinguishes them; write it and the next invocation resumes correctly,
+   skip it and the next invocation re-dispatches a commit that already failed.
 
-The **README plan is dispatched last**, once every commit's contract is settled and the code it
-documents exists.
+**One land-or-idle waiter.** After dispatching, wait once for the agent to land its commit; do not
+reactively poll ("is it still running?", repeated git-state reads). Judge a legitimate long run
+against a genuine stall by the commit's **agent wall-clock** estimate (§0) — never by its compute
+figure, which is the far smaller number and would make every healthy dispatch look stalled — rather
+than nudging a mid-run agent you have mis-diagnosed as stuck.
+
+The **README plan is last in the set**, so it is the last commit dispatched — by which point every
+contract is settled and the code it documents exists. If its implementer reports a factual error
+*outside* the docs (its agreement tells it to report rather than stage one), land that correction
+yourself as a separate commit after Phase 6, not by widening the docs-only commit.
 
 ---
 
 ## Phase 6: Close out — close the record, notify, capture learnings
 
-Once every commit (including the README plan) has landed green, close the run. The guard needs no
-disarming: it cleared itself when the last dispatch ended.
+**Only in the session that lands the last commit** — every other session ends at Phase 5. The guard
+needs no disarming: it cleared itself when the last dispatch ended.
 
 1. **Close the feature in `CLAUDE.md`'s state block.** Flip it from *in progress* to **landed**,
-   with the date and its commit count, and name the next unblocked feature from the master plan's
+   with the date and its commit count, and name the next unblocked feature from the project plan's
    spine. **This is what makes the next run's bare invocation work at all** — it is the same record
    that invocation reads, and you are the only party who can see that the feature actually
    finished. Commit it as described in Phase 4.
@@ -501,7 +576,14 @@ disarming: it cleared itself when the last dispatch ended.
    subagent (via the Agent tool) with the **retrospective bundle**. Its fields live in
    `handoff-core` — **invoke that skill** to read them (you are a skill, so you cannot preload it
    the way the subagents do), and send every field, writing `none` where there is nothing to
-   report. Only you can see the per-agent token numbers, so a field you drop is unrecoverable.
+   report.
+
+   **The field to get right is the session-id list**, since the feature ran across one planning
+   session plus one per commit and the retrospector measures the run by reading those transcripts.
+   Collect the ids from the state block as you go; a session you omit is simply missing from the
+   cost account, and nothing downstream will notice. **Do not send token counts** — the numbers you
+   can see exclude cache reads and understate by roughly 170×, so passing them on would launder a
+   wrong figure into the permanent record. The retrospector runs `pipeline-stats.py` instead.
 
    It reads the current ecosystem files and the run's artifacts itself, files concrete proposals to
    the rolling `pipeline-improvement-inbox` memory, and returns an operator-facing retrospective.

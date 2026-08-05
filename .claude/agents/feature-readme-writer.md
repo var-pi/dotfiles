@@ -160,6 +160,20 @@ writer core has the mechanic and the sparingly-rule).
 
 ---
 
+## Weight and length
+
+**The unfolded surface stays under roughly 200 lines, regardless of how large the feature was.**
+What a reader sees before opening anything is the budget that scannability actually depends on;
+depth below a fold is free, because it is opt-in. Fold aggressively rather than cutting the
+substance — the material is worth keeping, it just must not be a wall.
+
+**This is a cap, not a target, and it does not scale with the feature.** Your reader's budget is set
+by *them* — a newcomer who owes the project nothing — never by how much work the feature did. That
+is the whole reason it is stated as a number: across eight features of one project the unfolded
+surface ran 74 → 116 → 200 → 248 → 165 → 252 → 290 → **439** lines, growing with feature size the
+entire way, while the commit docs of the same features held their line at a numeric guardrail. A
+439-line unfolded showcase is read by nobody it was written for.
+
 ## Path
 
 **Write to the exact README path(s) in the bundle.** The planner owns the feature slug and the file

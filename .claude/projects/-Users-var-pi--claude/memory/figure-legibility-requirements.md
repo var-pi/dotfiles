@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: cd14a2f2-201c-4b07-8f70-ab067d22f3a4
+  modified: 2026-08-05T16:57:02.184Z
 ---
 
 Any generated figure/graph/chart must be self-explanatory from the artifact itself: title,
@@ -21,3 +22,10 @@ they care about outputs that stand on their own.
 **How to apply:** Save with fitting margins (`bbox_inches="tight"` / `tight_layout()` or an
 explicit padded layout) and open the saved image to confirm every label sits fully inside the
 frame — rendering the plotting code is not enough, inspect the actual output file.
+
+**Scope:** this is a standing preference for *any* figure produced for this user, in or out of the
+pipeline. Inside the pipeline it is stated operationally once, in `commit-plan-implementer` →
+*Make outputs self-explanatory*, which owns the bar because it owns the generating;
+`commit-code-reviewer` and `writer-core` only name it and add their own check. Keep it that way —
+the requirement was briefly restated in four places and the copies had started to differ. See
+[[pipeline-ecosystem]].
