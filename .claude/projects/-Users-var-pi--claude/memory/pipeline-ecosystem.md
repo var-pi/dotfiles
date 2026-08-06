@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-08-05T18:03:11.251Z
+  modified: 2026-08-06T11:36:10.682Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -546,7 +546,7 @@ ecosystem had been patching for two features.
   reframes the `APPROVAL-GATED` deterministic-checks inbox item — **the loop is the skill, not the
   tool**, which dissolves the Semgrep/Julia blocker. Left gated at the operator's instruction, with
   the reframe and its altitude question annotated in [[pipeline-improvement-inbox]].
-- **Harness sweep, checked and rejected:** `fallbackModel` (a silent downgrade on a load-bearing-math
+- **Harness sweep, checked and rejected (2026-08-05):** `fallbackModel` (a silent downgrade on a load-bearing-math
   commit is worse than a visible halt); dynamic workflows (rejected for the same reason as agent
   teams — this work is strictly sequential); `/goal` (fights one-commit-per-session); Artifacts for
   `PIPELINE.md` (the markdown-beside-the-files rationale stands); `Agent(model:opus)`-style
@@ -555,3 +555,43 @@ ecosystem had been patching for two features.
   better). `validate-config.sh` was **not** stale — its field lists already carried `background`,
   `context` and `isolation`. Noted for the operator: 2.1.221/222 exist and fix subagent `model:`
   override handling.
+
+**The project plan gained a writing discipline (2026-08-06).** Operator feedback: the project
+planner "has to learn a thing or two from other writers — folds are welcome, low noise/high signal
+is a mantra to take seriously, good structure is always welcome; not poetic but precise, we are
+doing science here." The gap was real and total: `writer-core` gives the two doc writers a full
+craft agreement, and **`project-plan` had none** — it specified what the plan must *contain* and
+nothing about how it reads. Measured in the artifact (`~/repo/bip-lab/docs/plan/bip-lab.md`, 719
+lines): **zero** `<details>` folds; brief F5 at ~85 lines against an agreement saying "each field is
+a line or two"; four invented sub-headings replacing field 2; the `X, not Y` cadence ~6×.
+
+- **New section `## How the plan reads`** in `project-plan`, every rule a cap. Its operative why is
+  the **two readers that fail differently**: the human at the approval gate, where noise costs
+  attention, and a **cold `feature-plan` session** that reads one brief and acts on it, where
+  ambiguity costs a misplanned feature nothing downstream catches. Rules: every line must change
+  what a reader does; structure is navigation (enumerable ⇒ table, one section one object); **fixed
+  fields stay fixed** — more room means a fold, never an invented sub-heading, because a cold
+  planner must land on field 8 without reading 1–7 and the reviewer checks field by field;
+  **unfolded surface capped at ~25 lines per brief / ~1 screen per section** with depth below a fold
+  free; a fold buys opt-in, not exemption, and nothing essential goes in one (*at the approval gate
+  there is no fold to open*); precise-not-literary with the antithesis cadence capped at one per
+  plan. Two clauses pre-empt the obvious objections — a folded passage is still plain text to the
+  cold planner reading the file, and a `.tex` plan's equivalent is an appendix.
+- **The cap is safe to state hard because of its pairing with the fold.** It can only relocate
+  content, never strip it — which is what let this be written as a cap rather than the encouragement
+  that has failed every previous time (2026-07-28).
+- **`project-plan-reviewer` gained a *Legibility* objective**, phrased as **fault the form as you
+  would the content** (same shape as "fault a delta that names a signature"). Without it the rule is
+  obeyed on run one and gone by run three, and the author is structurally the last person who can
+  see the defect — prose reads clearly to whoever just wrote it.
+- **Registered as a coupling: *the artifact-craft rules*, split by artifact, not by principle.**
+  `writer-core` owns the doc writers' statement; `project-plan` owns the plan's; neither may be
+  rewritten to cover the other's artifact, and a change to a shared principle checks both.
+  *Rejected alt (a):* point `project-plan` at `writer-core` — it is model-invocable, but a skill
+  cannot preload a core, half of it does not apply (figures, handoff), and its **LaTeX ban directly
+  contradicts** `project-plan` step 4's `.tex` permission. *Rejected alt (b):* a fourth shared core
+  — one consumer does not justify the preload and the coupling.
+- **Deliberately not extended down a rung** (operator-confirmed): a commit plan is read only by the
+  implementer and the reviewer, agents that read linearly, so folds and scannability buy nothing
+  there. `PIPELINE.md` got one §9 troubleshooting row; the §3 altitude table was left alone, since
+  that column is content ownership and form is not altitude.

@@ -8,7 +8,7 @@ the map and a governing file disagree, the file wins and this map is stale.
 To change anything in the ecosystem, invoke **`/pipeline-maintenance`** — it carries the editing
 discipline and the cross-file dependency graph.
 
-> Verified against the files on **2026-08-05** (Claude Code 2.1.220). Mechanically re-checkable
+> Verified against the files on **2026-08-06** (Claude Code 2.1.220). Mechanically re-checkable
 > with `sh ~/.claude/skills/pipeline-maintenance/validate-config.sh`; what a run *costs* is
 > re-checkable with `python3 ~/.claude/skills/pipeline-maintenance/pipeline-stats.py <project>`.
 >
@@ -275,6 +275,7 @@ reading the diff. An item left in the inbox resurfaces next cycle; that is the p
 | `pre-commit: stage this commit's docs/commits/ file` | A code commit without its doc. Owner: `hooks/pre-commit` + the path pinned in the plan's §8 |
 | `commit-msg: write a descriptive commit message` | Subject under 15 chars, or no body. Owner: `hooks/commit-msg` + the implementer's commit conventions |
 | Commit docs feel bloated or same-weight throughout | `skills/writer-core/SKILL.md` (scannability, folding, the cut list) and `agents/commit-doc-writer.md` (what belongs in a commit doc at all) |
+| The project plan is a wall of prose, or a brief outgrew its eight fields | `skills/project-plan/SKILL.md` — "How the plan reads" (the unfolded cap, fixed fields, precise-not-literary). `project-plan-reviewer` is required to fault the form, not only the content. Separate from `writer-core`, which owns the same craft for the *doc writers'* artifacts |
 | A plan contains code bodies, test expressions, or tolerances | The altitude contract — §3 above; owners are `project-plan` and `feature-plan`. `feature-plan-reviewer` is required to fault their *presence*, not only their absence |
 | An implementer preserved something redundant "because the plan pinned it" | Plan-stated mechanics are the implementer's to replace. Owner: `agents/commit-plan-implementer.md` — "Plan-stated mechanics are yours" |
 | A subagent reports `/code-review` or `/verify` failed with `disable-model-invocation` | Expected: both are user-triggered only. `commit-code-reviewer` replaces the first; drive the flow directly instead of the second |

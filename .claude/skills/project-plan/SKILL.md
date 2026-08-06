@@ -86,7 +86,8 @@ answer can add or remove a commit — but not the tolerance either.)
 
 ## The feature brief
 
-One brief per feature. Each field is a line or two — a brief is orientation, not a spec.
+One brief per feature. Each field is a line or two — a brief is orientation, not a spec. *How the
+plan reads* (below) bounds its form; this section fixes its content.
 
 1. **Idea** — the one concept this feature exists to establish.
 2. **Proves** — the claim it pins down, and the analytic target or ground truth it is checked
@@ -121,6 +122,39 @@ from, and must not assume context that lives only in this conversation.
 
 **Project-level sections.** Through-line · Feature ladder, spine, and cut line · Repository
 architecture and rationale · Cross-cutting conventions · Risk register · Budget.
+
+---
+
+## How the plan reads — low noise, high signal
+
+The plan has **two readers, and they fail differently.** The human reads it at the approval gate,
+where noise costs attention. A **cold `feature-plan` session** reads one brief and acts on it, and
+there an ambiguous sentence costs a misplanned feature that nothing downstream catches — the brief
+is all it has. This is a scientific document: precision outranks elegance, and both outrank
+completeness.
+
+- **Every line must change what a reader does** — what the human approves, or what the planner
+  decomposes. A line that only establishes that you understood the material is noise, however true
+  it is.
+- **Structure is navigation.** Headings work as the table of contents; **one section, one object**;
+  anything enumerable — the spine, the risk register, the budget, a provenance ledger — is a
+  **table**, not prose.
+- **Fixed fields stay fixed.** The eight brief fields appear in order, under their own names. A
+  brief that needs more room gets a fold, **never an invented sub-heading** — a cold planner must be
+  able to land on field 8 without reading fields 1–7, and the reviewer checks a brief field by
+  field. A brief that grows its own section structure can no longer be checked that way.
+- **Cap the unfolded surface: ~25 lines per brief, ~1 screen per project-level section.** Depth
+  below a `<details><summary>…</summary>` fold is free — a derivation, a surveyed alternative, a
+  worked example, background. *That pairing is what makes the cap safe to state as a cap: it can
+  only relocate content, never strip it.* Write the `<summary>` as a real title under ~8 words. **A
+  fold buys opt-in, not exemption** — folded text obeys every rule here. Nothing a reader must have
+  goes in one: at the approval gate there is no fold to open. (Folding costs the downstream planner
+  nothing — it reads the file, where a folded passage is still plain text. In a `.tex` plan the
+  equivalent move is an appendix, and the cap still applies.)
+- **Precise, not literary.** State the claim and the class of evidence for it. A metaphor may
+  illustrate an argument but never carry one, and the **`X, not Y` cadence is capped at one per
+  plan** — the tell is *was Y ever actually on the table?* Where it wasn't, delete the negated half
+  and state what is true.
 
 ---
 

@@ -33,7 +33,8 @@ the right altitude at all, and that its features are worth building.**
 
 - the **preloaded `reviewer-core`** — the shared reviewer discipline, already in your context;
 - the **project plan handed to you**;
-- the **project-plan** skill — the altitude contract and honesty rules the plan must satisfy;
+- the **project-plan** skill — the altitude contract, the honesty rules, and the writing rules
+  (*How the plan reads*) the plan must satisfy;
 - **feature-plan** — because each feature brief must be a well-formed input to a *cold*
   session of it;
 - the project's `CLAUDE.md`, `README.md`, source text, and existing code — read enough to check
@@ -63,3 +64,9 @@ write the review by objective, verdict). Scope the objectives for a *project-pla
   their limits; the budget reconciling with the summed estimates.
 - **Reuse-first** — no feature reinvents machinery an earlier feature or the existing codebase
   already builds.
+- **Legibility** — the plan is the artifact, so **fault its form as you would its content**, against
+  *How the plan reads*: a brief that outgrew its fields or invented sub-headings in place of them, a
+  section past its unfolded cap with nothing folded, a wall of prose where the material is a table,
+  a claim carried by a metaphor rather than by its evidence. This objective exists because the
+  author is the last person who can see it — prose reads clearly to whoever just wrote it, and both
+  of the plan's readers arrive cold.

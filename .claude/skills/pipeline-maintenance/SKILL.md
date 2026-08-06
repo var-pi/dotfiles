@@ -77,7 +77,9 @@ reader*).
 **Skills (main session, Opus):**
 - `skills/project-plan/SKILL.md` — the **project planner**. Top altitude: through-line,
   decomposition into **feature briefs**, repo architecture, risk register. Persists to the
-  project's `docs/plan/`. Writes no code, signatures, or tolerances.
+  project's `docs/plan/`. Writes no code, signatures, or tolerances. Also owns **how that document
+  reads** (*How the plan reads*) — the only rung whose artifact is read by a human and a cold agent
+  both.
 - `skills/feature-plan/SKILL.md` — the **feature planner**. Decomposes one feature brief into
   a set of commit plans (one per file); pins contracts + decisions + test *intent/target/method*;
   hardens the set through a review loop; then dispatches **one commit per session** (Phases 1–4 run
@@ -308,6 +310,19 @@ multiple files; edit them together or you leave a relic.**
   embedding); [[figure-legibility-requirements]] records why it exists. Restating the bar in any of
   the three is the drift to hunt — it read as four rules for one requirement, and the copies had
   already begun to differ.
+- **The artifact-craft rules** are split **by artifact, not by principle**, across two owners:
+  `writer-core` owns the craft of the two **doc writers'** artifacts, `project-plan` → *How the plan
+  reads* owns the craft of the **project plan**, and `project-plan-reviewer`'s *Legibility*
+  objective enforces the second half (a craft rule no reviewer checks is obeyed on run one and gone
+  by run three). They share principles — front-loading, folds, denser forms, the antithesis cap —
+  but state them to different readers with different bounds, so **neither may be rewritten to cover
+  the other's artifact**, and a change to a shared principle means checking both. *Why the split and
+  not a pointer:* `project-plan` is a skill and cannot preload a core, and half of `writer-core`
+  does not apply to a plan — its LaTeX ban directly contradicts `project-plan` step 4, which permits
+  `.tex` for math-dense projects. *Rejected alt:* a fourth shared core — one consumer does not
+  justify the preload and the coupling. **The rung below is deliberately excluded:** a commit plan
+  is read only by the implementer and the reviewer, agents that read linearly, so folds and
+  scannability buy nothing there.
 - **The config validator:** `skills/pipeline-maintenance/validate-config.sh` is named by post-edit
   check 6 **and** by `feature-plan` Phase 1; move or rename it and both go stale. Its field
   lists are transcribed from the published frontmatter tables, so a harness change can make the
