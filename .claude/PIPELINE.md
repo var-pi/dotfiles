@@ -1,34 +1,28 @@
 # The planning pipeline — a visual map
 
 **This file is a map, not an agreement.** It shows the shape of the ecosystem: who dispatches whom,
-where the human gates sit, what each artifact path is. It carries **no rule of its own** — every
-rule is owned by the file named beside it (`skills/*/SKILL.md`, `agents/*.md`, `hooks/*`). When
-the map and a governing file disagree, the file wins and this map is stale.
+where the human gates sit, what each artifact path is. It carries **no rule of its own** — every rule
+is owned by the file named beside it. When the map and a governing file disagree, the file wins and
+this map is stale. To change anything, invoke **`/pipeline-maintenance`**.
 
-To change anything in the ecosystem, invoke **`/pipeline-maintenance`** — it carries the editing
-discipline and the cross-file dependency graph.
-
-> Verified against the files on **2026-08-06** (Claude Code 2.1.220). Mechanically re-checkable
-> with `sh ~/.claude/skills/pipeline-maintenance/validate-config.sh`; what a run *costs* is
-> re-checkable with `python3 ~/.claude/skills/pipeline-maintenance/pipeline-stats.py <project>`.
->
-> Ecosystem files are distributed through the `~/.dotfiles` bare repo — an edit is not live
-> anywhere else until `/dotfiles-sync` has pushed it.
+> Verified against the files on **2026-08-07** (Claude Code 2.1.222). Re-check with
+> `validate-config.sh` (wiring) and `pipeline-stats.py <project>` (what a run cost), both in
+> `skills/pipeline-maintenance/`. Ecosystem files ride the `~/.dotfiles` bare repo — an edit is live
+> nowhere else until `/dotfiles-sync` has pushed it.
 
 ---
 
 ## 1. The 30-second version
 
-The pipeline runs the ladder **project → feature → commit**. Everything is automated except four
-human steps:
+The ladder is **project → feature → commit**. Everything is automated except four human steps:
 
 | # | You do | Then the pipeline |
 |---|--------|-------------------|
 | 1 | Fresh session → **`/project-plan`** on the brief → approve at `ExitPlanMode` | Persists the project plan + one **feature brief** per feature to `docs/plan/` |
-| 2 | **A new session to plan the feature, in the project repo** → **`/feature-plan`** with **no arguments** → approve the commit-plan set **and its execution budget** at `ExitPlanMode` | Derives which feature is next from `CLAUDE.md`'s state block + the plan's spine, announces it, plans and hardens the whole set, persists it, opens the state record — then stops |
-| 2b | **One more session per commit** → **`/feature-plan`**, still with no arguments, repeated until the feature lands | Reads the state block, dispatches the next unlanded commit, gates it green, records *N of M landed*, stops. Interruption lands between commits, never inside one |
-| 3 | Wait for the **"ready to push"** notification → review the local commits → **push by hand** | Nothing — the guard blocks a *dispatched implementer* from pushing, deliberately |
-| 4 | **`/pipeline-maintenance`** when the improvement inbox has items | Reads the inbox, asks what it must, plans, then applies the proposals **with you present** and pushes them via `/dotfiles-sync` |
+| 2 | New session in the project repo → **`/feature-plan`** with **no arguments** → approve the commit-plan set **and its execution budget** | Derives the next feature from `CLAUDE.md`'s state block, announces it, plans and hardens the whole set, persists it, opens the state record — then stops |
+| 2b | **One more session per commit** → **`/feature-plan`**, still bare, until the feature lands | Dispatches the next unlanded commit, gates it green, records *N of M landed*, stops. Interruption lands between commits, never inside one |
+| 3 | Wait for **"ready to push"** → review the local commits → **push by hand** | Nothing — the guard blocks a *dispatched implementer* from pushing, deliberately |
+| 4 | **`/pipeline-maintenance`** when the improvement inbox has items | Reads the inbox, asks what it must, then applies proposals **with you present** and pushes via `/dotfiles-sync` |
 
 Step 2's `ExitPlanMode` is **the only gate between a plan and code being written**.
 
@@ -38,53 +32,38 @@ Step 2's `ExitPlanMode` is **the only gate between a plan and code being written
 
 ```mermaid
 flowchart TD
-    subgraph L1["PROJECT altitude · skills/project-plan/SKILL.md · Opus, main session"]
-        direction TB
-        B["project brief or source text"] --> MP["<b>/project-plan</b><br/>through-line · decomposition<br/>architecture · risk register"]
-        MP <--> MPR(["project-plan-reviewer<br/>Opus xhigh · persistent, resumed each round"])
-        MP --> G1{{"HUMAN GATE · ExitPlanMode"}}
-        G1 --> DP[("docs/plan/[slug]<br/>project plan + one feature brief per feature")]
-    end
+    B["project brief or source text"] --> MP["<b>/project-plan</b><br/>through-line · decomposition<br/>architecture · risk register"]
+    MP <--> MPR(["project-plan-reviewer<br/>Opus xhigh · resumed each round"])
+    MP --> G1{{"HUMAN GATE · ExitPlanMode"}}
+    G1 --> DP[("docs/plan/[slug]<br/>project plan + one brief per feature")]
 
-    subgraph L2["FEATURE altitude · skills/feature-plan/SKILL.md · Opus, main session"]
-        direction TB
-        PAD["<b>/feature-plan</b> on one feature brief"]
-        PAD --> P1["Phase 1 · Explore<br/>fan-out survey delegated to the Explore subagent"]
-        P1 --> P2["Phase 2 · Plan the set<br/>one commit plan per file + a README plan"]
-        P2 --> P3["Phase 3 · Review loop"]
-        P3 <--> FPR(["feature-plan-reviewer<br/>Opus xhigh · persistent · sees the WHOLE set every round"])
-        P3 --> G2{{"HUMAN GATE · ExitPlanMode<br/>the set + the execution budget"}}
-        G2 --> P4["Phase 4 · persist to ~/.claude/plans/<br/>open the feature in CLAUDE.md's state block"]
-        P4 --> P5["Phase 5 · walk the set<br/>strictly sequential, gated on each commit landing green"]
-    end
+    DP -. "SESSION BOUNDARY — you open a fresh session and call /feature-plan bare;<br/>state travels in docs/plan/ + CLAUDE.md's state block, never a live session" .-> PAD
 
-    subgraph L3["COMMIT altitude · one dispatch per commit plan"]
-        direction TB
-        LOOP["for each commit plan, in order"] --> IMP(["<b>commit-plan-implementer</b><br/>Opus high · writes the code"])
-        IMP -. "landed green — only then the next plan" .-> LOOP
-        IMP --> RM(["README plan dispatched LAST<br/>authored by feature-readme-writer"])
-    end
+    PAD["<b>/feature-plan</b> · Phases 1–4, once per feature"] --> P3["Phase 3 · review loop"]
+    P3 <--> FPR(["feature-plan-reviewer<br/>Opus xhigh · sees the WHOLE set every round"])
+    P3 --> G2{{"HUMAN GATE · ExitPlanMode<br/>the set + its execution budget"}}
+    G2 --> PLANS[("~/.claude/plans/*.md<br/>one file per commit plan + the README plan")]
 
-    DP -. "SESSION BOUNDARY — you open a fresh session per feature and call it bare<br/>state travels in the persisted plan + CLAUDE.md's state block, not a live session" .-> PAD
-    P5 --> LOOP
-    RM --> P6["Phase 6 · notify 'ready to push'<br/>planner writes project learnings to memory"]
-    P6 --> RETRO(["pipeline-retrospector<br/>Opus · reviews the RUN, not the code · propose-only"])
+    PLANS -. "one more session per commit, /feature-plan still bare" .-> P5["<b>Phase 5</b> · dispatch the next<br/>unlanded commit, then STOP"]
+    P5 --> IMP(["<b>commit-plan-implementer</b><br/>Opus xhigh · writes the code<br/>planner may mark one commit sonnet"])
+    IMP -. "landed green · record N of M · next session" .-> P5
+    P5 -. "pass conditions fail" .-> HALT["HALT · PushNotification<br/>record where it stopped"]
+    P5 --> P6["Phase 6 · 'ready to push'<br/>project learnings to memory"]
+    P6 --> RETRO(["pipeline-retrospector<br/>Opus · reviews the RUN · propose-only"])
     RETRO --> INBOX[("memory/pipeline-improvement-inbox.md")]
-    P5 -. "a commit fails its pass conditions" .-> HALT["HALT the chain · PushNotification"]
 
     classDef gate fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111;
     classDef store fill:#e0e7ff,stroke:#4338ca,color:#111;
     classDef agent fill:#dcfce7,stroke:#15803d,color:#111;
     classDef stop fill:#fecaca,stroke:#b91c1c,color:#111;
     class G1,G2 gate;
-    class DP,INBOX store;
-    class MPR,FPR,IMP,RM,RETRO agent;
+    class DP,PLANS,INBOX store;
+    class MPR,FPR,IMP,RETRO agent;
     class HALT stop;
 ```
 
-**Reading it:** rounded green = subagent, yellow hexagon = human gate, cylinder = durable artifact.
-The dotted line between altitudes is a real session boundary — `project-plan` names the next feature
-and stops.
+Rounded green = subagent, yellow hexagon = human gate, cylinder = durable artifact, dotted = a real
+session boundary.
 
 ---
 
@@ -93,24 +72,16 @@ and stops.
 Each rung owns exactly one thing and copies nothing from another. A copy upstream is not a head
 start; it is a second source of truth that drifts the moment the real one is decided.
 
-| Rung | Owns | Must never contain | Artifact |
-|------|------|--------------------|----------|
-| **project-plan** | Through-line · decomposition into features · repo architecture · cross-cutting conventions · risk register · falsifier per feature · a per-feature **delta** (modules added/altered/removed, and every shipped guarantee the feature means to break) | Call signatures, schemas, code bodies, stubs, tolerances, sample sizes — a delta names **modules, never signatures** | `docs/plan/[slug]` |
-| **feature-plan** | Decomposition into commits · the **contract surface** between them · pre-resolved decisions *with rejected alternatives* · each test's **intent / target / method class / discrimination** · a declared **delta** where a commit alters shipped behavior · the effort estimate · the `docs/commits/` path | Code bodies, **test mechanics** (expressions, fixtures, grid sizes, loops), numeric bounds and tolerances | `~/.claude/plans/*.md` |
-| **commit-plan-implementer** | **Code bodies** · **all test mechanics** · **every numeric bound**, derived **theory-first** · verification · the commit itself | — (it reads only its one plan; never the project plan or sibling plans) | the git commit |
+| Rung | Owns | Must never contain |
+|------|------|--------------------|
+| **project-plan** | Through-line · decomposition into features · repo architecture · cross-cutting conventions · risk register · falsifier per feature · a per-feature **delta** | Call signatures, schemas, code bodies, stubs, tolerances, sample sizes — a delta names **modules, never signatures** |
+| **feature-plan** | Decomposition into commits · the **contract surface** between them · pre-resolved decisions *with rejected alternatives* · each test's **intent / target / method class / discrimination** · declared **deltas** · the effort estimate · the `docs/commits/` path | Code bodies, **test mechanics** (expressions, fixtures, grid sizes, loops), numeric bounds and tolerances |
+| **commit-plan-implementer** | **Code bodies** · **all test mechanics** · **every numeric bound**, derived theory-first · verification · the commit | — (it reads only its one plan; never the project plan or a sibling) |
 
-The reason the plan carries no code: a pre-written body turns the implementer into a transcriber
-that stops checking whether the code integrates, and grounds "final" code in infrastructure that
-does not exist yet. The safety net is the **pinned test target and discrimination margin** plus the
-implementer's verification loop. *(Owned by `skills/feature-plan/SKILL.md` — "What the plan
-pins".)*
-
-**Measurement splits by question, not by rung.** The planner may run code while planning, against
-infrastructure that **already exists**, for one purpose only: certifying that a gate discriminates
-and that a negative control genuinely fails — because that answer can add or delete a commit, and the
-implementer (reading one plan) cannot see across the set. It writes the **margin**, never the
-tolerance. Every `atol` / `rtol` / SE multiple / sample size is the implementer's, derived against
-real code. *(Owned by `skills/feature-plan/SKILL.md` — "Measuring during planning".)*
+Two rules sit behind this table: *why the plan carries no code*, and *measurement splits by question,
+not by rung* — the planner may measure only to certify a gate **discriminates**, and writes the
+margin, never the tolerance. Both owned by `skills/feature-plan/SKILL.md` ("What the plan pins",
+"Measuring during planning"); `feature-plan-reviewer` enforces both.
 
 ---
 
@@ -120,48 +91,32 @@ real code. *(Owned by `skills/feature-plan/SKILL.md` — "Measuring during plann
 sequenceDiagram
     autonumber
     participant PAD as feature-plan · Opus
-    participant IMP as commit-plan-implementer · Opus
-    participant REV as commit-code-reviewer · Opus, read-only
+    participant IMP as commit-plan-implementer · Opus xhigh
+    participant REV as commit-code-reviewer · Opus xhigh, read-only
     participant DOC as commit-doc-writer · Opus
     participant GIT as git guard hooks
 
     PAD->>IMP: one commit plan — goal, contract surface, decisions,<br/>test intent + discrimination, pass conditions, the docs path
-    Note over IMP,GIT: SubagentStart arms the git guard here,<br/>SubagentStop disarms it — nobody arms it by hand
+    Note over IMP,GIT: SubagentStart arms the guard here, SubagentStop disarms it
     Note over IMP: reads ONLY this plan plus the project's<br/>CLAUDE.md / README.md — never a sibling plan
-    IMP->>IMP: write the tests first
-    IMP->>IMP: MUTATION GATE — a test that passes before the<br/>feature exists is vacuous; rewrite it
-    IMP->>IMP: implement · own the mechanics · derive bounds theory-first
-    IMP->>IMP: verify empirically — ONE synchronous gated run,<br/>foreground, exactly once
+    IMP->>IMP: tests first (mutation gate) · implement · own the mechanics ·<br/>derive bounds theory-first · ONE synchronous gated run
     IMP->>REV: the diff, its goal, contracts, test intent
-    REV-->>IMP: findings organised by objective — no write tools
-    IMP->>IMP: fix every reasonable finding<br/>re-dispatch once if the fixes were substantial
+    REV-->>IMP: findings by objective — no write tools
+    IMP->>IMP: fix every reasonable finding · re-dispatch at most once
     IMP->>DOC: context bundle — a superset; the writer selects
     DOC-->>IMP: docs/commits/[feature]/[NN]-[commit].md
     IMP->>GIT: stage code + that doc, then one descriptive commit
-    GIT-->>IMP: pre-commit and commit-msg checks run here
     IMP-->>PAD: handoff — landed, ALL GATES: PASS, doc path, deviations
 ```
 
-Three things this diagram is making visible:
-
-- **The implementer is the only node with write access to the repo**, and it makes the most
-  judgment calls of any of them — it owns the code, the test mechanics, and every numeric bound.
-  Its agreement is deliberately the tersest and most imperative file in the ecosystem.
-- **The independent review is a control, not ceremony** — it exists because the built-in
-  `/code-review` command stopped being model-invocable, and the pipeline briefly ran with no
-  independent review at all.
-- **The implementer never pushes, and never returns mid-workflow.** It hands back a summary;
-  `feature-plan` gates the next commit on it and does *not* re-run the expensive experiment as a
-  second ground truth. A dispatch that returns *without* its commit landed is resumed, not halted and
-  not re-dispatched cold.
+The implementer is the only node with repo write access and makes the most judgment calls of any of
+them — hence the tersest agreement in the ecosystem. It never pushes and never returns mid-workflow;
+a dispatch returning *without* its commit landed is resumed, not halted and not re-dispatched cold
+(`skills/feature-plan/SKILL.md`, Phase 5).
 
 ---
 
 ## 5. The git guard
-
-Three POSIX-sh hooks in `~/.claude/hooks/`, pointed at by `git config core.hooksPath` and gated on a
-repo-local marker file so they are **inert in every other repo and every non-pipeline commit**. A
-fourth script, `pipeline-marker.sh`, owns the marker's lifetime.
 
 ```mermaid
 flowchart TD
@@ -169,13 +124,13 @@ flowchart TD
     M -- "no · not a pipeline run" --> LOCAL["chain to the repo's own hook if executable,<br/>then allow — never silently shadows a project hook"]
     M -- "yes · run is armed" --> W{"which hook fired?"}
 
-    W -- "pre-commit" --> PC{"does the staged set touch anything outside<br/>README.md / CLAUDE.md / docs/ ?"}
+    W -- "pre-commit" --> PC{"staged set touches anything outside<br/>README.md / CLAUDE.md / docs/ ?"}
     PC -- "no · docs-only" --> OK1["ALLOW — exempt<br/>e.g. the feature README commit"]
     PC -- "yes · this is code" --> PC2{"is a docs/commits/ file staged too?"}
     PC2 -- "yes" --> OK2["ALLOW — code and its explanation land together"]
     PC2 -- "no" --> X1["REJECT"]
 
-    W -- "commit-msg" --> CM{"subject at least 15 chars<br/>AND at least 2 non-blank lines?"}
+    W -- "commit-msg" --> CM{"subject ≥ 15 chars<br/>AND ≥ 2 non-blank lines?"}
     CM -- "yes" --> OK3["ALLOW"]
     CM -- "no" --> X2["REJECT — degenerate message"]
 
@@ -187,103 +142,70 @@ flowchart TD
     class X1,X2,X3 no;
 ```
 
-**Marker lifecycle — nobody arms it by hand.** `hooks/pipeline-marker.sh` is wired in
-`~/.claude/settings.json` as a `SubagentStart` hook (arm) and a `SubagentStop` hook (disarm), both
-matching `^commit-plan-implementer$`. The guard is therefore live for exactly the window in which a
-dispatched implementer is touching the repo: **your own pushes are never blocked between commits,
-and a halted run cannot strand an armed marker.** The arm step also points the repo at these hooks,
-unless the repo already sets its own `core.hooksPath` — then it leaves it alone and warns that the
-guard is not enforcing.
-
-**Why a marker file and not an env var:** each Bash call runs in a fresh shell, so nothing in the
-session environment can reach a dispatched implementer. The git layer can. (`settings.json` hooks
-*do* now fire on subagent tool calls, and their payload carries `agent_type` — which is what makes
-the lifecycle above possible. Enforcement stays at the git layer because it catches a commit by any
-route, not only one made through Bash.)
+**Nobody arms it by hand.** `hooks/pipeline-marker.sh` is wired in `settings.json` as a
+`SubagentStart`/`SubagentStop` pair matching `^commit-plan-implementer$`, so the guard is live for
+exactly the window a dispatched implementer is touching the repo: your own pushes are never blocked
+between commits, and a halt cannot strand an armed marker. Enforcement stays at the git layer because
+it catches a commit by **any** route, not only one made through Bash.
 
 ---
 
-## 6. Where everything lands
+## 6. File index — who owns what, and what it produces
 
-| Path | Written by | Read by | Notes |
-|------|-----------|---------|-------|
-| `docs/plan/[slug]` | `/project-plan` (after approval) | `/feature-plan`, you | Project plan + the feature briefs; **crosses the session boundary**, so each brief has to stand alone for a cold reader |
-| the project's `CLAUDE.md` — **pipeline-state block** | seeded by `/project-plan` step 4; written by `/feature-plan` Phases 4, 5 (halt) and 6 | `/feature-plan`'s own invocation, you | Which features landed, which is in progress, which is next. **This is what lets step 2 be called bare.** Rides `pre-commit`'s docs-only exemption so the planner can commit it mid-run |
-| `~/.claude/plans/*.md` | `/feature-plan` Phase 4 | every later `/feature-plan` session | One file per commit plan, plus the README plan. Its **path is recorded in the state block** — that is how a fresh session finds the set it must dispatch from |
-| `docs/commits/[feature]/[NN]-[commit].md` | **authored** by `commit-doc-writer` | maintainers | **Four owners, one path:** the planner *names* it (template §8), the writer *authors* it, the implementer *stages and commits* it, `pre-commit` *enforces* it |
-| feature `README.md` | `feature-readme-writer` | newcomers, evaluators | Dispatched **last**, once every commit has landed; a docs-only commit, so guard-exempt and it gets no `docs/commits/` file |
-| `memory/*.md` + `MEMORY.md` | the planner (project learnings, Phase 6) | future sessions | Learnings about the *codebase* |
-| `memory/pipeline-improvement-inbox.md` | `pipeline-retrospector` | `/pipeline-maintenance` | Learnings about the *pipeline* — see below |
+| File | Role · model · effort | Produces |
+|------|----------------------|----------|
+| `skills/project-plan/SKILL.md` | Project planner · main session | `docs/plan/[slug]`; dispatches `project-plan-reviewer`, `Explore` (Sonnet) |
+| `skills/feature-plan/SKILL.md` | Feature planner + **one commit per session** · main session | `~/.claude/plans/*.md`; dispatches `feature-plan-reviewer`, `Explore` (Sonnet), `commit-plan-implementer` ×1/session, `pipeline-retrospector` |
+| `skills/pipeline-maintenance/SKILL.md` | Meta-skill: edits the ecosystem · main session | the ecosystem files + the memories → `dotfiles-sync` |
+| `skills/dotfiles-sync/SKILL.md` | Distributes the ecosystem · main session | the commit + push that makes an edit live elsewhere |
+| `agents/project-plan-reviewer.md` | Critic of the project plan · Opus xhigh | reports only · **persistent, resumed each round** |
+| `agents/feature-plan-reviewer.md` | Critic of the whole commit-plan set · Opus xhigh | reports only · **persistent, resumed each round** |
+| `agents/commit-plan-implementer.md` | Executes one commit plan · **Opus xhigh**, planner may mark a routine commit `model: sonnet` (§0) | code + one local commit; dispatches the reviewer and the two writers |
+| `agents/commit-code-reviewer.md` | Independent review of one diff · Opus xhigh · **read-only** | reports only · **one-shot per commit** |
+| `agents/commit-doc-writer.md` | Authors the per-commit doc · Opus high | `docs/commits/[feature]/[NN]-[commit].md` · does not stage or commit |
+| `agents/feature-readme-writer.md` | Authors the showcase README · Opus high | feature `README.md` · dispatched **last** · does not stage or commit |
+| `agents/pipeline-retrospector.md` | Retrospective on the run · Opus high | the inbox + metrics memories **only** |
+| `skills/{reviewer,writer,handoff}-core/` | Shared discipline · **preloaded** via `skills:` frontmatter | — · `handoff-core` is invoked (not preloaded) by `feature-plan`, which is a skill |
+| `skills/pipeline-maintenance/{validate-config.sh, pipeline-stats.py}` | The two check scripts · POSIX sh / Python 3 | *is the config still wired* (exit 1 on an unresolvable reference; run by post-edit check 6 **and** `feature-plan` Phase 1) · *what the last run cost* (tokens, turns, reviews, peak context, per tier and commit) |
+| `hooks/pre-commit`, `pre-push`, `commit-msg`, `pipeline-marker.sh` | The git guard · POSIX sh | allow or reject · marker-gated, see §5 |
+
+Three paths have **more than one owner**, and all of them must agree:
+
+- `docs/commits/[feature]/[NN]-[commit].md` — *named* by `feature-plan` (§8), *authored* by
+  `commit-doc-writer`, *staged and committed* by the implementer, *enforced* by `pre-commit`.
+- the project's `CLAUDE.md` **pipeline-state block** — *seeded* by `project-plan` step 4, *written* by
+  `feature-plan` Phases 4, 5 (every dispatch, and the halt path) and 6, *read* by `feature-plan`'s own
+  invocation. **This is what lets step 2 be called bare.** Rides `pre-commit`'s docs-only exemption.
 
 ---
 
 ## 7. How the pipeline improves itself
 
-```mermaid
-flowchart LR
-    RUN["a feature finishes<br/>feature-plan Phase 6"] --> R(["pipeline-retrospector<br/>fresh context · reviews the run"])
-    R --> OP["operator-facing retrospective<br/>relayed to you verbatim"]
-    R --> IN[("pipeline-improvement-inbox<br/>the only file it may write")]
-    IN --> PM["<b>/pipeline-maintenance</b> · Intake step<br/>reads the queue before editing"]
-    PM --> FILES["edits the ecosystem files<br/>WITH YOU PRESENT"]
-    PM --> REC["reconciles the queue —<br/>delete what shipped, annotate what was deferred"]
-    FILES --> SYNC["<b>/dotfiles-sync</b> — commit + push<br/>until then the edit is local only"]
-    REC -.-> IN
-
-    classDef store fill:#e0e7ff,stroke:#4338ca,color:#111;
-    classDef agent fill:#dcfce7,stroke:#15803d,color:#111;
-    class IN store;
-    class R agent;
-```
-
-The retrospector **proposes only** — it never edits an ecosystem file. Those files govern every
-future run and a run closes unattended, so an edit there would change pipeline behaviour with nobody
-reading the diff. An item left in the inbox resurfaces next cycle; that is the point.
+At feature close, `feature-plan` Phase 6 dispatches `pipeline-retrospector`: it measures the run with
+`pipeline-stats.py`, appends a row to `memory/pipeline-metrics.md`, and files proposals to
+`memory/pipeline-improvement-inbox.md`. It **proposes only** — the ecosystem files govern every future
+run and a run closes unattended, so editing them here would change behaviour with nobody reading the
+diff. `/pipeline-maintenance` consumes and reconciles the queue with you present; an item left in the
+inbox resurfaces next cycle, which is the point.
 
 ---
 
-## 8. File index
+## 8. Something went wrong — where to look
 
-| File | Role | Model · effort | Reads | Dispatches / writes |
-|------|------|----------------|-------|---------------------|
-| `skills/project-plan/SKILL.md` | Project planner | main session · Opus | brief, source text, codebase | `project-plan-reviewer`, `Explore` → `docs/plan/` |
-| `skills/feature-plan/SKILL.md` | Feature planner + **one commit per session** | main session · Opus | one feature brief, codebase, the state block | `feature-plan-reviewer`, `Explore` (Sonnet), `commit-plan-implementer` ×1 per session, `pipeline-retrospector` → `~/.claude/plans/` |
-| `skills/pipeline-maintenance/SKILL.md` | Meta-skill: edits the ecosystem | main session · Opus | the inbox, then the ecosystem files | the ecosystem files, the memories → `dotfiles-sync` (its Phase 6) |
-| `skills/dotfiles-sync/SKILL.md` | Distributes the ecosystem | main session · Opus | the `~/.dotfiles` bare repo | the commit + push that makes an ecosystem edit live elsewhere |
-| `agents/project-plan-reviewer.md` | Critic of the project plan | Opus · xhigh | the plan | reports only · **persistent, resumed each round** |
-| `agents/feature-plan-reviewer.md` | Critic of the whole commit-plan set | Opus · xhigh | the whole set, every round | reports only · **persistent, resumed each round** |
-| `agents/commit-plan-implementer.md` | Executes one commit plan | **Sonnet · xhigh** — planner may override to Opus per commit (§0) | its one plan + project docs/code | `commit-code-reviewer`, `commit-doc-writer`, `feature-readme-writer` → code + one local commit |
-| `agents/commit-code-reviewer.md` | Independent review of one diff | Opus · high · **read-only** | the working diff | reports only · **one-shot per commit** |
-| `agents/commit-doc-writer.md` | Authors the per-commit doc | Opus · high | one diff + the bundle | `docs/commits/...` · does not stage or commit |
-| `agents/feature-readme-writer.md` | Authors the showcase README | Opus · high | the whole finished feature | `README.md` · does not stage or commit |
-| `agents/pipeline-retrospector.md` | Retrospective on the run | Opus · high | run artifacts + ecosystem files, measured with `pipeline-stats.py` | the inbox + metrics memories **only** |
-| `skills/reviewer-core/SKILL.md` | Shared review discipline | — | **preloaded** into `project-plan-reviewer` + `feature-plan-reviewer` via their `skills:` frontmatter | — · deliberately **not** preloaded into `commit-code-reviewer`, which is one-shot, not resumed |
-| `skills/writer-core/SKILL.md` | Shared doc craft | — | **preloaded** into `commit-doc-writer` + `feature-readme-writer` | — · the rushed-team-lead reader, folding, signal hierarchy, the stand-alone evidence bar |
-| `skills/handoff-core/SKILL.md` | The four handoff **bundles** | — | **preloaded** into `commit-plan-implementer` + the four receivers; `feature-plan` **invokes** it (a skill cannot preload a skill) | — · sender writes every field incl. `none`; receiver names any gap and proceeds |
-| `skills/pipeline-maintenance/validate-config.sh` | Schema + cross-reference check | POSIX sh | `agents/*.md`, `skills/*/SKILL.md`, `settings.json` | exit 1 on an unresolvable reference · run by post-edit check 6 **and** `feature-plan` Phase 1 |
-| `skills/pipeline-maintenance/pipeline-stats.py` | What a run actually cost | Python 3 | `~/.claude/projects/<slug>/` transcripts + subagent trees | tokens · cost · turns · review rounds · peak context, per tier and per commit · run by `pipeline-retrospector` **and** post-edit check 7 |
-| `hooks/pre-commit`, `pre-push`, `commit-msg` | The git guard | POSIX sh | the staged set / the message | allow or reject · marker-gated, see §5 |
-| `hooks/pipeline-marker.sh` | Arms/disarms the guard | POSIX sh | — | wired in `settings.json` as `SubagentStart`/`SubagentStop` on `commit-plan-implementer` |
-
----
-
-## 9. Something went wrong — where to look
-
-| What you see | Where it comes from |
-|--------------|---------------------|
-| `pre-push: push blocked during a pipeline run` | An implementer dispatch is still running, so the guard is armed. If nothing is running, a `SubagentStop` hook did not fire: clear `$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE` by hand |
-| `pre-commit: stage this commit's docs/commits/ file` | A code commit without its doc. Owner: `hooks/pre-commit` + the path pinned in the plan's §8 |
-| `commit-msg: write a descriptive commit message` | Subject under 15 chars, or no body. Owner: `hooks/commit-msg` + the implementer's commit conventions |
-| Commit docs feel bloated or same-weight throughout | `skills/writer-core/SKILL.md` (scannability, folding, the cut list) and `agents/commit-doc-writer.md` (what belongs in a commit doc at all) |
-| The project plan is a wall of prose, or a brief outgrew its eight fields | `skills/project-plan/SKILL.md` — "How the plan reads" (the unfolded cap, fixed fields, precise-not-literary). `project-plan-reviewer` is required to fault the form, not only the content. Separate from `writer-core`, which owns the same craft for the *doc writers'* artifacts |
-| A plan contains code bodies, test expressions, or tolerances | The altitude contract — §3 above; owners are `project-plan` and `feature-plan`. `feature-plan-reviewer` is required to fault their *presence*, not only their absence |
-| An implementer preserved something redundant "because the plan pinned it" | Plan-stated mechanics are the implementer's to replace. Owner: `agents/commit-plan-implementer.md` — "Plan-stated mechanics are yours" |
+| What you see | Owner |
+|--------------|-------|
+| `pre-push: push blocked during a pipeline run` | An implementer dispatch is still running. If nothing is, a `SubagentStop` hook did not fire — clear `$(git rev-parse --git-dir)/CLAUDE_PIPELINE_ACTIVE` by hand |
+| `pre-commit: stage this commit's docs/commits/ file` | A code commit without its doc — `hooks/pre-commit` + the path pinned in the plan's §8 |
+| `commit-msg: write a descriptive commit message` | Subject under 15 chars, or no body — `hooks/commit-msg` + the implementer's commit conventions |
+| `pipeline-marker: this repo sets core.hooksPath=…` | The repo owns its hooks path, so the guard is **not** enforcing — `hooks/pipeline-marker.sh` |
+| Commit docs feel bloated or same-weight throughout | `skills/writer-core/SKILL.md` (scannability, folding, the cut list) + `agents/commit-doc-writer.md` |
+| The project plan is a wall of prose, or a brief outgrew its eight fields | `skills/project-plan/SKILL.md` — "How the plan reads". `project-plan-reviewer` must fault the form, not only the content |
+| A plan contains code bodies, test expressions, or tolerances | The altitude contract, §3. `feature-plan-reviewer` must fault their *presence*, not only their absence |
+| Every commit ran at the same tier | The `model: sonnet` downgrade was never marked — `feature-plan` §0 + `feature-plan-reviewer`'s discrimination objective, which faults a set that marks nothing |
+| An implementer preserved something redundant "because the plan pinned it" | Plan-stated mechanics are the implementer's to replace — `agents/commit-plan-implementer.md` |
 | A subagent reports `/code-review` or `/verify` failed with `disable-model-invocation` | Expected: both are user-triggered only. `commit-code-reviewer` replaces the first; drive the flow directly instead of the second |
-| `pipeline-marker: this repo sets core.hooksPath=…` | The repo owns its hooks path, so the guard is **not** enforcing. Owner: `hooks/pipeline-marker.sh`; arm it by hand if you want it |
-| A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one that set `disable-model-invocation`) and it only warns in the debug log. Owner: `skills/reviewer-core/`, `skills/writer-core/`, `skills/handoff-core/` — and `validate-config.sh` is what catches it before a run |
-| An agent says its bundle was missing a field | Working as designed: the receiver names the gap and proceeds. The sender dropped it. Owner: `skills/handoff-core/` for the field set, the sending agreement for filling it |
-| `/feature-plan` opens by reporting a config failure | `validate-config.sh` found an unresolvable reference — a renamed agent, a core that no longer loads, a dead hook path. Fix it in `/pipeline-maintenance`, not mid-run |
-| A commit seems to have stalled | Check the plan's §0 **agent wall-clock** estimate — not its compute figure, which is far smaller and makes every healthy dispatch look stalled. The run is *supposed* to be long for gated experiments |
-| A dispatch came back saying it is "waiting" for a subagent | Usually a **backgrounded** dispatch: subagents run in the background unless the `Agent` call passes `run_in_background: false`. Owner of the rule: `skills/handoff-core/` (sender half of the protocol), named by `agents/commit-plan-implementer.md` — "Never return in a waiting state" — and by `feature-plan` Phase 5 beat 1. The recovery side is Phase 5, which verifies the tree and **resumes that same session** |
-| The implementer skipped its code review or wrote its own commit doc | Check `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`. The pipeline needs depth ≥ 2; at the limit the harness withholds the `Agent` tool, so the implementer does the delegated work itself instead of failing. Owner: `/pipeline-maintenance` — "The dispatch shape" |
-| The pipeline keeps repeating a mistake across features | It belongs in the inbox → `/pipeline-maintenance`, not in a one-off correction to a running agent |
+| A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one setting `disable-model-invocation`) and only warns in the debug log — `validate-config.sh` catches it before a run |
+| `/feature-plan` opens by reporting a config failure | `validate-config.sh` found an unresolvable reference. Fix it in `/pipeline-maintenance`, not mid-run |
+| A commit seems to have stalled | Check the plan's §0 **agent wall-clock** estimate — not its compute figure, which is far smaller and makes every healthy dispatch look stalled |
+| A dispatch came back saying it is "waiting" | Usually a **backgrounded** dispatch — subagents background by default unless the `Agent` call passes `run_in_background: false`. Rule owned by `skills/handoff-core/`; recovery by `feature-plan` Phase 5 |
+| The implementer skipped its code review or wrote its own commit doc | Check `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`. The pipeline needs depth ≥ 2; at the limit the harness withholds the `Agent` tool rather than erroring — `/pipeline-maintenance`, "The dispatch shape" |
