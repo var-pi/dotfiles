@@ -31,6 +31,10 @@ from collections import defaultdict
 # less than ~20%; the shape of a run (which tier burned the tokens) survives price drift,
 # the dollar total does not.
 PRICES = {
+    # No pipeline node runs on Fable (see [[pipeline-ecosystem]], 2026-08-07). The row exists
+    # anyway: DEFAULT is Opus-priced, so a hand-run Fable dispatch landing in a transcript would
+    # otherwise be costed at half its real rate with nothing reporting the error.
+    "claude-fable-5":      {"in": 10.00, "out": 50.00, "window": 1_000_000},
     "claude-opus-5":       {"in": 5.00, "out": 25.00, "window": 1_000_000},
     "claude-opus-4-8":     {"in": 5.00, "out": 25.00, "window": 1_000_000},
     "claude-sonnet-5":     {"in": 3.00, "out": 15.00, "window": 1_000_000},
