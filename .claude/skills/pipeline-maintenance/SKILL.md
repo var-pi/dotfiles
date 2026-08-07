@@ -100,13 +100,13 @@ reader*).
 - `project-plan-reviewer` (Opus, xhigh) — reviews the project plan. Persistent across rounds.
 - `feature-plan-reviewer` (Opus, xhigh) — reviews the whole feature set as a unit. Persistent
   across rounds.
-- `commit-plan-implementer` (**Sonnet, xhigh** — the planner may override to Opus per commit via
-  template §0) — executes one commit plan: **writes the code**, owns **all test mechanics and every
+- `commit-plan-implementer` (**Opus, xhigh** — the planner may mark a routine commit `model: sonnet`
+  via template §0) — executes one commit plan: **writes the code**, owns **all test mechanics and every
   numeric bound** (derived theory-first), verifies, dispatches `commit-code-reviewer`, commits
   locally (never pushes). Delegates doc *authoring* to the two writers. The most expensive node by
   far: 35–60% of a feature's tokens, scaling as ~turns^1.5, so a rule that adds turns here costs
   more than the same rule anywhere else.
-- `commit-code-reviewer` (Opus, high, **read-only**) — independent fresh-context review of one
+- `commit-code-reviewer` (Opus, xhigh, **read-only**) — independent fresh-context review of one
   increment's diff, dispatched by the implementer before it commits. **One-shot per commit**, not
   resumed — so it does *not* read `reviewer-core.md` (that core assumes a session resumed across
   rounds). Reports; never fixes.
@@ -174,12 +174,17 @@ multiple files; edit them together or you leave a relic.**
     discrimination claims **and the mechanism story attached to them**, **fault a plan that contains
     an expression or a tolerance**) is the other half and must move with it.
   - **The model override rides the same rung.** Template §0 lets the planner mark a commit
-    `model: opus`; the criterion is *load-bearing mathematics*, which is an altitude judgement the
-    planner is uniquely placed to make (it sees the whole set) and the implementer structurally
-    cannot (it sees one plan). Spans `feature-plan` §0 ↔ Phase 5's dispatch line ↔
-    `commit-plan-implementer`'s frontmatter default ↔ `feature-plan-reviewer`'s discrimination
+    `model: sonnet`; the criterion is *no new load-bearing mathematics and no novel contract*, which
+    is an altitude judgement the planner is uniquely placed to make (it sees the whole set) and the
+    implementer structurally cannot (it sees one plan). Spans `feature-plan` §0 ↔ Phase 5's dispatch
+    line ↔ `commit-plan-implementer`'s frontmatter default ↔ `feature-plan-reviewer`'s discrimination
     objective. **There is no effort override** — the Agent tool takes `model` only — so any text
     offering one is naming a capability that does not exist.
+    **The marker's direction is load-bearing, not cosmetic.** It pointed *up* (mark the hard commits
+    `opus`) while the default was Sonnet, and *down* since 2026-08-07. Whichever way it points, the
+    skipped marking is the free one — an unmarked set silently runs everything at the default — so
+    the reviewer objective must fault the omission in whichever direction is currently free. Flip the
+    default again and that objective flips with it, or the discrimination stops biting.
 - **The delta / consolidation shape** spans `feature-plan` template §3 ("Files & delta"),
   `commit-plan-implementer` ("Build only what the increment needs"), and `feature-plan-reviewer`
   ("Declared deltas"). The load-bearing guarantee in all three is the same sentence: **the existing
@@ -263,11 +268,14 @@ multiple files; edit them together or you leave a relic.**
   or retire that skill and this phase names a capability that no longer exists — post-edit check 6's
   exact silent failure. Untrack a file and the edit stops propagating to other machines with no
   error anywhere; a new ecosystem file must be added to that repo in the same pass that creates it.
-  - **Every new file needs `git add -f`.** The dotfiles repo's `.gitignore` is a `*` catch-all with
-    tracked paths opted in individually, so a file you create is **not** untracked-and-visible — it
-    is *ignored*, absent from `git status` entirely. Nothing warns you; the edit simply never leaves
-    this machine. Check with `git check-ignore -v <path>` and force-add, then confirm the file shows
-    as `A` in the staged set before the sync.
+  - **Every `git add` there needs `-f`** — new *and* already-tracked files alike (verified
+    2026-08-07). `~/.gitignore` is a bare `*` with no negations, so git prunes the whole directory
+    before it ever checks whether a path is in the index; a plain `add` of a file you just edited
+    fails with *"The following paths are ignored"*. Two traps behind that: `git check-ignore -v
+    <path>` reports **nothing** for a tracked file, so it does not diagnose this, and the failure for
+    a *new* file is silent in the other direction — it never appears in `git status` at all, so the
+    edit simply never leaves this machine. Force-add the exact path (never a glob — the work-tree is
+    all of `$HOME`), then confirm it is staged before the sync.
 - **The dispatch shape — foreground, and two levels deep.** Two harness defaults this pipeline
   depends on, both of which have already moved once and both of which fail *silently*:
   - **Subagents run in the background by default** (since v2.1.198), so a dispatch without
@@ -369,10 +377,10 @@ multiple files; edit them together or you leave a relic.**
   neighbour** (`commit-doc-writer` vs `feature-readme-writer`; the three reviewers by altitude),
   and any **caller instruction the dispatcher cannot get right without it** — "one plan at a time",
   "read-only". Those are *what*, not *how*.
-- **Calibrate by the file's job, not by model tier.** Tier follows the job rather than setting it —
-  the implementer runs Sonnet by default precisely *because* its agreement is a checklist, and the
-  planner may raise one commit to Opus without the file changing. What differentiates a file is what
-  it is *for*. The implementer's agreement is a
+- **Calibrate by the file's job, not by model tier.** Tier follows the job rather than setting it:
+  the implementer's agreement survived two tier flips **unchanged** (Opus→Sonnet 2026-08-05,
+  Sonnet→Opus 2026-08-07) — if tier drove calibration, one of those would have forced a rewrite.
+  What differentiates a file is what it is *for*. The implementer's agreement is a
   checklist executed under production pressure: tersest, imperative-first, every rule actionable
   without re-reading. The reviewers' and writers' agreements are judgment instruments: rationale
   earns more room there, because they must generalize to cases nobody enumerated. Hardest dedup on

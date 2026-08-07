@@ -264,15 +264,18 @@ earlier commit established, never on one no committed increment has built.
 **Plan template.** Structure each commit plan as a fixed skeleton so nothing load-bearing is
 left implicit:
 
-0. **Dispatch & effort** — the implementer runs **Sonnet by default**. Name `model: opus` on a
-   commit that carries the feature's load-bearing mathematics: a closed-form derivation, the
-   discrimination margin the rest of the set rests on, or the headline claim itself. Not because a
-   commit is long, touches many files, or feels important — **length is not weight**, and a
-   scale-up commit with a routine contract is exactly the cheap case the default exists for.
+0. **Dispatch & effort** — the implementer runs **Opus by default**. Name `model: sonnet` on a
+   commit that carries **no new load-bearing mathematics and no novel contract**: a scale-up, a
+   plumbing change, a mechanical extension of a pattern an earlier commit already established. Not
+   because a commit is short or touches few files — **length is not weight**, and a long commit that
+   derives the discrimination margin the rest of the set rests on is exactly what the default exists
+   for.
 
    Marking every commit, or none, means you have not made the judgement: on a recent eight-commit
    feature three commits carried the mathematics and 70% of the tier's tokens while the cheapest was
-   3%, so the discrimination is where the saving lives. *(Effort is **not** overridable per dispatch —
+   3%, so the discrimination is where the saving lives. **Omission is the free direction** — a
+   downgrade you skip costs nothing and reads as caution, which is why the reviewer faults a set that
+   marks nothing at all. *(Effort is **not** overridable per dispatch —
    the Agent tool takes `model` and nothing else. The implementer's frontmatter sets effort for every
    commit; do not write an effort override into a plan, because nothing can honour it.)*
 
@@ -505,8 +508,8 @@ The beats:
    `run_in_background: false`: subagents run in the background by default, and a backgrounded
    implementer hands its result back as a notification in a *later* turn — which would let this
    session reach beat 4, record a landed count, and stop while the commit is still being built.
-   If the plan's Dispatch line named `model: opus`, pass that explicitly too
-   (`Agent(subagent_type: "commit-plan-implementer", model: "opus", run_in_background: false)`);
+   If the plan's Dispatch line named `model: sonnet`, pass that explicitly too
+   (`Agent(subagent_type: "commit-plan-implementer", model: "sonnet", run_in_background: false)`);
    otherwise dispatch with the default model and say nothing about it. There is no effort parameter
    to pass.
 2. **Gate on the implementer's own result — do not re-run the heavy experiment.** The implementer

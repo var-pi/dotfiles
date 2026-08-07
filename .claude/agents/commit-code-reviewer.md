@@ -3,7 +3,7 @@ name: commit-code-reviewer
 description: Independent read-only review of one increment's diff before it is committed. Reports findings; the implementer fixes them.
 tools: Read, Grep, Glob, Bash
 model: opus
-effort: high
+effort: xhigh
 skills:
   - handoff-core
 ---

@@ -1,7 +1,7 @@
 ---
 name: commit-plan-implementer
 description: Execute one commit plan — write the tests and code, verify, document, and hand back one local commit. Dispatch one plan at a time.
-model: sonnet
+model: opus
 effort: xhigh
 skills:
   - handoff-core
@@ -317,6 +317,16 @@ pair came back with *disjoint* must-fix lists, so taking only the survivor would
 other's findings. Merge them, note in your handoff that you did, and act on the union. The same holds
 for a result that arrives addressed to someone else: a dispatch already paid for is evidence, and the
 only way to waste it is to drop it.
+
+### Delegate only these three
+
+You have exactly three delegations, all named below: the independent review, the commit doc, and — on
+the README increment only — the feature README. **Dispatch no other subagent.** Do not spawn a
+generic agent to read files, run a search, or double-check your work: a child re-establishes context
+from scratch and runs at 1.3–3.7M cache-read against your own 250–350k, so anything you could finish
+in a few tool calls costs several times more delegated than done inline.
+
+**Verification is never delegated** — it stays in your loop, where its result is yours to act on.
 
 ### Delegate the commit doc to `commit-doc-writer`
 

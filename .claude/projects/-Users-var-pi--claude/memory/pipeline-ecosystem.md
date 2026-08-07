@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-08-06T11:36:10.682Z
+  modified: 2026-08-07T15:23:00.087Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -593,5 +593,53 @@ a line or two"; four invented sub-headings replacing field 2; the `X, not Y` cad
   — one consumer does not justify the preload and the coupling.
 - **Deliberately not extended down a rung** (operator-confirmed): a commit plan is read only by the
   implementer and the reviewer, agents that read linearly, so folds and scannability buy nothing
-  there. `PIPELINE.md` got one §9 troubleshooting row; the §3 altitude table was left alone, since
+  there. `PIPELINE.md` got one troubleshooting row; the §3 altitude table was left alone, since
   that column is content ownership and form is not altitude.
+
+**Implementer flipped to Opus, Fable rejected, map rewritten (2026-08-07).** Operator upgraded Pro →
+Max x5 and asked three questions: use Fable anywhere, promote the implementer, bump effort.
+
+- **`commit-plan-implementer` is Opus/xhigh again, and the marker inverted.** Template §0 now names
+  `model: sonnet` as a **downgrade** for a commit carrying *no new load-bearing mathematics and no
+  novel contract* (scale-up, plumbing, mechanical extension). *Why:* the 2026-08-05 Sonnet default
+  was a cost decision, and 5× limits removed the constraint; Opus 5's advantage concentrates on
+  multi-file/refactor work and narrows on easy single-turn edits, which is exactly the implementer's
+  split. Not derivable from the rows — 93 turns/commit (Sonnet, `06-fbm`) vs 217 (Opus,
+  `07-sde-bridge`) is confounded by feature size — so this is recorded as a **preference call**, to be
+  judged by the next [[pipeline-metrics]] row.
+- **The generalizable half: whichever way the marker points, the skipped marking is the free one.**
+  Under Sonnet-default, omitting `opus` was visible; under Opus-default, omitting `sonnet` costs
+  nothing and *reads as caution*, so an unmarked set silently runs everything at the default and the
+  discrimination dies. `feature-plan-reviewer`'s objective was therefore re-pointed and given a cap
+  ("on a set of four or more, no `sonnet` mark at all is a finding"). Registered in the coupling: a
+  future flip must move that objective with it.
+- **Fable 5: rejected, not deferred-by-omission.** *Operator's reason:* Opus 5 trumps Fable on almost
+  all fronts at half the price ($5/$25 vs $10/$50 per MTok); revisit at the next Fable release. Two
+  facts worth not rediscovering: `fable` **is** a valid `Agent`-tool model alias in 2.1.222 (the
+  blocker was never mechanical), and Fable is metered *separately from plan limits* — a per-model
+  allowance with a usage-credits path behind it. *A correction worth keeping:* the maintainer first
+  argued against Fable **from that metering**, reading strings in the CC binary as evidence the
+  operator was constrained; they were evidence a mechanism exists, nothing more. A mechanism is not a
+  measurement. The surviving argument is different and unresolved: published guidance says prompts
+  written for prior models are *often too prescriptive for Fable and reduce its output quality*, and
+  these ~3,400 lines are exactly that shape — so re-opening means an A/B with scaffolding removed,
+  not a frontmatter edit. `pipeline-stats.py` gained a `claude-fable-5` price row anyway, because
+  `DEFAULT` is Opus-priced and would silently halve the cost of any hand-run Fable dispatch.
+- **`commit-code-reviewer` high → xhigh** — the only effort change. It is the pipeline's sole
+  independent code review, its job is squarely coding/agentic judgement (where xhigh is the documented
+  setting), and it now reviews Opus-written diffs. The plan reviewers stay xhigh (`max` is documented
+  as prone to overthinking); the writers and retrospector stay high. *Noted, not changed:*
+  `settings.json` carries `effortLevel: high`, which is what every main-session skill actually runs at.
+- **New bound: the implementer delegates to exactly three agents.** Opus 5 reaches for subagents
+  markedly more readily than the model that agreement was tuned for, and the implementer *is* a
+  delegating node. It may now dispatch only `commit-code-reviewer`, `commit-doc-writer`, and
+  `feature-readme-writer`; verification is never delegated. Operative why (measured 2026-08-05): a
+  child runs at 1.3–3.7M cache-read against the implementer's own 250–350k context.
+- **`PIPELINE.md` rewritten** — 289 → ~208 lines, nine sections to eight. Fixed staleness that had
+  survived two sessions: the implementer labelled "Opus high" (wrong on both counts since
+  2026-08-05), Phase 5 described as walking the whole set, and a verified-against line for 2.1.220.
+  Merged the artifact-path table into the file index, dropped the four-box improvement-loop diagram,
+  and cut prose that restated an adjacent table. Three diagrams survive. **The ~130-line target was
+  missed and the estimate is the lesson:** it was formed by costing prose, but 35 of the file's lines
+  are table rows carrying one fact each, and those are the part a human actually uses. Cutting to 130
+  would have meant deleting reference rows, not tightening writing.

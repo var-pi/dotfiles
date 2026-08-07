@@ -102,9 +102,12 @@ write the review by objective, verdict). Scope the objectives for a *feature-pla
   magnitude**, and right-shape-wrong-magnitude ships green. This is a whole-set duty because the
   hole is invisible test-by-test: each check looks sound in isolation, and only the set reveals what
   they all share.
-- **The model override discriminates** — §0 marks `model: opus` on the commits carrying the
-  feature's load-bearing mathematics. Marked on every commit, or on none, is a finding: it means the
-  judgement was not made, and it is the judgement rather than the marking that carries the value.
+- **The model override discriminates** — §0 marks `model: sonnet` on the routine commits: those
+  carrying no new load-bearing mathematics and no novel contract. Marked on every commit is a
+  finding; **marked on none is the finding to hunt**, because a downgrade costs the planner nothing
+  to skip and skipping it reads as caution. On a set of four or more, no `sonnet` mark at all is a
+  finding unless you can name the new load-bearing work each commit carries — one measured
+  eight-commit feature had three such commits, and its cheapest was 3% of the tier.
 - **Discrimination claims, re-verified independently** — for every margin the plan pins, check it
   yourself against the real code rather than accepting the planner's measurement record. That record
   exists to tell you *what* was measured and how, so your pass is a re-verification rather than a
