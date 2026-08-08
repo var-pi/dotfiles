@@ -1,5 +1,5 @@
 {
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "SubagentStart": [
       {
@@ -29,7 +29,7 @@
     "command": "bash /Users/var-pi/.claude/statusline-command.sh",
     "refreshInterval": 3000
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "awaySummaryEnabled": false,
   "preferredNotifChannel": "kitty",
   "autoCompactEnabled": true,
