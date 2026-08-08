@@ -1,11 +1,11 @@
 ---
 name: pipeline-ecosystem
-description: The three-altitude planning pipeline (3 skills + 3 preloaded cores + 7 subagents + git-guard hooks + 2 check scripts) and its design intent
+description: The three-altitude planning pipeline (3 skills + 2 preloaded cores + 6 subagents + git-guard hooks + 2 check scripts) and its design intent
 metadata: 
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-08-07T15:23:00.087Z
+  modified: 2026-08-08T12:38:23.346Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -26,19 +26,18 @@ interconnected files under `~/.claude/`, each read by a different model:
   one commit plan at a time — **writes the code bodies and derives the test bounds theory-first**
   (as of 2026-07-22; the plan no longer carries code or numbers). It **delegates all durable doc
   *authoring* to two Opus writer subagents** (below) while owning verify/stage/commit itself.
-- `agents/commit-doc-writer.md` — the **commit-doc writer** subagent (Opus, high). Authors the
-  per-commit, *maintainer-facing* `docs/commits/<feature-slug>/<NN>-<commit-slug>.md` for every
-  commit; reads that one diff; does not stage/commit. Added 2026-07-18.
-- `agents/feature-readme-writer.md` — the **feature-README writer** subagent (Opus, high). Authors
-  the feature's *outward-facing, showcase* `README.md`; dispatched **last**, once every commit has
-  landed green; synthesizes the whole feature (all `docs/commits/` + code + existing experiment
-  figures); does not stage/commit. Structure/captivation for outside readers is its craft. Added
-  2026-07-18. The README increment still routes through the implementer (which commits it and gets
-  its own `docs/commits/` doc from `commit-doc-writer`, satisfying the guard).
-- `hooks/pre-commit` + `hooks/pre-push` — the **pipeline guard** (POSIX sh). Marker-gated on
-  `$GIT_DIR/CLAUDE_PIPELINE_ACTIVE` (or `$CLAUDE_PIPELINE` override): during a run they block
-  push and reject a commit missing a staged `docs/commits/` file; inert otherwise, chaining to
-  any repo-local hook. Armed via per-repo `core.hooksPath` at Tier-2 start, disarmed at close.
+- `agents/feature-readme-writer.md` — the **feature-README writer** subagent (Opus, high), and since
+  2026-08-08 the pipeline's only doc writer. Authors the feature's *outward-facing* `README.md`,
+  whose subject is **the insight the work produced, not the implementation**; dispatched **last**,
+  once every commit has landed green; synthesizes the whole feature (`git log` over its commits +
+  code + tests + existing figures); does not stage/commit. Added 2026-07-18. *(A sibling
+  `commit-doc-writer`, authoring a per-commit `docs/commits/` file, existed 2026-07-18 → 2026-08-08;
+  see the retirement entry below.)*
+- `hooks/pre-push` + `hooks/commit-msg` — the **pipeline guard** (POSIX sh). Marker-gated on
+  `$GIT_DIR/CLAUDE_PIPELINE_ACTIVE` (or `$CLAUDE_PIPELINE` override): during a run they block every
+  push and reject a degenerate commit message; inert otherwise, chaining to any repo-local hook.
+  `hooks/pre-commit` survives as a chain-only shim that enforces nothing (see 2026-08-08). Armed by
+  `hooks/pipeline-marker.sh` on the implementer's dispatch, via per-repo `core.hooksPath`.
 
 Design intent: shared execution discipline lives once in the implementer's prompt; plans stay
 lean. The planner pins the architecture — contracts, decisions, each test's intent/target/method —
@@ -643,3 +642,57 @@ Max x5 and asked three questions: use Fable anywhere, promote the implementer, b
   missed and the estimate is the lesson:** it was formed by costing prose, but 35 of the file's lines
   are table rows carrying one fact each, and those are the part a human actually uses. Cutting to 130
   would have meant deleting reference rows, not tightening writing.
+
+**`docs/commits/` retired; the commit message is the deliverable; the README re-aimed at insight
+(2026-08-08).** Two operator `.todo.md` items, worked together because they are the same question:
+what each written artifact of a feature is *for*.
+
+- **The `docs/commits/` file and `commit-doc-writer` are gone.** The operator's reasoning: the doc
+  and the commit message explained the same increment twice, the doc cost an Opus dispatch per code
+  commit, and the review surface they actually use is `git log`. **The message is now an increment's
+  only durable explanation**, and the standard moved into `commit-plan-implementer` → *Write the
+  commit message*: subject; a body covering what was built / why this approach / what the tests pin /
+  the evidence, **capped at ~15 lines** with most commits far under; plain text, no Markdown. The
+  retired agent's four exclusions were sound and carried over almost verbatim — **not the run log,
+  not the development history, not a comparison against the plan, not the code's local traps** — plus
+  the rejected-alternative bar (a rejection nobody would have chosen is not a decision).
+- **The altitude call: §8 pins the staging set and nothing else.** It previously pinned "the exact
+  staging and the full commit message". A message written at plan time states *intent*, not what
+  landed, and the implementer transcribes it — the same defect as a pre-written code body one rung
+  down, now landing on the one artifact the operator reads. `feature-plan-reviewer` gained the
+  converse duty (a drafted message in §8 is a finding, same shape as an expression in a `method`
+  column). *Rejected alt:* a dedicated commit-message writer subagent — it re-adds most of the token
+  spend this change removes, since a child runs at 1.3–3.7M cache-read against the implementer's own
+  250–350k (measured 2026-08-05).
+- **`hooks/pre-commit` was reduced to a chain-only shim, not deleted** — the trap worth not
+  rediscovering. `pipeline-marker.sh` sets `core.hooksPath` with `git config --local` and never
+  unsets it, so every repo that has ever run the pipeline looks there for its hooks from then on;
+  deleting the file would silently stop running that project's own `pre-commit`, forever, with
+  nothing reporting it. The **docs-only exemption** vocabulary (`README.md`/`CLAUDE.md`/`docs/`) is
+  retired everywhere it appeared.
+- **`hooks/commit-msg` was deliberately *not* strengthened**, though it is now the only guard on what
+  a commit says. A hook measures length, and length is not quality: raising the thresholds buys
+  padding rather than explanation. Both the hook and the implementer now say the check is a **floor,
+  not the standard**. The git guard is a **quartet** (marker + its 2 wirings + pre-push + commit-msg).
+- **`writer-core` retired and folded into `feature-readme-writer`.** Losing `commit-doc-writer` left
+  it with one consumer, which is exactly the test that kept a fourth core from ever being built:
+  *one consumer does not justify the preload and the coupling.* The pipeline now has two cores
+  (`reviewer-core`, `handoff-core`) and one doc writer.
+- **The README's subject is now the insight, stated as three hard exclusions** (operator: "not
+  implementation level information… taken to relative extreme"): **no component/module inventory, no
+  API/parameter/configuration reference, at most one runnable block** and only to make a claim
+  reproducible. *The operative why is exclusivity, and it is what makes the rule generalize:* the
+  README is the **only** artifact that can carry the feature's insight — a commit message explains
+  one increment and cannot see across the set, the code says what it does and never what it showed,
+  the tests pin behaviour and not meaning. Anything else a README holds duplicates something that
+  already exists somewhere better. Paired with a guard against the obvious over-correction: insight
+  is *specific*, so vagueness is not the compliant form.
+- **Handoff bundles: four → three.** The commit-doc bundle is gone; the feature-README and
+  retrospective bundles now carry the feature's **commit range** in place of the docs path, since
+  `git log` is where per-increment explanation lives.
+- **`pipeline-stats.py` keeps `commit-doc-writer` in `TIER_ORDER` on purpose** — features measured
+  before this date have a real tier under that name, and dropping it would sort those rows to the end
+  of every historical report.
+- **Unmeasured, like the Opus flip before it.** Expected direction is one fewer Opus dispatch per
+  code commit plus a shorter artifact; whether that shows up is the **next [[pipeline-metrics]] row's**
+  job to say, not this entry's.

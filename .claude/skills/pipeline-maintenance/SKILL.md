@@ -103,17 +103,18 @@ reader*).
 - `commit-plan-implementer` (**Opus, xhigh** — the planner may mark a routine commit `model: sonnet`
   via template §0) — executes one commit plan: **writes the code**, owns **all test mechanics and every
   numeric bound** (derived theory-first), verifies, dispatches `commit-code-reviewer`, commits
-  locally (never pushes). Delegates doc *authoring* to the two writers. The most expensive node by
+  locally (never pushes) **under a message it writes itself** — the increment's only durable
+  explanation. Delegates only the feature README. The most expensive node by
   far: 35–60% of a feature's tokens, scaling as ~turns^1.5, so a rule that adds turns here costs
   more than the same rule anywhere else.
 - `commit-code-reviewer` (Opus, xhigh, **read-only**) — independent fresh-context review of one
   increment's diff, dispatched by the implementer before it commits. **One-shot per commit**, not
   resumed — so it does *not* read `reviewer-core.md` (that core assumes a session resumed across
   rounds). Reports; never fixes.
-- `commit-doc-writer` (Opus, high) — authors the per-commit, maintainer-facing
-  `docs/commits/<slug>/<NN>-*.md`. Reads one diff. Does not stage/commit.
-- `feature-readme-writer` (Opus, high) — authors the feature's outward-facing showcase
-  `README.md`. Dispatched last. Synthesizes the whole feature. Does not stage/commit.
+- `feature-readme-writer` (Opus, high) — the pipeline's **only** doc writer, so it carries its craft
+  inline rather than from a core. Authors the feature's outward-facing `README.md`, whose subject is
+  **the insight the work produced, never the implementation**. Dispatched last. Synthesizes the whole
+  feature. Does not stage/commit.
 - `pipeline-retrospector` (Opus, high) — reviews the **run**, not the code: dispatched by
   `feature-plan` Phase 6, measures the run with `pipeline-stats.py`, appends a row to
   [[pipeline-metrics]], files improvement proposals to [[pipeline-improvement-inbox]], and returns
@@ -124,17 +125,13 @@ that list them in their `skills:` frontmatter — not read via a tool call):**
 - `skills/reviewer-core/` — the discipline the two **plan** reviewers share (independence,
   objective-list workflow, resumed-not-respawned, converge-don't-circle). Each reviewer file carries
   only its altitude-specific objectives. Deliberately **not** preloaded into `commit-code-reviewer`.
-- `skills/writer-core/` — the craft both **doc writers** share: the rushed-team-lead reader and
-  the reader-time economics, layering (`<details>` folds, front-loading, heading navigability,
-  one-section-one-object, and the rule that **a fold buys opt-in, not exemption**), signal hierarchy
-  (bold/callouts, used sparingly), denser-form selection **capped at ~5 unbroken prose sentences**,
-  the cut list, the **stand-alone bar for figures *and* tables/display blocks**, claim-strength
-  calibration, style constraints, weight calibration, handoff. Each writer file carries only its
-  audience, sources, sections, and altitude.
-- `skills/handoff-core/` — the four agent-to-agent **bundle** field sets (code-review, commit-doc,
+  *(A `writer-core` existed until 2026-08-08, shared by two doc writers. Retiring `commit-doc-writer`
+  left it with one consumer, which is the same test that kept a fourth core from ever being built —
+  so it was folded into `feature-readme-writer` and deleted.)*
+- `skills/handoff-core/` — the three agent-to-agent **bundle** field sets (code-review,
   feature-README, retrospective) plus the protocol both ends follow: sender writes every field
   including `none`, receiver names any gap in its handback and proceeds rather than stalling.
-  Preloaded into the implementer and the four receivers. **`feature-plan` cannot preload it**
+  Preloaded into the implementer and the three receivers. **`feature-plan` cannot preload it**
   — `skills:` is a subagent-only frontmatter field — so the planner invokes it via the `Skill`
   tool at Phase 6.
 
@@ -144,15 +141,18 @@ that list them in their `skills:` frontmatter — not read via a tool call):**
   in `~/.claude/settings.json`. The guard is therefore live for exactly one dispatch at a time and
   nobody arms it by hand. Never `exit 2` on the disarm path — on `SubagentStop` that blocks the
   subagent from finishing.
-- `hooks/pre-commit` — during a pipeline run, rejects a **code** commit missing its staged
-  `docs/commits/` file; **exempts docs-only commits** (nothing staged outside
-  `README.md`/`CLAUDE.md`/`docs/`).
+- `hooks/pre-commit` — **enforces nothing; a chain-only shim.** It required a staged `docs/commits/`
+  file until that artifact was retired (2026-08-08). **Do not delete it:** `pipeline-marker.sh` sets
+  `core.hooksPath` here with `git config --local` and never unsets it, so any repo that has ever run
+  the pipeline looks here for its hooks from then on — removing the file silently stops running that
+  project's own `pre-commit`, forever, with nothing reporting it.
 - `hooks/pre-push` — during a pipeline run, blocks every push (pushing is a manual human step).
 - `hooks/commit-msg` — during a pipeline run, rejects a degenerate commit message (empty, a
-  subject under ~15 chars, or subject-only with no body), so the implementer cannot commit without
-  a real description.
-- All three are marker-gated on `$GIT_DIR/CLAUDE_PIPELINE_ACTIVE` (or `$CLAUDE_PIPELINE`), inert
-  otherwise, and chain to any repo-local hook when inactive.
+  subject under ~15 chars, or subject-only with no body). Now the **only** guard on what a commit
+  says, and deliberately still a floor: it measures length, and raising its thresholds would buy
+  padding rather than explanation.
+- The latter two are marker-gated on `$GIT_DIR/CLAUDE_PIPELINE_ACTIVE` (or `$CLAUDE_PIPELINE`),
+  inert otherwise, and all three chain to any repo-local hook when inactive.
 
 ## The dependency graph — what breaks what
 
@@ -197,27 +197,38 @@ multiple files; edit them together or you leave a relic.**
   must **name every shipped guarantee it intends to break**, since that is precisely the change the
   green-unmodified test-set cannot cover. Loosen either and the brief starts competing with the
   commit plans.
-- **The docs/commits path** is **named** by feature-plan (template §8), **authored** by
-  `commit-doc-writer`, **staged + committed** by the implementer, and **enforced** by `pre-commit`.
-  Change the path convention or the exemption and all four must agree.
-- **The git-guard quintet:** `hooks/pipeline-marker.sh` + its two `settings.json` wirings (the
-  `SubagentStart`/`SubagentStop` matchers on `commit-plan-implementer`) + the three git hooks
-  (`pre-commit`, `pre-push`, `commit-msg`) + the implementer's commit conventions + the Phase 5
+- **The commit message** (replaced *the docs/commits path*, 2026-08-08). The message is now an
+  increment's **only** durable explanation and the artifact the operator reviews the work by. Its
+  **standard** — what to say, the cut list, the ~15-line cap — is owned by `commit-plan-implementer`
+  → *Write the commit message*, and stated nowhere else. Four other files must stay in step:
+  `feature-plan` §8 pins the **staging set and nothing more**; `feature-plan-reviewer` faults a plan
+  that drafts a message (the same presence-fault as an expression in a `method` column);
+  `hooks/commit-msg` catches only a degenerate one; `PIPELINE.md` §3/§4 mirror the ownership.
+  - **The altitude line is the load-bearing part, and it will look like a convenience to a future
+    edit.** A planner-written message describes a build that has not happened, so the implementer
+    transcribes intent instead of accounting for what landed — the same defect as a pre-written code
+    body one rung down, and it now lands on the one artifact the operator reads. Moving the message
+    back up a rung means editing all five files, not one.
+  - **The bar cannot move into the hook.** A hook measures length; length is not quality, and a
+    higher threshold buys padding. Anything that reads like tightening the guard belongs in the
+    implementer's cap instead.
+- **The git-guard quartet:** `hooks/pipeline-marker.sh` + its two `settings.json` wirings (the
+  `SubagentStart`/`SubagentStop` matchers on `commit-plan-implementer`) + the two enforcing git hooks
+  (`pre-push`, `commit-msg`) + the implementer's commit conventions + the Phase 5
   paragraph that tells the planner **not** to touch the marker. Rename the implementer and the
   matchers stop matching, silently leaving every commit unguarded — so a rename means editing
-  `settings.json` in the same pass. Two sub-couplings to keep in step: (a) the **docs-only
-  exemption** lives in `pre-commit`'s logic and
-  is described in both feature-plan (README plan) and the implementer — its file set is
-  `README.md` / `CLAUDE.md` / `docs/`, and all three must agree; (b) the **descriptive-message
-  rule** lives in `commit-msg`'s check and the implementer's commit conventions — keep the
-  threshold described consistently across both.
+  `settings.json` in the same pass. Two things not to lose: (a) `hooks/pre-commit` still exists as a
+  **chain-only shim** and must not be deleted — see the hooks list above for why its removal fails
+  silently; (b) the **descriptive-message rule** lives in `commit-msg`'s check and the implementer's
+  commit conventions — keep the threshold described consistently across both, and keep both saying
+  the check is a floor rather than the standard.
 - **The reviewer resumption protocol:** `feature-plan` Phase 3 resumes one persistent
   `feature-plan-reviewer` session each round; the reviewer + `reviewer-core` assume exactly that
   ("resumed, not respawned"). Same for `project-plan` ↔ `project-plan-reviewer`. Change how the loop
   resumes → change both sides.
-- **The README routing:** the README plan is a full set member (feature-plan) that the
-  implementer dispatches to `feature-readme-writer`; it is docs-only (no commit-doc, exempt from
-  the guard). Spans feature-plan + implementer + feature-readme-writer + pre-commit.
+- **The README routing:** the README plan is a full set member (feature-plan), dispatched **last**,
+  that the implementer routes to `feature-readme-writer` rather than writing itself. Spans
+  feature-plan + implementer + feature-readme-writer.
 - **The session boundary:** `project-plan` names the next feature and *stops*; the human starts
   `feature-plan` in a fresh top-level session, **bare — no plan path, no feature name**.
   project-plan's "never dispatch p-a-d as a subagent" rationale (ExitPlanMode gate + budget) depends
@@ -229,8 +240,8 @@ multiple files; edit them together or you leave a relic.**
   **written** by `feature-plan` at four points (Phase 4 opens the feature and records the plan-set
   path, **every Phase 5 dispatch updates the landed count**, Phase 5's failure path records where a
   run stopped, Phase 6 closes it), **seeded** by `project-plan` step 4, and **read** by
-  `feature-plan`'s own *How you are invoked*. It rides `pre-commit`'s docs-only exemption, so the
-  planner can commit it mid-run. Six places must agree on one shape; change the shape and the bare
+  `feature-plan`'s own *How you are invoked*. The guard is armed only during an implementer
+  dispatch, so the planner can commit it between them. Six places must agree on one shape; change the shape and the bare
   invocation silently starts reading a format nothing writes — and its failure mode is not an error
   but a plausible wrong feature.
   - **This block is now load-bearing, not merely informative.** Under one-commit-per-session it is
@@ -258,11 +269,11 @@ multiple files; edit them together or you leave a relic.**
   omit code bodies and numeric bounds. Retire or rename it → update all four. **The built-in
   `/code-review` command is not model-invocable** (it fails with `disable-model-invocation`); if a
   future harness restores it, this agent is what it would replace, not supplement.
-- **The doc-style contract:** what a doc contains is owned by `commit-doc-writer` /
-  `feature-readme-writer` (+ `writer-core.md`); what the *implementer* hands them is owned by the
-  implementer's bundle sections. The implementer must pass a **superset** and let the writer select
-  — a bundle that dictates content competes with the writer's agreement and wins by accident.
-  Changing what docs contain means checking the bundle lists too.
+- **The doc-style contract:** what the README contains is owned by `feature-readme-writer`; what the
+  *implementer* hands it is owned by the implementer's dispatch section and the feature-README bundle.
+  The implementer must pass a **superset** and let the writer select — a bundle that dictates content
+  competes with the writer's agreement and wins by accident. Changing what the README contains means
+  checking the bundle list too.
 - **The sync step:** Phase 6 depends on `skills/dotfiles-sync/SKILL.md` being present and
   model-invocable, and on the ecosystem files being tracked in the `~/.dotfiles` bare repo. Rename
   or retire that skill and this phase names a capability that no longer exists — post-edit check 6's
@@ -292,10 +303,11 @@ multiple files; edit them together or you leave a relic.**
   - **Nesting depth ≥ 2.** The pipeline is main session → implementer → reviewer/writers. The
     default limit was **1** until v2.1.219 raised it to 3, and `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`
     can put it back. At the limit the harness simply **withholds the `Agent` tool** from the
-    implementer, so the failure is not a blocked dispatch but an implementer that quietly writes its
-    own commit doc and skips its independent review. Nothing in `validate-config.sh` can see this;
-    if the delegation layer ever appears to vanish, check that env var before editing an agreement.
-- **The handoff bundles:** `skills/handoff-core/` owns all four field sets; the five agents that
+    implementer, so the failure is not a blocked dispatch but an implementer that quietly skips its
+    independent review and writes the feature README itself. Nothing in `validate-config.sh` can see
+    this; if the delegation layer ever appears to vanish, check that env var before editing an
+    agreement.
+- **The handoff bundles:** `skills/handoff-core/` owns all three field sets; the four agents that
   preload it and `feature-plan` Phase 6 (which invokes it) may only **name** a bundle. A field
   list that reappears inline in a sending or receiving agreement is the drift the core exists to
   prevent — so adding a field means editing the core alone, and renaming the core means grepping
@@ -314,23 +326,26 @@ multiple files; edit them together or you leave a relic.**
   silently truncates the cost account rather than erroring.
 - **The generated-artifact bar** is *stated* once, in `commit-plan-implementer` → *Make outputs
   self-explanatory*, because that agreement owns the generating. `commit-code-reviewer` and
-  `writer-core` **name it and add only their own act** (margins fit at save time; readable before
-  embedding); [[figure-legibility-requirements]] records why it exists. Restating the bar in any of
-  the three is the drift to hunt — it read as four rules for one requirement, and the copies had
-  already begun to differ.
+  `feature-readme-writer` **name it and add only their own act** (margins fit at save time; readable
+  before embedding); [[figure-legibility-requirements]] records why it exists. Restating the bar in
+  any of the three is the drift to hunt — it once read as four rules for one requirement, and the
+  copies had already begun to differ.
 - **The artifact-craft rules** are split **by artifact, not by principle**, across two owners:
-  `writer-core` owns the craft of the two **doc writers'** artifacts, `project-plan` → *How the plan
+  `feature-readme-writer` owns the craft of the **README**, `project-plan` → *How the plan
   reads* owns the craft of the **project plan**, and `project-plan-reviewer`'s *Legibility*
   objective enforces the second half (a craft rule no reviewer checks is obeyed on run one and gone
   by run three). They share principles — front-loading, folds, denser forms, the antithesis cap —
   but state them to different readers with different bounds, so **neither may be rewritten to cover
   the other's artifact**, and a change to a shared principle means checking both. *Why the split and
-  not a pointer:* `project-plan` is a skill and cannot preload a core, and half of `writer-core`
+  not a pointer:* `project-plan` is a skill and cannot preload a core, and half of the README craft
   does not apply to a plan — its LaTeX ban directly contradicts `project-plan` step 4, which permits
-  `.tex` for math-dense projects. *Rejected alt:* a fourth shared core — one consumer does not
-  justify the preload and the coupling. **The rung below is deliberately excluded:** a commit plan
-  is read only by the implementer and the reviewer, agents that read linearly, so folds and
-  scannability buy nothing there.
+  `.tex` for math-dense projects. *Rejected alt:* a shared craft core — **one consumer does not
+  justify the preload and the coupling**, which is also the test that retired `writer-core` in
+  2026-08-08 once `commit-doc-writer` was gone. **Two rungs are deliberately excluded:** a commit
+  plan is read only by the implementer and the reviewer, agents that read linearly, so folds and
+  scannability buy nothing there; and a **commit message** is plain text in `git log`, so its
+  standard (in `commit-plan-implementer`) borrows the cut list and the caps but none of the
+  Markdown machinery.
 - **The config validator:** `skills/pipeline-maintenance/validate-config.sh` is named by post-edit
   check 6 **and** by `feature-plan` Phase 1; move or rename it and both go stale. Its field
   lists are transcribed from the published frontmatter tables, so a harness change can make the
@@ -354,8 +369,8 @@ multiple files; edit them together or you leave a relic.**
   "this sentence is bloat", "I liked this part". The rule you write must be the **principle
   extracted from the example**, never the example promoted to a rule. A transcribed example gets
   applied to every case that superficially resembles it, and the resemblance is usually shallow.
-  *Precedent:* "I liked the war story" was written into `commit-doc-writer` as *include a war
-  story* — so every doc grew one, and the device that made a single doc interesting became
+  *Precedent:* "I liked the war story" was written into the since-retired `commit-doc-writer` as
+  *include a war story* — so every doc grew one, and the device that made a single doc interesting became
   boilerplate the reader learned to skip. The correct extraction was *surface the one genuinely
   non-obvious thing, at most one, usually none.* Before writing a rule, ask: **what must it say so
   an agent facing a case the operator never mentioned still does the right thing?**
@@ -374,7 +389,7 @@ multiple files; edit them together or you leave a relic.**
   session resumed each round") is an abstract of the body that owns the rule, so it is a copy free
   to drift, and it is read in the `/` menu by an operator who wants to know which file this is.
   Keep exactly two things beyond the *what*: the cue distinguishing the file from its **nearest
-  neighbour** (`commit-doc-writer` vs `feature-readme-writer`; the three reviewers by altitude),
+  neighbour** (the three reviewers, told apart by altitude and by read-only-ness),
   and any **caller instruction the dispatcher cannot get right without it** — "one plan at a time",
   "read-only". Those are *what*, not *how*.
 - **Calibrate by the file's job, not by model tier.** Tier follows the job rather than setting it:
@@ -412,7 +427,7 @@ Run this before declaring an ecosystem edit done:
    today, and every frontmatter/settings key must actually be one the harness parses. The harness
    changes underneath these files, and **both failure modes are silent**: `/code-review` and
    `/verify` became user-triggered-only, and the pipeline ran without its independent-review control
-   until a commit doc happened to mention the error; separately, all seven agents carried
+   until one commit's write-up happened to mention the error; separately, all seven agents carried
    `reasoning_effort:` — never a real key — so the "xhigh" reviewers ran at the session default for
    months with no warning anywhere. Frontmatter parses loose: an unknown key is dropped, not
    flagged. The cheap checks are the session's own available-skills listing (a bundled command

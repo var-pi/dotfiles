@@ -1,19 +1,19 @@
 ---
 name: handoff-core
-description: Shared bundle contract for the planning pipeline's agent-to-agent handoffs. Preloaded into the implementer and the four receiving agents; not a standalone workflow.
+description: Shared bundle contract for the planning pipeline's agent-to-agent handoffs. Preloaded into the implementer and the three receiving agents; not a standalone workflow.
 user-invocable: false
 ---
 
 # Handoff core
 
-The pipeline's four agent-to-agent **handoff bundles** — what one agent must hand the next when it
+The pipeline's three agent-to-agent **handoff bundles** — what one agent must hand the next when it
 dispatches it, and what the receiver checks on arrival. This file is the single source for those
 field sets: the sending agreement names the bundle, the receiving agreement names the bundle, and
 neither restates its fields, so the two ends cannot drift apart.
 
 It is **preloaded into your context at startup** (via the `skills:` frontmatter of
-`commit-plan-implementer`, `commit-code-reviewer`, `commit-doc-writer`, `feature-readme-writer`,
-and `pipeline-retrospector`), so it is already here — you need not go read it. If you are one of
+`commit-plan-implementer`, `commit-code-reviewer`, `feature-readme-writer`, and
+`pipeline-retrospector`), so it is already here — you need not go read it. If you are one of
 those agents and this text is *absent* from your context, the preload failed: read
 `~/.claude/skills/handoff-core/SKILL.md` before dispatching or before starting work.
 
@@ -57,12 +57,12 @@ handoff that returns without its work done costs the run a manual recovery, whic
 principle as `commit-plan-implementer`'s *never return in a waiting state*.
 
 **The field list is a floor, not a specification of your output.** It says what must reach you,
-never what your artifact contains — that is your own agreement's business, and for the two doc
-writers the bundle is deliberately a **superset** they select from. A sender that starts
+never what your artifact contains — that is your own agreement's business, and for the README
+writer the bundle is deliberately a **superset** it selects from. A sender that starts
 prescribing content has stopped filling a bundle and started competing with the receiving
 agreement.
 
-## The four bundles
+## The three bundles
 
 ### Code-review bundle — `commit-plan-implementer` → `commit-code-reviewer`
 
@@ -71,21 +71,13 @@ agreement.
 - the **test intent**;
 - **where the change lives** (paths).
 
-### Commit-doc bundle — `commit-plan-implementer` → `commit-doc-writer`
-
-- the exact **`docs/commits/…` path** from the plan;
-- **what changed and why** — the plan's pre-resolved decisions, restated;
-- the **test list** and the **mutation-gate result**;
-- the **empirical / end-to-end verification observations**;
-- any **review finding that changed the design** (not the fact that a review ran);
-- any **deviation from the plan**.
-
 ### Feature-README bundle — `commit-plan-implementer` → `feature-readme-writer`
 
 - the exact **README path(s)** from the plan;
 - the **feature slug** and the **set of commits** that make up the feature, with the
   through-line/intent;
-- **where the per-commit docs live** (`docs/commits/<feature-slug>/`);
+- the **commit range** the feature spans, so the writer can read each increment's own explanation
+  out of `git log`;
 - any **deviation from the plan** worth surfacing to a reader.
 
 ### Retrospective bundle — `feature-plan` → `pipeline-retrospector`
@@ -94,7 +86,7 @@ agreement.
   (`~/.claude/plans/`);
 - the **two memory paths** it may write — the improvement inbox and the metrics record — since it
   cannot be expected to locate the operator's memory directory by guessing;
-- **where the docs landed** (`docs/commits/<feature-slug>/`) and the **README path**;
+- the **commit range** the feature spans and the **README path**;
 - the **project slug and every session id the feature ran across**, so the retrospector can run
   `pipeline-stats.py` over the whole run. Dispatch is one commit per session, so the feature spans
   several sessions and no single transcript holds it; this list is the only thing that cannot be

@@ -46,7 +46,9 @@ CACHE_READ_MULT = 0.10
 CACHE_WRITE_MULT = 1.25
 
 # Agent names are read from the transcripts, never hardcoded, so this script keeps
-# working across a rename. Only the ordering below is cosmetic.
+# working across a rename. Only the ordering below is cosmetic. `commit-doc-writer` was retired
+# on 2026-08-08 and is kept here on purpose: features measured before that date have a real tier
+# under that name, and dropping it would sort those rows to the end of every historical report.
 TIER_ORDER = ["commit-plan-implementer", "commit-code-reviewer", "commit-doc-writer",
               "feature-readme-writer", "feature-plan-reviewer", "project-plan-reviewer",
               "pipeline-retrospector", "Explore"]

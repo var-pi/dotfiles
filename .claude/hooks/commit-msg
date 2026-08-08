@@ -7,6 +7,12 @@
 # project's own commit-msg. While armed it rejects a degenerate commit message (empty or a
 # too-short subject), so a dispatched implementer subagent cannot commit without a real
 # description.
+#
+# Since 2026-08-08 the commit message is the increment's only durable explanation, which makes this
+# the only guard on what a commit says. It is deliberately still only a floor: it measures length,
+# and length is not quality. Raising the thresholds would buy padding, not explanation — the actual
+# standard (what to say, what to cut, the ~15-line cap) lives in commit-plan-implementer's
+# agreement, under "Write the commit message".
 git_dir=$(git rev-parse --git-dir 2>/dev/null) || exit 0
 marker="$git_dir/CLAUDE_PIPELINE_ACTIVE"
 
@@ -27,7 +33,7 @@ subject=$(printf '%s' "$subject" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
 body_lines=$(grep -vE '^[[:space:]]*#' "$1" | grep -cvE '^[[:space:]]*$')
 
 if [ "${#subject}" -lt 15 ] || [ "$body_lines" -lt 2 ]; then
-    echo "commit-msg: write a descriptive commit message — a subject (>=15 chars) plus a body naming the increment and its verified pass conditions (pipeline guard; an empty, one-word, or subject-only message is rejected)." >&2
+    echo "commit-msg: write a real commit message — a subject (>=15 chars) plus a body explaining what was built, why this approach, and the evidence it works (pipeline guard; an empty, one-word, or subject-only message is rejected). This check is the floor, not the standard." >&2
     exit 1
 fi
 exit 0

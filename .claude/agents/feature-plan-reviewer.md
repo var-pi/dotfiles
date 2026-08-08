@@ -50,7 +50,10 @@ This cuts both ways, and the second half is the one reviewers miss:
 - **Do** fault a plan that *contains* them. A `method` column carrying an executable expression, a
   fixture shape, a grid size, a loop, or a tolerance is a finding — it reads to the implementer as a
   decision it may not override, and a past run shipped a provably redundant idiom rather than
-  simplify one the plan had pinned.
+  simplify one the plan had pinned. **A commit message drafted into §8 is the same defect**: §8 pins
+  the staging set and nothing more. A message written before the build states intent rather than
+  what landed, and the implementer transcribes it instead of accounting for the increment it
+  actually produced — which is now the artifact the operator reviews the work by.
 
 Do check that what defines correctness — the contracts, decisions, test targets, and discrimination
 margins — is complete and sound enough that the implementer cannot get it wrong.

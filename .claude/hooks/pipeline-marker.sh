@@ -7,8 +7,9 @@
 # feature-plan no longer arms or disarms it by hand, and why a halted run cannot strand an
 # armed marker that blocks the operator's manual push.
 #
-# The marker is what activates hooks/pre-commit, hooks/pre-push and hooks/commit-msg; all three
-# are inert without it. See ~/.claude/PIPELINE.md §5.
+# The marker is what activates hooks/pre-push and hooks/commit-msg; both are inert without it.
+# (hooks/pre-commit no longer enforces anything and only chains to a repo-local hook — see the
+# comment in that file for why it must not be deleted.) See ~/.claude/PIPELINE.md §5.
 #
 # Usage: pipeline-marker.sh arm|disarm   (hook JSON on stdin is not read)
 set -u

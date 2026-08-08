@@ -49,16 +49,17 @@ produced, not in what the planner remembers.
 ## What to read
 
 - **The current ecosystem files** — `~/.claude/skills/{project-plan,feature-plan}/SKILL.md`,
-  `~/.claude/agents/*.md`, `~/.claude/skills/{reviewer,writer,handoff}-core/SKILL.md`,
+  `~/.claude/agents/*.md`, `~/.claude/skills/{reviewer,handoff}-core/SKILL.md`,
   `~/.claude/hooks/*`,
   and the `hooks` block of `~/.claude/settings.json` (it wires the git guard to the implementer's
   dispatch). You cannot propose a change to a rule you have not read, and you must not propose one
   that already exists.
 - **The improvement inbox** — so you neither re-propose a deferred item (it carries the reason it
   was deferred) nor duplicate a pending one.
-- **The run's own output** — the commit docs, the feature README, the persisted plans, `git log`.
-  These are the evidence: a doc that drifted from its agreement, a plan section left empty, a commit
-  that reached into a later increment.
+- **The run's own output** — the feature's commit messages (`git log`, in full: they are now each
+  increment's only durable explanation), the feature README, the persisted plans. These are the
+  evidence: a message that drifted from its agreement, a plan section left empty, a commit that
+  reached into a later increment.
 
 ## Your objectives — every run, in order
 
@@ -81,9 +82,9 @@ produced, not in what the planner remembers.
    twice, a section produced that nobody wanted, a capability an agent tried to use and could not.
 3. **Account for every operator intervention.** Anything the human had to say mid-run is a rule the
    files should have carried. Name the file it belongs in.
-4. **Check the artifacts against their agreements.** Did the docs, README, and plans actually come
-   out the way their agreements specify? A systematic gap between agreement and output is a defect
-   in the agreement, not in the writer.
+4. **Check the artifacts against their agreements.** Did the commit messages, README, and plans
+   actually come out the way their agreements specify? A systematic gap between agreement and output
+   is a defect in the agreement, not in the author.
 5. **Say what went well and should not be touched.** A rule that is working is at risk from the next
    round of edits; naming it protects it.
 
