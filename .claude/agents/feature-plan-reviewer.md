@@ -6,6 +6,7 @@ model: opus
 effort: xhigh
 skills:
   - reviewer-core
+  - reader-profile
 ---
 
 # Feature-plan-reviewer working agreement

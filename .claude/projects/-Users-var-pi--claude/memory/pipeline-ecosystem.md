@@ -1,11 +1,11 @@
 ---
 name: pipeline-ecosystem
-description: The three-altitude planning pipeline (3 skills + 2 preloaded cores + 6 subagents + git-guard hooks + 2 check scripts) and its design intent
+description: The three-altitude planning pipeline (3 skills + 2 cores + reader-profile + 6 subagents + git-guard hooks + 2 check scripts) and its design intent
 metadata: 
   node_type: memory
   type: project
   originSessionId: 685a0512-e644-4ce1-b0c2-2b309b52e7f9
-  modified: 2026-08-08T12:38:23.346Z
+  modified: 2026-08-08T13:17:44.016Z
 ---
 
 A planning/execution pipeline on the ladder **project → feature → commit** lives in
@@ -696,3 +696,50 @@ what each written artifact of a feature is *for*.
 - **Unmeasured, like the Opus flip before it.** Expected direction is one fewer Opus dispatch per
   code commit plus a shorter artifact; whether that shows up is the **next [[pipeline-metrics]] row's**
   job to say, not this entry's.
+
+**`reader-profile` — the calibration layer (2026-08-08, second session that day).** The operator
+delivered a finished reader profile (what may be assumed unexplained for them as reader, standing
+notation, where to spend words, and a **no-verdict clause**) with an instruction to wire it into
+seven consumers. Two of the seven were wrong, both verified against ground truth rather than memory:
+
+- **`commit-doc-writer` was named as its "primary customer"** — retired six hours earlier, in the
+  session recorded directly above. Its consumer slot was already covered by `commit-plan-implementer`,
+  which now owns the commit message. *Generalizable:* a document written against the ecosystem goes
+  stale between drafting and wiring; check the roster, not the draft.
+- **`skills:` in a skill's frontmatter was the specified mechanism for the two planner skills** — it
+  is **subagent-only**. Re-verified today against the published tables (`/docs/en/skills` frontmatter
+  reference has no `skills:`; `/docs/en/sub-agents` defines it as "preload into the *subagent's*
+  context"), so the 2026-07-28 finding still holds. A `skills:` block in a `SKILL.md` parses, is
+  dropped, and the skill runs uncalibrated — the `reasoning_effort:` mode. Fixed by the existing
+  `handoff-core` precedent: **four agents preload, two skills invoke** via the `Skill` tool, each
+  carrying the "you cannot preload it" why so a later edit does not convert it back.
+- **`validate-config.sh` was the file that should have caught this and only warned.** `skills:` in a
+  `SKILL.md` is now a hard **error** naming the workaround. This deliberately breaks the validator's
+  standing rule (*unknown key ⇒ warning, because the validator can be the stale party*) — the
+  distinction that licenses it is **known-invalid vs. merely unlisted**. Also refreshed `SKILL_FIELDS`
+  against today's table (`when_to_use`, `metadata`, `license`, `compatibility` were missing and
+  warned spuriously); `AGENT_FIELDS` checked and still exact.
+- **Two scope rules were added that the delivered draft did not have, and they are the load-bearing
+  part.** (a) It governs **shipped artifacts only** — not review findings, handbacks or the
+  retrospective. §6 forbids most of a review finding's vocabulary (*critical*, *the key gap*,
+  *subtle*), so a reviewer reading it as a style constraint files a weaker finding and **nothing
+  reports it**; the file now says that for the plan reviewers it is a *checking standard*. (b) **An
+  artifact's own agreement wins on audience** — `feature-readme-writer` writes for a newcomer, bans
+  LaTeX and requires every symbol defined, all of which flatly contradict the profile's
+  assume-silently ledger and `$\mathcal X$` notation. §2/§3 yield there; **§1.3, §1.4, §5 and §6
+  never yield**, because they are honesty rules rather than audience calibration. Stated as a named
+  precedence order and mirrored by name in `feature-readme-writer`, since a collision left to
+  judgement is resolved two ways on two runs. *Rejected alts:* dropping the writer from the list (it
+  would lose the no-verdict clause, which applies regardless of who reads); re-aiming the README at
+  this reader (reverses the same-day insight decision).
+- **Not a `-core`, deliberately.** A core is discipline shared by agents in the *same role*; this is
+  one reader cutting *across* roles — which is also why it is the first shared file reaching both
+  preloaded agents and invoking skills. Its §9 keeps only the **two exclusions**
+  (`commit-code-reviewer`: correctness and contracts, so pedagogical findings sit outside its remit;
+  `pipeline-retrospector`: reviews the run, ships no reader prose) and points at the coupling for the
+  roster — the delivered nine-row injection table was a seventh copy of the wiring and already named
+  the retired agent.
+- **Registered as a coupling ("the reader profile"), spanning nine files**, plus two `PIPELINE.md`
+  rows (file index + troubleshooting). **Cost is a projection, not a measurement:** ~3.4k tokens
+  preloaded into four agents, order $3 against a measured $445 feature — the next
+  [[pipeline-metrics]] row is what settles it.

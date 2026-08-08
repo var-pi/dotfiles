@@ -134,6 +134,12 @@ that list them in their `skills:` frontmatter — not read via a tool call):**
   Preloaded into the implementer and the three receivers. **`feature-plan` cannot preload it**
   — `skills:` is a subagent-only frontmatter field — so the planner invokes it via the `Skill`
   tool at Phase 6.
+- `skills/reader-profile/` — the **calibration of explanation** for the operator as reader: what may
+  be assumed unexplained, the standing notation, where to spend words, and the **no-verdict clause**.
+  **Not a `-core`, deliberately:** a core is discipline shared by agents playing the *same role*;
+  this is one reader cutting *across* roles, which is also why it reaches both preloaded agents and
+  invoking skills. Preloaded into both plan reviewers, `commit-plan-implementer` and
+  `feature-readme-writer`; invoked by `project-plan` step 0 and `feature-plan` Phase 1.
 
 **Hooks (POSIX sh, `#!/bin/sh`):**
 - `hooks/pipeline-marker.sh` — arms the marker (and points the repo at these hooks) on
@@ -315,6 +321,28 @@ multiple files; edit them together or you leave a relic.**
   core says what must *reach* an agent, never what its artifact contains. Its two rules are a
   matched pair — the sender's explicit `none` is what gives the receiver's gap-check anything to
   bite on, so dropping either leaves the other inert.
+- **The reader profile** spans `skills/reader-profile/` + four agents' `skills:` lists (both plan
+  reviewers, the implementer, the README writer) + two skill-body invocations (`project-plan` step 0,
+  `feature-plan` Phase 1) + `feature-readme-writer`'s *Style constraints* + two `PIPELINE.md` rows.
+  Adding a consumer means picking the **right mechanism**: an agent preloads, a skill invokes, and
+  putting `skills:` in a `SKILL.md` is dropped silently (`validate-config.sh` now errors on it).
+  Three things to keep intact:
+  - **Its two scope rules are what stop it from competing with four other agreements**, and both
+    will read like hedges to a future edit. (a) It governs **shipped artifacts only** — a reviewer
+    that applies §6's no-verdict vocabulary ban to its own findings reports more weakly and nothing
+    catches it, so the file says explicitly that for the reviewers it is a *checking standard*.
+    (b) **An artifact's own agreement wins on audience** — the README is written for a newcomer, so
+    §2's ledger, §3's notation and any LaTeX yield there, while §1.3, §1.4, §5 and §6 never do.
+    Stated as a named precedence, not a judgement call, because two agents facing the same collision
+    must not resolve it two ways. Both halves are mirrored *by name* in `feature-readme-writer`.
+  - **Its §9 records only the two exclusions** (`commit-code-reviewer` — correctness and contracts,
+    so pedagogical findings sit outside its remit; `pipeline-retrospector` — reviews the run, ships
+    no reader prose). The consumer roster lives here, not there: a list in both places is the
+    drifting restatement, and the delivered draft already named a retired agent.
+  - **It is reader-specific, not project-specific.** A fact true of one source text belongs in that
+    project's `CLAUDE.md` source-profile block (its §10 says so). The distinction is what keeps a
+    project-agnostic layer project-agnostic — the same altitude question the gated static-analysis
+    inbox item turns on.
 - **The measurement loop:** `pipeline-stats.py` is run by `pipeline-retrospector` (objective 1) and
   by post-edit check 7; its input is the **session-id list** in the retrospective bundle
   (`handoff-core`), which `feature-plan` Phase 6 fills from the state block; its output is a row in
@@ -350,8 +378,11 @@ multiple files; edit them together or you leave a relic.**
   check 6 **and** by `feature-plan` Phase 1; move or rename it and both go stale. Its field
   lists are transcribed from the published frontmatter tables, so a harness change can make the
   *validator* the stale party — which is why an unknown key is a warning and only an unresolvable
-  reference is an error. It cannot check whether a named capability is still *invocable*; that
-  half of check 6 stays human.
+  reference is an error. **One key breaks that rule and should:** `skills:` in a `SKILL.md` is a hard
+  error, because it is not an unrecognized key but a *known-invalid* one — subagent-only, dropped
+  silently, and the skill then runs uncalibrated. Reserve that treatment for keys whose wrongness is
+  established rather than merely unlisted. It cannot check whether a named capability is still
+  *invocable*; that half of check 6 stays human.
 - **The visual map:** `~/.claude/PIPELINE.md` mirrors the map above, the altitude contract, the
   artifact paths, the guard's branch logic and thresholds, the file index (model/effort per agent),
   and the improvement loop. It is a **mirror with no authority** — nothing may be recorded only

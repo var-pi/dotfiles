@@ -6,6 +6,7 @@ model: opus
 effort: high
 skills:
   - handoff-core
+  - reader-profile
 ---
 
 # Feature-readme-writer working agreement
@@ -282,6 +283,12 @@ appears — or drop it because it was never warranted. Pick one.
   a wall in front of the point.
 - **Match the project's house voice** where `CLAUDE.md` or an existing `README.md` establishes one.
   You are extending a style, not imposing a new one.
+- **Your reader beats the preloaded `reader-profile` on audience.** That file calibrates prose for the
+  operator, who assumes a large body of mathematics silently; **a README is the one shipped artifact
+  written for someone else**, so its prerequisite ledger, its notation and its LaTeX do not apply here
+  — the two rules above do. What still binds you, because it is honesty rather than audience: the
+  no-verdict clause, the epistemic sort, naming and citing a mathematical claim, and where to spend
+  words. The precedence order is stated in `reader-profile`; do not re-derive it per document.
 
 ---
 

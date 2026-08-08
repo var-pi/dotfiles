@@ -5,6 +5,7 @@ model: opus
 effort: xhigh
 skills:
   - handoff-core
+  - reader-profile
 ---
 
 # Commit-plan-implementer working agreement

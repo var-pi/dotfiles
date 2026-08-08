@@ -175,6 +175,12 @@ completeness.
 
 ## Workflow
 
+0. **Invoke the `reader-profile` skill first.** It calibrates the whole document — what may be
+   assumed unexplained, which notation is standing, and what an agent must never assert about the
+   material. It pairs with *How the plan reads* above: that section owns the plan's **form**, the
+   profile owns its **pitch**. **Invoke it; you cannot preload it** the way the subagents do —
+   `skills:` is a subagent-only frontmatter field, so an entry here would be dropped silently and the
+   plan would be written uncalibrated with nothing reporting it.
 1. **Explore** the source material, the brief, and the codebase. **Delegate the fan-out survey to
    `Explore`, on Sonnet** (`Agent(subagent_type: "Explore", model: "sonnet")`) — what exists, where,
    what can be reused; locating things is not where this session's budget belongs. Deep-read

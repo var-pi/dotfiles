@@ -207,6 +207,13 @@ it to the operator before planning**: do not repair it yourself (that is `/pipel
 job, with the operator present) and do not continue quietly, or the defect it named resurfaces
 mid-run as a mystery.
 
+**Then invoke the `reader-profile` skill.** It calibrates every explanation this feature will ship —
+what may be assumed unexplained, what a demonstration must predict before it computes, and what an
+agent must never assert. You need it before Phase 2, because it shapes what a test is asked to
+*show*, not merely how the plan is worded. **Invoke it; you cannot preload it** the way the subagents
+do — `skills:` is a subagent-only frontmatter field, so a `skills:` entry here would be dropped
+silently and you would plan uncalibrated with nothing reporting it.
+
 To plan a whole feature you read broadly — the one stage where wide context is warranted,
 because you are the one who will decide how to carve it up:
 

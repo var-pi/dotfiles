@@ -5,7 +5,7 @@ where the human gates sit, what each artifact path is. It carries **no rule of i
 is owned by the file named beside it. When the map and a governing file disagree, the file wins and
 this map is stale. To change anything, invoke **`/pipeline-maintenance`**.
 
-> Verified against the files on **2026-08-08** (Claude Code 2.1.222). Re-check with
+> Verified against the files on **2026-08-08** (second pass; Claude Code 2.1.222). Re-check with
 > `validate-config.sh` (wiring) and `pipeline-stats.py <project>` (what a run cost), both in
 > `skills/pipeline-maintenance/`. Ecosystem files ride the `~/.dotfiles` bare repo — an edit is live
 > nowhere else until `/dotfiles-sync` has pushed it.
@@ -158,6 +158,7 @@ it catches a commit by **any** route, not only one made through Bash.
 | `agents/feature-readme-writer.md` | Authors the showcase README — **what the work revealed**, not how it is built · Opus high | feature `README.md` · dispatched **last** · does not stage or commit |
 | `agents/pipeline-retrospector.md` | Retrospective on the run · Opus high | the inbox + metrics memories **only** |
 | `skills/{reviewer,handoff}-core/` | Shared discipline · **preloaded** via `skills:` frontmatter | — · `handoff-core` is invoked (not preloaded) by `feature-plan`, which is a skill |
+| `skills/reader-profile/` | Calibration of explanation for the operator as reader — not a role discipline, hence not a `-core` | — · **preloaded** into both plan reviewers, the implementer and the README writer; **invoked** by `project-plan` step 0 and `feature-plan` Phase 1. Governs shipped artifacts only; an artifact's own agreement wins on audience |
 | `skills/pipeline-maintenance/{validate-config.sh, pipeline-stats.py}` | The two check scripts · POSIX sh / Python 3 | *is the config still wired* (exit 1 on an unresolvable reference; run by post-edit check 6 **and** `feature-plan` Phase 1) · *what the last run cost* (tokens, turns, reviews, peak context, per tier and commit) |
 | `hooks/pre-commit`, `pre-push`, `commit-msg`, `pipeline-marker.sh` | The git guard · POSIX sh | allow or reject · marker-gated, see §5 |
 
@@ -194,6 +195,8 @@ inbox resurfaces next cycle, which is the point.
 | An implementer preserved something redundant "because the plan pinned it" | Plan-stated mechanics are the implementer's to replace — `agents/commit-plan-implementer.md` |
 | A subagent reports `/code-review` or `/verify` failed with `disable-model-invocation` | Expected: both are user-triggered only. `commit-code-reviewer` replaces the first; drive the flow directly instead of the second |
 | A reviewer or writer ignores its shared core | The `skills:` preload was skipped (missing/renamed core, or one setting `disable-model-invocation`) and only warns in the debug log — `validate-config.sh` catches it before a run |
+| A doc explains a prerequisite the reader owns, grades difficulty, or ranks sections by interest | `skills/reader-profile/` — §2's ledger and §6's no-verdict clause. If it is a **README**, this is expected: its reader is a newcomer, and its own agreement wins on audience |
+| A plan or agent file grew a `skills:` block that does nothing | `skills:` is subagent-only; a skill preloads nothing. Invoke via the `Skill` tool — `validate-config.sh` now errors on this |
 | `/feature-plan` opens by reporting a config failure | `validate-config.sh` found an unresolvable reference. Fix it in `/pipeline-maintenance`, not mid-run |
 | A commit seems to have stalled | Check the plan's §0 **agent wall-clock** estimate — not its compute figure, which is far smaller and makes every healthy dispatch look stalled |
 | A dispatch came back saying it is "waiting" | Usually a **backgrounded** dispatch — subagents background by default unless the `Agent` call passes `run_in_background: false`. Rule owned by `skills/handoff-core/`; recovery by `feature-plan` Phase 5 |

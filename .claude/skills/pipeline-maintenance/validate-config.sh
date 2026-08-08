@@ -19,7 +19,7 @@ SKILLS="$CLAUDE_DIR/skills"
 SETTINGS="$CLAUDE_DIR/settings.json"
 
 AGENT_FIELDS="name description tools disallowedTools model permissionMode maxTurns skills mcpServers hooks memory background effort isolation color initialPrompt"
-SKILL_FIELDS="name description argument-hint arguments disable-model-invocation user-invocable allowed-tools disallowed-tools model effort context agent background hooks paths shell"
+SKILL_FIELDS="name description when_to_use argument-hint arguments disable-model-invocation user-invocable allowed-tools disallowed-tools model effort context agent background hooks paths shell metadata license compatibility"
 
 errors=0
 warns=0
@@ -106,6 +106,13 @@ for f in "$SKILLS"/*/SKILL.md; do
     dir=$(basename "$(dirname "$f")")
 
     for k in $(fm_keys "$f"); do
+        # 'skills:' is subagent-only. In a SKILL.md it parses, is dropped, and the skill runs
+        # uncalibrated with nothing reporting it -- the reasoning_effort failure mode, and a mistake
+        # this ecosystem has actually made. Loud, not a warning.
+        if [ "$k" = "skills" ]; then
+            err "$dir: 'skills:' is a subagent-only frontmatter field and is dropped silently here; a skill cannot preload another. Invoke it with the Skill tool instead (see feature-plan Phase 1)"
+            continue
+        fi
         in_list "$k" "$SKILL_FIELDS" || warn "$dir: unknown skill frontmatter key '$k' (dropped silently by the parser)"
     done
 
