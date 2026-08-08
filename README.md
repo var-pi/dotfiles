@@ -1,6 +1,7 @@
 # dotfiles
 
-> A declarative Apple-Silicon workstation with a local Julia LLM living inside my editor.
+> A declarative Apple-Silicon workstation — a local Julia LLM inside my editor, and a
+> versioned agent pipeline that plans and writes the code.
 
 My `$HOME`, under version control. There are no symlinks and no bootstrap script —
 the whole home directory *is* the work tree of a bare git repository, and a
@@ -21,8 +22,9 @@ solvers for **Scientific Machine Learning in Julia**.
   disabled, so answers stream straight through.
 - **Reproducible Julia.** Pinned environments with committed `Manifest.toml`s, `Revise`
   wired into `startup.jl`, and a format-add-commit-push shortcut for a tight loop.
-- **Agentic workflows, versioned.** A custom Claude Code `plan-and-dispatch` skill and
-  its reviewer/implementer agents are tracked right alongside the shell config.
+- **A whole planning pipeline, versioned.** Three Claude Code skills, six subagents and a
+  marker-gated git guard run a project → feature → commit ladder — tracked right alongside
+  the shell config, and steered by its own retrospectives.
 
 ## The Julia Master
 
@@ -58,6 +60,48 @@ all structured as Summary / Background / Details.
 
 Everything runs locally. It's private, offline-capable, and free to interrupt.
 
+## The planning pipeline
+
+The other half of the repo is a Claude Code ecosystem that plans and writes code on this
+machine. It runs a **project → feature → commit** ladder, and the human steps are
+deliberately few:
+
+```
+  a brief or source text
+    │
+    ▼
+  /project-plan  ⇄ project-plan-reviewer  ──[ HUMAN GATE ]──▶  docs/plan/
+    │                                                          plan + one brief per feature
+    ▼
+  /feature-plan  ⇄ feature-plan-reviewer  ──[ HUMAN GATE ]──▶  one plan file per commit
+    │
+    ▼  one session per commit, until the feature lands
+  commit-plan-implementer ──▶ commit-code-reviewer ──▶ one local commit
+                                                            │
+                                                            ▼
+                                                    I review and push, by hand
+```
+
+Two `ExitPlanMode` approvals, one session per commit, and the push. The review rounds, the
+test-first implementation, and the *N of M landed* bookkeeping run without me — state
+travels in `docs/plan/` and a `CLAUDE.md` block, never a live session, so an interruption
+lands *between* commits rather than inside one.
+
+What holds it together is an **altitude contract**: each rung owns exactly one thing and
+copies nothing from the rung above. A plan says what a test must *discriminate*; it never
+carries a code body, a test expression, or a tolerance. Those belong to the implementer,
+derived theory-first at the moment the code is written — so there is only ever one source
+of truth to drift.
+
+A **git guard** enforces the last boundary. `SubagentStart`/`SubagentStop` hooks arm a
+marker for exactly the window a dispatched implementer is touching the repo, and while it's
+armed `pre-push` rejects unconditionally. An agent can commit; only I can push.
+
+It also improves itself: at feature close a retrospector measures what the run actually
+cost — tokens, turns, peak context, per tier — and files proposals to an inbox that
+`/pipeline-maintenance` works through with me present, never unattended, because those files
+govern every future run. `.claude/PIPELINE.md` is the map.
+
 ## The stack
 
 | Layer | Choice | Why |
@@ -65,13 +109,13 @@ Everything runs locally. It's private, offline-capable, and free to interrupt.
 | System | `nix-darwin` flake (`vortex`) | Declarative, reproducible macOS from a lockfile |
 | Editor | Neovim, Lua config | `blink.cmp`, telescope, treesitter, LSP for Julia/Lua/Nix/LaTeX |
 | Language | Julia (LTS + a `1.12` shim) | `Revise`, pinned envs, committed manifests |
-| AI | MLX server + Claude Code | On-device Julia model; versioned agent workflows |
+| AI | MLX server + Claude Code | On-device Julia model; a versioned project → feature → commit pipeline |
 | Terminal | kitty + JetBrains Mono | — |
 | Shell | zsh | The bare-repo `dotfiles` alias and a few sharp helpers |
 
 A few shell helpers do the heavy lifting: `drs` rebuilds the system
-(`darwin-rebuild switch`), `ucc` bumps just the Claude Code flake input, and `gpp`
-formats, commits, and pushes a Julia project in one step.
+(`darwin-rebuild switch`), `ucc` bumps just the Claude Code flake input, `jms` brings the
+Julia Master up, and `gpp` formats, commits, and pushes a Julia project in one step.
 
 ## The bare-repo trick
 
@@ -97,6 +141,10 @@ tracked files sit exactly where they belong. `dotfiles status`, `dotfiles add`,
 ├── .julia/
 │   ├── config/startup.jl               # Revise on interactive start
 │   └── environments/                   # pinned, manifest-locked envs
-├── .claude/                            # plan-and-dispatch skill + agents
+├── .claude/
+│   ├── PIPELINE.md                     # the map: who dispatches whom, where the gates are
+│   ├── skills/                         # project-plan, feature-plan, maintenance, dotfiles-sync
+│   ├── agents/                         # the plan reviewers, implementer, code reviewer, …
+│   └── hooks/                          # the marker-gated git guard
 └── scripts/mlx-cli/                    # the on-device Julia Master server
 ```
